@@ -10,11 +10,6 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  plugins: [nextCookies()], // make sure nextCookies() is the last plugin in the array
-  socialProviders: {
-    discord: {
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
-    },
-  },
+  plugins: [nextCookies()],
+  socialProviders: {},
 })

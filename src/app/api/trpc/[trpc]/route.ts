@@ -5,10 +5,6 @@ import { env } from "@/env"
 import { createTRPCContext } from "@/server/api/init"
 import { appRouter } from "@/server/api/root"
 
-/**
- * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
- * handling a HTTP request (e.g. when you make requests from Client Components).
- */
 async function createContext(req: NextRequest) {
   return createTRPCContext({
     headers: req.headers,

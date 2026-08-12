@@ -1,23 +1,26 @@
 {
   "compilerOptions": {
     "allowJs": true,
-
     /* Path Aliases */
-    "baseUrl": ".",
     "checkJs": true,
     /* Base Options: */
     "esModuleInterop": true,
     "incremental": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-
     /* Bundled projects */
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     },
     "plugins": [
       {
@@ -26,13 +29,14 @@
     ],
     "resolveJsonModule": true,
     "skipLibCheck": true,
-
     /* Strictness */
     "strict": true,
     "target": "ES2017",
     "verbatimModuleSyntax": true
   },
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules"
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",

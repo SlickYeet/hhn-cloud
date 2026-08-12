@@ -2,13 +2,16 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "assist": {
     "actions": {
-      "recommended": true,
+      "preset": "recommended",
       "source": {
         "organizeImports": {
           "level": "on",
           "options": {
             "groups": [
-              [":PACKAGE:", ":PACKAGE_WITH_PROTOCOL:"],
+              [
+                ":PACKAGE:",
+                ":PACKAGE_WITH_PROTOCOL:"
+              ],
               ":BLANK_LINE:",
               ":ALIAS:",
               ":BLANK_LINE:",
@@ -17,7 +20,7 @@
             "identifierOrder": "natural"
           }
         },
-        "recommended": true,
+        "preset": "recommended",
         "useSortedAttributes": "on",
         "useSortedKeys": "on",
         "useSortedProperties": "on"
@@ -101,11 +104,15 @@
           "fix": "safe",
           "level": "warn",
           "options": {
-            "functions": ["clsx", "cva", "cn"]
+            "functions": [
+              "clsx",
+              "cva",
+              "cn"
+            ]
           }
         }
       },
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "useCollapsedElseIf": "error",
         "useCollapsedIf": "error",
