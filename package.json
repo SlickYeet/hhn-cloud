@@ -11,6 +11,7 @@
     "@t3-oss/env-nextjs": "^0.13.11",
     "better-auth": "^1.6.27",
     "drizzle-orm": "^0.45.2",
+    "drizzle-seed": "^0.3.1",
     "drizzle-zod": "^0.8.3",
     "next": "^16.3.0",
     "postgres": "^3.4.9",
@@ -34,16 +35,19 @@
   "scripts": {
     "auth:generate": "npx @better-auth/cli@latest generate --config ./src/server/auth/index.ts --yes",
     "build": "next build",
+    "clean": "rm -rf .next node_modules bun.lock && bun install",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
+    "db:reset": "bun ./src/scripts/reset-db.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:unsafe": "biome check --write --unsafe .",
     "lint:write": "biome check --write .",
-    "start": "next start"
+    "shadcn": "bunx --bun shadcn@latest",
+    "start": "bun run db:migrate && next start"
   },
   "type": "module",
   "version": "0.1.0"
