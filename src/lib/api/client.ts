@@ -2,8 +2,14 @@ import { createORPCClient } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import type { RouterClient } from "@orpc/server"
 
-import { getBaseUrl } from "@/lib/utils"
+import { env } from "@/env"
 import type { router } from "@/server/api/routers"
+
+export function getBaseUrl() {
+  if (typeof window !== "undefined") return window.location.origin
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return env.NEXT_PUBLIC_URL
+}
 
 declare global {
   var $api: RouterClient<typeof router> | undefined
