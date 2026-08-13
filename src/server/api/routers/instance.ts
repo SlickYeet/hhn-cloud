@@ -214,4 +214,147 @@ export const instanceRouter = {
 
       return instance
     }),
+
+  restart: publicProcedure
+    .route({
+      method: "POST",
+      path: "/instance/:id/restart",
+      summary: "Restart an instance",
+      tags: ["Instances"],
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string() }))
+    .errors({
+      BAD_REQUEST: {
+        message: "Invalid request",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(({ context, errors, input }) => {
+      if (!input.id) throw errors.BAD_REQUEST()
+
+      const instanceIndex = mockInstances.findIndex(
+        (instance) => instance.id === input.id,
+      )
+
+      if (instanceIndex === -1) throw errors.NOT_FOUND()
+
+      mockInstances[instanceIndex].status = "running"
+      mockInstances[instanceIndex].updatedAt = new Date()
+
+      return { id: input.id }
+    }),
+
+  start: publicProcedure
+    .route({
+      method: "POST",
+      path: "/instance/:id/start",
+      summary: "Start an instance",
+      tags: ["Instances"],
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string() }))
+    .errors({
+      BAD_REQUEST: {
+        message: "Invalid request",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(({ context, errors, input }) => {
+      if (!input.id) throw errors.BAD_REQUEST()
+
+      const instanceIndex = mockInstances.findIndex(
+        (instance) => instance.id === input.id,
+      )
+
+      if (instanceIndex === -1) throw errors.NOT_FOUND()
+
+      mockInstances[instanceIndex].status = "running"
+      mockInstances[instanceIndex].updatedAt = new Date()
+
+      return { id: input.id }
+    }),
+
+  stop: publicProcedure
+    .route({
+      method: "POST",
+      path: "/instance/:id/stop",
+      summary: "Stop an instance",
+      tags: ["Instances"],
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string() }))
+    .errors({
+      BAD_REQUEST: {
+        message: "Invalid request",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(({ context, errors, input }) => {
+      if (!input.id) throw errors.BAD_REQUEST()
+
+      const instanceIndex = mockInstances.findIndex(
+        (instance) => instance.id === input.id,
+      )
+
+      if (instanceIndex === -1) throw errors.NOT_FOUND()
+
+      mockInstances[instanceIndex].status = "stopped"
+      mockInstances[instanceIndex].updatedAt = new Date()
+
+      return { id: input.id }
+    }),
+
+  update: publicProcedure
+    .route({
+      method: "PUT",
+      path: "/instance/:id",
+      summary: "Update an instance",
+      tags: ["Instances"],
+    })
+    .input(
+      z.object(
+        insertInstanceSchema
+          .pick({
+            hostname: true,
+            id: true,
+            organizationId: true,
+          })
+          .partial().shape,
+      ),
+    )
+    .output(z.object({ id: z.string() }))
+    .errors({
+      BAD_REQUEST: {
+        message: "Invalid request",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(({ context, errors, input }) => {
+      if (!input.id) throw errors.BAD_REQUEST()
+
+      const instanceIndex = mockInstances.findIndex(
+        (instance) => instance.id === input.id,
+      )
+
+      if (instanceIndex === -1) throw errors.NOT_FOUND()
+
+      const updatedInstance = {
+        ...mockInstances[instanceIndex],
+        ...input,
+        updatedAt: new Date(),
+      }
+
+      mockInstances[instanceIndex] = updatedInstance
+
+      return { id: updatedInstance.id }
+    }),
 }
