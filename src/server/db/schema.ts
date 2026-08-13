@@ -23,6 +23,13 @@ export const sshKeyTable = createTable("ssh_key", (d) => ({
     .notNull(),
 }))
 
+export type SshKey = typeof sshKeyTable.$inferInsert
+export const insertSshKeySchema = createInsertSchema(sshKeyTable, {
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+})
+export const selectSshKeySchema = createSelectSchema(sshKeyTable)
+
 export const templateStatusEnum = pgEnum("template_status", [
   "active",
   "inactive",
@@ -56,6 +63,13 @@ export const templateTable = createTable(
     index("template_description_idx").on(t.description),
   ],
 )
+
+export type Template = typeof templateTable.$inferInsert
+export const insertTemplateSchema = createInsertSchema(templateTable, {
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+})
+export const selectTemplateSchema = createSelectSchema(templateTable)
 
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
@@ -112,12 +126,10 @@ export const instanceTable = createTable(
   ],
 )
 
-const timestampInputSchema = z.coerce.date()
-
 export type Instance = typeof instanceTable.$inferInsert
 export const insertInstanceSchema = createInsertSchema(instanceTable, {
-  createdAt: timestampInputSchema.optional(),
-  updatedAt: timestampInputSchema.optional(),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
 })
 export const selectInstanceSchema = createSelectSchema(instanceTable)
 
@@ -151,6 +163,13 @@ export const ipAllocationTable = createTable(
   ],
 )
 
+export type IpAllocation = typeof ipAllocationTable.$inferInsert
+export const insertIpAllocationSchema = createInsertSchema(ipAllocationTable, {
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+})
+export const selectIpAllocationSchema = createSelectSchema(ipAllocationTable)
+
 export const networkTable = createTable("network", (d) => ({
   createdAt: d.timestamp("created_at").defaultNow().notNull(),
   id: d.text("id").primaryKey(),
@@ -162,6 +181,13 @@ export const networkTable = createTable("network", (d) => ({
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 }))
+
+export type Network = typeof networkTable.$inferInsert
+export const insertNetworkSchema = createInsertSchema(networkTable, {
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+})
+export const selectNetworkSchema = createSelectSchema(networkTable)
 
 export const user = createTable(
   "user",
