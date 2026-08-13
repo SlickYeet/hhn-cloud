@@ -1,23 +1,41 @@
-import { relations, sql } from "drizzle-orm"
+import { relations } from "drizzle-orm"
 import { index, pgEnum, pgTableCreator } from "drizzle-orm/pg-core"
-import { createSelectSchema } from "drizzle-zod"
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
+import * as z from "zod"
 
 export const createTable = pgTableCreator((name) => `cloud_${name}`)
+
+export const sshKeyTable = createTable("ssh_key", (d) => ({
+  createdAt: d.timestamp("created_at").defaultNow().notNull(),
+  id: d.text("id").primaryKey(),
+  name: d.text("name").notNull(),
+  organizationId: d
+    .text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  publicKey: d.text("public_key").notNull(),
+  updatedAt: d
+    .timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+}))
 
 export const templateTable = createTable(
   "template",
   (d) => ({
     cpu: d.integer().notNull(),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     description: d.text(),
     disk: d.integer().notNull(),
     id: d.text().primaryKey(),
     memory: d.integer().notNull(),
     name: d.text().notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
   }),
   (t) => [
     index("template_name_idx").on(t.name),
@@ -37,14 +55,15 @@ export const instanceStatusEnum = pgEnum("status", [
 export const instanceTable = createTable(
   "instance",
   (d) => ({
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
     ipAddress: d.text("ip_address").notNull(),
     macAddress: d.text("mac_address").notNull(),
     name: d.text("name").notNull(),
+    organizationId: d
+      .text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
     pveNode: d.text("pve_node").notNull(),
     pveVmid: d.integer("pve_vmid").notNull(),
     status: instanceStatusEnum("status").notNull(),
@@ -52,7 +71,11 @@ export const instanceTable = createTable(
       .text("template_id")
       .notNull()
       .references(() => templateTable.id, { onDelete: "cascade" }),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
   }),
   (t) => [
     index("instance_name_idx").on(t.name),
@@ -63,7 +86,13 @@ export const instanceTable = createTable(
   ],
 )
 
+const timestampInputSchema = z.coerce.date()
+
 export type Instance = typeof instanceTable.$inferInsert
+export const insertInstanceSchema = createInsertSchema(instanceTable, {
+  createdAt: timestampInputSchema.optional(),
+  updatedAt: timestampInputSchema.optional(),
+})
 export const selectInstanceSchema = createSelectSchema(instanceTable)
 
 export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
@@ -75,10 +104,7 @@ export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
 export const ipAllocationTable = createTable(
   "ip_allocation",
   (d) => ({
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
     instanceId: d
       .text("instance_id")
@@ -86,7 +112,11 @@ export const ipAllocationTable = createTable(
     ipAddress: d.text("ip_address").notNull(),
     network: d.text("network").notNull(),
     status: ipAllocationStatusEnum("status").notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
   }),
   (t) => [
     index("ip_allocation_ipAddress_idx").on(t.ipAddress),
