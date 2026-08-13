@@ -4,11 +4,12 @@ export default async function Page() {
   const instance = await api.instance.getAll()
 
   return (
-    <main>
-      <h1>Home Page</h1>
+    <main className="p-6">
+      <h1 className="font-bold text-2xl">Home Page</h1>
       {instance.map((i) => (
-        <div key={i.id}>
+        <div className="mt-4 border border-neutral-600 p-4" key={i.id}>
           <p>{i.name}</p>
+          <p>{i.ipAddress}</p>
         </div>
       ))}
     </main>

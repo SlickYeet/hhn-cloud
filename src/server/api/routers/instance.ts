@@ -5,7 +5,12 @@ import { selectInstanceSchema } from "@/server/db/schema"
 
 export const instanceRouter = {
   getAll: publicProcedure
-    .route({ method: "GET" })
+    .route({
+      method: "GET",
+      path: "/instances",
+      summary: "Get all instances",
+      tags: ["Instances"],
+    })
     .output(z.array(selectInstanceSchema))
     .handler(() => {
       return [
