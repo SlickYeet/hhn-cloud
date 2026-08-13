@@ -15,6 +15,14 @@ services:
     container_name: "${COMPOSE_PROJECT_NAME}-redis"
     ports:
       - "6379:6379"
+    command: >
+      redis-server 
+      --appendonly yes 
+      --appendfsync everysec
+      --save 60 1
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
+  redis_data:
