@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm"
 import { index, pgEnum, pgTableCreator } from "drizzle-orm/pg-core"
+import { createSelectSchema } from "drizzle-zod"
 
 export const createTable = pgTableCreator((name) => `cloud_${name}`)
 
@@ -63,6 +64,7 @@ export const instanceTable = createTable(
 )
 
 export type Instance = typeof instanceTable.$inferInsert
+export const selectInstanceSchema = createSelectSchema(instanceTable)
 
 export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
   "allocated",
