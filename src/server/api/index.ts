@@ -1,3 +1,4 @@
+import { oo } from "@orpc/openapi"
 import { ORPCError, os } from "@orpc/server"
 
 import { env } from "@/env"
@@ -36,15 +37,21 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
 
 export const publicProcedure = base.use(timingMiddleware)
 
-export const protectedProcedure = base
-  .use(timingMiddleware)
-  .use(async ({ context, next }) => {
-    if (!context.session) {
-      throw new ORPCError("UNAUTHORIZED")
-    }
-    return next({
-      context: {
-        session: { ...context.session, user: context.session.user },
-      },
-    })
-  })
+export const protectedProcedure = base.use(timingMiddleware).use(
+  oo.spec(
+    base.middleware(async ({ context, next }) => {
+      if (!context.session) {
+        throw new ORPCError("UNAUTHORIZED")
+      }
+
+      return next({
+        context: {
+          session: { ...context.session, user: context.session.user },
+        },
+      })
+    }),
+    {
+      security: [{ bearerAuth: [] }],
+    },
+  ),
+)

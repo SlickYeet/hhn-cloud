@@ -24,19 +24,10 @@ const openAPIHandler = new OpenAPIHandler(router, {
     new OpenAPIReferencePlugin({
       schemaConverters: [new ZodToJsonSchemaConverter()],
       specGenerateOptions: {
-        // components: {
-        //   securitySchemes: {
-        //     bearerAuth: {
-        //       scheme: "bearer",
-        //       type: "http",
-        //     },
-        //   },
-        // },
         info: {
           title: "HHN Cloud API",
           version: "1",
         },
-        // security: [{ bearerAuth: [] }],
       },
     }),
   ],
