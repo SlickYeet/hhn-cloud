@@ -7,10 +7,12 @@ export const createTable = pgTableCreator((name) => `cloud_${name}`)
 
 export const sshKeyTable = createTable("ssh_key", (d) => ({
   createdAt: d.timestamp("created_at").defaultNow().notNull(),
+  fingerprint: d.text("fingerprint").notNull(),
   id: d.text("id").primaryKey(),
-  name: d.text("name").notNull(),
+  name: d.text("name").unique().notNull(),
   organizationId: d
     .text("organization_id")
+    .unique()
     .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
   publicKey: d.text("public_key").notNull(),
@@ -21,51 +23,75 @@ export const sshKeyTable = createTable("ssh_key", (d) => ({
     .notNull(),
 }))
 
+export const templateStatusEnum = pgEnum("template_status", [
+  "active",
+  "inactive",
+  "deleted",
+])
+
 export const templateTable = createTable(
   "template",
   (d) => ({
-    cpu: d.integer().notNull(),
+    cloudInitEnabled: d.boolean("cloud_init_enabled").default(false).notNull(),
+    cpu: d.integer("cpu").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    description: d.text(),
-    disk: d.integer().notNull(),
-    id: d.text().primaryKey(),
-    memory: d.integer().notNull(),
-    name: d.text().notNull(),
+    description: d.text("description"),
+    disk: d.integer("disk").notNull(),
+    id: d.text("id").primaryKey(),
+    memory: d.integer("memory").notNull(),
+    name: d.text("name").unique().notNull(),
+    os: d.text("os").notNull(),
+    pveVmid: d.integer("pve_vmid").unique().notNull(),
+    status: templateStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    version: d.text("version").notNull(),
   }),
   (t) => [
     index("template_name_idx").on(t.name),
+    index("template_pveVmid_idx").on(t.pveVmid),
     index("template_description_idx").on(t.description),
   ],
 )
 
-export const instanceStatusEnum = pgEnum("status", [
+export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
   "provisioning",
   "running",
-  "failed",
+  "stopped",
+  "restarting",
   "deleting",
   "deleted",
+  "failed",
 ])
 
 export const instanceTable = createTable(
   "instance",
   (d) => ({
+    cpu: d.integer("cpu").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    deletedAt: d.timestamp("deleted_at"),
+    disk: d.integer("disk").notNull(),
+    hostname: d.text("hostname").notNull(),
     id: d.text("id").primaryKey(),
-    ipAddress: d.text("ip_address").notNull(),
-    macAddress: d.text("mac_address").notNull(),
-    name: d.text("name").notNull(),
+    memory: d.integer("memory").notNull(),
+    networkId: d
+      .text("network_id")
+      .notNull()
+      .references(() => networkTable.id, { onDelete: "cascade" }),
     organizationId: d
       .text("organization_id")
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     pveNode: d.text("pve_node").notNull(),
-    pveVmid: d.integer("pve_vmid").notNull(),
+    pveVmid: d.integer("pve_vmid").unique().notNull(),
+    sshKeyId: d
+      .text("ssh_key_id")
+      .notNull()
+      .references(() => sshKeyTable.id, { onDelete: "cascade" }),
     status: instanceStatusEnum("status").notNull(),
     templateId: d
       .text("template_id")
@@ -78,11 +104,11 @@ export const instanceTable = createTable(
       .notNull(),
   }),
   (t) => [
-    index("instance_name_idx").on(t.name),
-    index("instance_ipAddress_idx").on(t.ipAddress),
-    index("instance_macAddress_idx").on(t.macAddress),
+    index("instance_hostname_idx").on(t.hostname),
+    index("instance_organizationId_idx").on(t.organizationId),
     index("instance_pveNode_idx").on(t.pveNode),
     index("instance_pveVmid_idx").on(t.pveVmid),
+    index("instance_sshKeyId_idx").on(t.sshKeyId),
   ],
 )
 
@@ -98,7 +124,7 @@ export const selectInstanceSchema = createSelectSchema(instanceTable)
 export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
   "allocated",
   "available",
-  "reserved",
+  "unavailable",
 ])
 
 export const ipAllocationTable = createTable(
@@ -106,11 +132,12 @@ export const ipAllocationTable = createTable(
   (d) => ({
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
-    instanceId: d
-      .text("instance_id")
-      .references(() => instanceTable.id, { onDelete: "cascade" }),
-    ipAddress: d.text("ip_address").notNull(),
-    network: d.text("network").notNull(),
+    ipAddress: d.inet("ip_address").unique().notNull(),
+    macAddress: d.macaddr("mac_address").unique().notNull(),
+    network: d.inet("network").notNull(),
+    networkId: d
+      .text("network_id")
+      .references(() => networkTable.id, { onDelete: "cascade" }),
     status: ipAllocationStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")
@@ -123,6 +150,18 @@ export const ipAllocationTable = createTable(
     index("ip_allocation_network_idx").on(t.network),
   ],
 )
+
+export const networkTable = createTable("network", (d) => ({
+  createdAt: d.timestamp("created_at").defaultNow().notNull(),
+  id: d.text("id").primaryKey(),
+  name: d.text("name").unique().notNull(),
+  network: d.inet("network").unique().notNull(),
+  updatedAt: d
+    .timestamp("updated_at")
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
+}))
 
 export const user = createTable(
   "user",
@@ -315,4 +354,53 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
     fields: [invitation.inviterId],
     references: [user.id],
   }),
+}))
+
+export const sshKeyRelations = relations(sshKeyTable, ({ one }) => ({
+  instance: one(instanceTable, {
+    fields: [sshKeyTable.id],
+    references: [instanceTable.sshKeyId],
+  }),
+  organization: one(organization, {
+    fields: [sshKeyTable.organizationId],
+    references: [organization.id],
+  }),
+}))
+
+export const instanceRelations = relations(instanceTable, ({ one }) => ({
+  network: one(networkTable, {
+    fields: [instanceTable.networkId],
+    references: [networkTable.id],
+  }),
+  organization: one(organization, {
+    fields: [instanceTable.organizationId],
+    references: [organization.id],
+  }),
+  sshKey: one(sshKeyTable, {
+    fields: [instanceTable.sshKeyId],
+    references: [sshKeyTable.id],
+  }),
+  template: one(templateTable, {
+    fields: [instanceTable.templateId],
+    references: [templateTable.id],
+  }),
+}))
+
+export const templateRelations = relations(templateTable, ({ many }) => ({
+  instances: many(instanceTable),
+}))
+
+export const ipAllocationRelations = relations(
+  ipAllocationTable,
+  ({ one }) => ({
+    network: one(networkTable, {
+      fields: [ipAllocationTable.networkId],
+      references: [networkTable.id],
+    }),
+  }),
+)
+
+export const networkRelations = relations(networkTable, ({ many }) => ({
+  instances: many(instanceTable),
+  ipAllocations: many(ipAllocationTable),
 }))
