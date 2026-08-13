@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm"
+import { relations, sql } from "drizzle-orm"
 import { index, pgEnum, pgTableCreator } from "drizzle-orm/pg-core"
 import { createSelectSchema } from "drizzle-zod"
 
@@ -97,19 +97,21 @@ export const ipAllocationTable = createTable(
 export const user = createTable(
   "user",
   (d) => ({
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    banExpires: d.timestamp("ban_expires"),
+    banned: d.boolean("banned").default(false),
+    banReason: d.text("ban_reason"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     email: d.text("email").notNull().unique(),
-    emailVerified: d
-      .boolean()
-      .$defaultFn(() => false)
-      .notNull(),
+    emailVerified: d.boolean("email_verified").default(false).notNull(),
     id: d.text("id").primaryKey(),
     image: d.text("image"),
     name: d.text("name").notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    role: d.text("role"),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
   }),
   (t) => [
     index("user_name_idx").on(t.name),
@@ -120,15 +122,17 @@ export const user = createTable(
 export const session = createTable(
   "session",
   (d) => ({
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    activeOrganizationId: d.text("active_organization_id"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     expiresAt: d.timestamp("expires_at").notNull(),
     id: d.text("id").primaryKey(),
+    impersonatedBy: d.text("impersonated_by"),
     ipAddress: d.text("ip_address"),
     token: d.text("token").notNull().unique(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     userAgent: d.text("user_agent"),
     userId: d
       .text("user_id")
@@ -144,10 +148,7 @@ export const account = createTable(
     accessToken: d.text("access_token"),
     accessTokenExpiresAt: d.timestamp("access_token_expires_at"),
     accountId: d.text("account_id").notNull(),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
     idToken: d.text("id_token"),
     password: d.text("password"),
@@ -155,7 +156,10 @@ export const account = createTable(
     refreshToken: d.text("refresh_token"),
     refreshTokenExpiresAt: d.timestamp("refresh_token_expires_at"),
     scope: d.text("scope"),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     userId: d
       .text("user_id")
       .notNull()
@@ -167,15 +171,118 @@ export const account = createTable(
 export const verification = createTable(
   "verification",
   (d) => ({
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     expiresAt: d.timestamp("expires_at").notNull(),
     id: d.text("id").primaryKey(),
     identifier: d.text("identifier").notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
     value: d.text("value").notNull(),
   }),
   (t) => [index("verification_identifier_idx").on(t.identifier)],
 )
+
+export const organization = createTable("organization", (d) => ({
+  createdAt: d.timestamp("created_at").notNull(),
+  id: d.text("id").primaryKey(),
+  logo: d.text("logo"),
+  metadata: d.text("metadata"),
+  name: d.text("name").notNull(),
+  slug: d.text("slug").notNull().unique(),
+}))
+
+export const member = createTable(
+  "member",
+  (d) => ({
+    createdAt: d.timestamp("created_at").notNull(),
+    id: d.text("id").primaryKey(),
+    organizationId: d
+      .text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    role: d.text("role").default("member").notNull(),
+    userId: d
+      .text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  }),
+  (t) => [
+    index("member_organizationId_idx").on(t.organizationId),
+    index("member_userId_idx").on(t.userId),
+  ],
+)
+
+export const invitation = createTable(
+  "invitation",
+  (d) => ({
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    email: d.text("email").notNull(),
+    expiresAt: d.timestamp("expires_at").notNull(),
+    id: d.text("id").primaryKey(),
+    inviterId: d
+      .text("inviter_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    organizationId: d
+      .text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    role: d.text("role"),
+    status: d.text("status").default("pending").notNull(),
+  }),
+  (table) => [
+    index("invitation_organizationId_idx").on(table.organizationId),
+    index("invitation_email_idx").on(table.email),
+  ],
+)
+
+export const userRelations = relations(user, ({ many }) => ({
+  accounts: many(account),
+  invitations: many(invitation),
+  members: many(member),
+  sessions: many(session),
+}))
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}))
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}))
+
+export const organizationRelations = relations(organization, ({ many }) => ({
+  invitations: many(invitation),
+  members: many(member),
+}))
+
+export const memberRelations = relations(member, ({ one }) => ({
+  organization: one(organization, {
+    fields: [member.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [member.userId],
+    references: [user.id],
+  }),
+}))
+
+export const invitationRelations = relations(invitation, ({ one }) => ({
+  organization: one(organization, {
+    fields: [invitation.organizationId],
+    references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [invitation.inviterId],
+    references: [user.id],
+  }),
+}))
