@@ -4,7 +4,7 @@ import { publicProcedure } from "@/server/api"
 import { selectTemplateSchema } from "@/server/db/schema"
 
 const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
-  selectTemplateSchema.parse({
+  {
     cloudInitEnabled: true,
     cpu: 2,
     createdAt: new Date(),
@@ -18,8 +18,8 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
     status: "active",
     updatedAt: new Date(),
     version: "20.04",
-  }),
-  selectTemplateSchema.parse({
+  },
+  {
     cloudInitEnabled: true,
     cpu: 2,
     createdAt: new Date(),
@@ -33,8 +33,8 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
     status: "active",
     updatedAt: new Date(),
     version: "11",
-  }),
-  selectTemplateSchema.parse({
+  },
+  {
     cloudInitEnabled: true,
     cpu: 2,
     createdAt: new Date(),
@@ -48,8 +48,8 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
     status: "active",
     updatedAt: new Date(),
     version: "8",
-  }),
-  selectTemplateSchema.parse({
+  },
+  {
     cloudInitEnabled: true,
     cpu: 2,
     createdAt: new Date(),
@@ -63,7 +63,7 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
     status: "active",
     updatedAt: new Date(),
     version: "34",
-  }),
+  },
 ]
 
 export const templateRouter = {
