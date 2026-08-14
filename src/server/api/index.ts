@@ -5,19 +5,7 @@ import { env } from "@/env"
 import { auth } from "@/server/auth"
 import { db } from "@/server/db"
 
-export async function createORPCContext(opts: { headers: Headers }) {
-  const session = await auth.api.getSession({
-    headers: opts.headers,
-  })
-
-  return {
-    db,
-    session,
-    ...opts,
-  }
-}
-
-const base = os.$context<Awaited<ReturnType<typeof createORPCContext>>>()
+const base = os.$context<{ headers: Headers }>()
 
 const timingMiddleware = base.middleware(async ({ next, path }) => {
   const start = Date.now()
@@ -35,23 +23,40 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
   return result
 })
 
-export const publicProcedure = base.use(timingMiddleware)
-
-export const protectedProcedure = base.use(timingMiddleware).use(
-  oo.spec(
-    base.middleware(async ({ context, next }) => {
-      if (!context.session) {
-        throw new ORPCError("UNAUTHORIZED")
-      }
-
-      return next({
-        context: {
-          session: { ...context.session, user: context.session.user },
-        },
-      })
-    }),
-    {
-      security: [{ bearerAuth: [] }],
+const databaseMiddleware = base.middleware(async ({ next }) => {
+  return next({
+    context: {
+      db,
     },
-  ),
+  })
+})
+
+const authMiddleware = oo.spec(
+  base.middleware(async ({ context, next }) => {
+    const session = await auth.api.getSession({
+      headers: context.headers,
+    })
+
+    if (!session) {
+      throw new ORPCError("UNAUTHORIZED")
+    }
+
+    return next({
+      context: {
+        session: { ...session, user: session.user },
+      },
+    })
+  }),
+  {
+    security: [{ bearerAuth: [] }],
+  },
 )
+
+export const publicProcedure = base
+  .use(timingMiddleware)
+  .use(databaseMiddleware)
+
+export const protectedProcedure = base
+  .use(timingMiddleware)
+  .use(databaseMiddleware)
+  .use(authMiddleware)
