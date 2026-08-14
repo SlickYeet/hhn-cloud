@@ -1,4 +1,4 @@
-import { api } from "@/lib/api/client"
+import { api } from "@/server/api/client"
 
 export default async function Page() {
   const instance = await api.instance.list({

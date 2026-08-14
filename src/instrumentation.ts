@@ -1,3 +1,3 @@
 export async function register() {
-  await import("./lib/api/server")
+  await import("./server/api/server")
 }
