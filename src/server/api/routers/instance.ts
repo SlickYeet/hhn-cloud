@@ -1,5 +1,7 @@
 import * as z from "zod"
 
+import { env } from "@/env"
+import { getProxmoxClient } from "@/lib/proxmox"
 import { publicProcedure } from "@/server/api"
 import { insertInstanceSchema, selectInstanceSchema } from "@/server/db/schema"
 
@@ -16,9 +18,8 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
     organizationId: "org1",
     pveNode: "node1",
     pveVmid: 101,
-    sshKeyId: "sshkey1",
     status: "running",
-    templateId: "template1",
+    templateId: 9001,
     updatedAt: new Date(),
   },
   {
@@ -33,9 +34,8 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
     organizationId: "org2",
     pveNode: "node2",
     pveVmid: 102,
-    sshKeyId: "sshkey2",
     status: "queued",
-    templateId: "template2",
+    templateId: 9002,
     updatedAt: new Date(),
   },
   {
@@ -50,9 +50,8 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
     organizationId: "org3",
     pveNode: "node3",
     pveVmid: 103,
-    sshKeyId: "sshkey3",
     status: "provisioning",
-    templateId: "template3",
+    templateId: 9003,
     updatedAt: new Date(),
   },
   {
@@ -67,9 +66,8 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
     organizationId: "org4",
     pveNode: "node4",
     pveVmid: 104,
-    sshKeyId: "sshkey4",
     status: "failed",
-    templateId: "template4",
+    templateId: 9004,
     updatedAt: new Date(),
   },
   {
@@ -84,12 +82,14 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
     organizationId: "org4",
     pveNode: "node5",
     pveVmid: 105,
-    sshKeyId: "sshkey5",
     status: "deleted",
-    templateId: "template5",
+    templateId: 9005,
     updatedAt: new Date(),
   },
 ]
+
+const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
+const PROXMOX_DEFAULT_POOL = env.PROXMOX_POOL
 
 export const instanceRouter = {
   create: publicProcedure
@@ -99,8 +99,20 @@ export const instanceRouter = {
       summary: "Create a new instance",
       tags: ["Instances"],
     })
-    .input(z.object(insertInstanceSchema.shape))
-    .output(z.object({ id: z.string() }))
+    .input(
+      z.object(
+        insertInstanceSchema.omit({
+          createdAt: true,
+          deletedAt: true,
+          networkId: true,
+          pveNode: true,
+          pveVmid: true,
+          status: true,
+          updatedAt: true,
+        }).shape,
+      ),
+    )
+    .output(z.object({ vmid: z.string() }))
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
@@ -109,21 +121,35 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input) throw errors.BAD_REQUEST()
 
-      const newInstance = {
-        ...input,
-        createdAt: new Date(),
-        deletedAt: null,
-        updatedAt: new Date(),
+      const proxmox = getProxmoxClient()
+
+      const newVmid = 8001
+
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(input.templateId)
+        .clone.$post({
+          full: true,
+          name: input.hostname,
+          newid: newVmid,
+          pool: PROXMOX_DEFAULT_POOL,
+        })
+
+      setTimeout(() => void 0, 5000)
+
+      const newInstance = await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(newVmid)
+        .status.current.$get()
+
+      if (!newInstance) throw errors.NOT_FOUND()
+
+      return {
+        vmid: newInstance.vmid.toString(),
       }
-
-      mockInstances.push(newInstance)
-
-      if (!newInstance.id) throw errors.NOT_FOUND()
-
-      return { id: newInstance.id }
     }),
 
   delete: publicProcedure
@@ -143,16 +169,17 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instanceIndex = mockInstances.findIndex(
-        (instance) => instance.id === input.id,
-      )
+      const proxmox = getProxmoxClient()
 
-      if (instanceIndex === -1) throw errors.NOT_FOUND()
+      const vmid = Number(input.id)
 
-      mockInstances.splice(instanceIndex, 1)
+      await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).$delete({
+        "destroy-unreferenced-disks": true,
+        purge: true,
+      })
 
       return { id: input.id }
     }),
@@ -228,21 +255,62 @@ export const instanceRouter = {
       BAD_REQUEST: {
         message: "Invalid request",
       },
+      CONFLICT: {
+        message: "Instance is already restarting",
+      },
+      FORBIDDEN: {
+        message: "Instance is not running",
+      },
       NOT_FOUND: {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instanceIndex = mockInstances.findIndex(
-        (instance) => instance.id === input.id,
-      )
+      const proxmox = getProxmoxClient()
 
-      if (instanceIndex === -1) throw errors.NOT_FOUND()
+      const vmid = Number(input.id)
 
-      mockInstances[instanceIndex].status = "running"
-      mockInstances[instanceIndex].updatedAt = new Date()
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(vmid)
+        .status.reboot.$post()
+
+      return { id: input.id }
+    }),
+
+  shutdown: publicProcedure
+    .route({
+      method: "POST",
+      path: "/instance/:id/shutdown",
+      summary: "Shutdown an instance",
+      tags: ["Instances"],
+    })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string() }))
+    .errors({
+      BAD_REQUEST: {
+        message: "Invalid request",
+      },
+      FORBIDDEN: {
+        message: "Instance is not running",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(async ({ context, errors, input }) => {
+      if (!input.id) throw errors.BAD_REQUEST()
+
+      const proxmox = getProxmoxClient()
+
+      const vmid = Number(input.id)
+
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(vmid)
+        .status.shutdown.$post()
 
       return { id: input.id }
     }),
@@ -260,21 +328,27 @@ export const instanceRouter = {
       BAD_REQUEST: {
         message: "Invalid request",
       },
+      CONFLICT: {
+        message: "Instance is already running",
+      },
+      FORBIDDEN: {
+        message: "Instance is already running",
+      },
       NOT_FOUND: {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instanceIndex = mockInstances.findIndex(
-        (instance) => instance.id === input.id,
-      )
+      const proxmox = getProxmoxClient()
 
-      if (instanceIndex === -1) throw errors.NOT_FOUND()
+      const vmid = Number(input.id)
 
-      mockInstances[instanceIndex].status = "running"
-      mockInstances[instanceIndex].updatedAt = new Date()
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(vmid)
+        .status.start.$post()
 
       return { id: input.id }
     }),
@@ -292,21 +366,24 @@ export const instanceRouter = {
       BAD_REQUEST: {
         message: "Invalid request",
       },
+      FORBIDDEN: {
+        message: "Instance is not running",
+      },
       NOT_FOUND: {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instanceIndex = mockInstances.findIndex(
-        (instance) => instance.id === input.id,
-      )
+      const proxmox = getProxmoxClient()
 
-      if (instanceIndex === -1) throw errors.NOT_FOUND()
+      const vmid = Number(input.id)
 
-      mockInstances[instanceIndex].status = "stopped"
-      mockInstances[instanceIndex].updatedAt = new Date()
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(vmid)
+        .status.stop.$post()
 
       return { id: input.id }
     }),
@@ -338,23 +415,17 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instanceIndex = mockInstances.findIndex(
-        (instance) => instance.id === input.id,
-      )
+      const proxmox = getProxmoxClient()
 
-      if (instanceIndex === -1) throw errors.NOT_FOUND()
+      const vmid = Number(input.id)
 
-      const updatedInstance = {
-        ...mockInstances[instanceIndex],
-        ...input,
-        updatedAt: new Date(),
-      }
+      await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).config.$put({
+        name: input.hostname,
+      })
 
-      mockInstances[instanceIndex] = updatedInstance
-
-      return { id: updatedInstance.id }
+      return { id: input.id }
     }),
 }
