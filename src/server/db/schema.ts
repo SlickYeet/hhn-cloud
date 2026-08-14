@@ -110,7 +110,7 @@ export const instanceTable = createTable(
     pveVmid: d.integer("pve_vmid").unique().notNull(),
     status: instanceStatusEnum("status").notNull(),
     templateId: d
-      .text("template_id")
+      .integer("template_id")
       .notNull()
       .references(() => templateTable.id, { onDelete: "restrict" }),
     updatedAt: d
