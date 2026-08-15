@@ -46,7 +46,7 @@ export const templateTable = createTable(
   "template",
   (d) => ({
     cloudInitEnabled: d.boolean("cloud_init_enabled").default(false).notNull(),
-    cpu: d.integer("cpu").notNull(),
+    cores: d.integer("cores").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     description: d.text("description"),
     disk: d.integer("disk").notNull(),
@@ -91,7 +91,7 @@ export const instanceStatusEnum = pgEnum("instance_status", [
 export const instanceTable = createTable(
   "instance",
   (d) => ({
-    cpu: d.integer("cpu").notNull(),
+    cores: d.integer("cores").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     deletedAt: d.timestamp("deleted_at"),
     disk: d.integer("disk").notNull(),
@@ -204,6 +204,7 @@ export const insertIpAllocationSchema = createInsertSchema(ipAllocationTable, {
 export const selectIpAllocationSchema = createSelectSchema(ipAllocationTable)
 
 export const networkTable = createTable("network", (d) => ({
+  cidr: d.integer("cidr").default(24).notNull(),
   createdAt: d.timestamp("created_at").defaultNow().notNull(),
   dhcpEnabled: d.boolean("dhcp_enabled").default(true).notNull(),
   dnsServers: d.text("dns_servers").array().notNull(),
