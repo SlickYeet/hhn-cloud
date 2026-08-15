@@ -50,7 +50,7 @@ export const templateTable = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     description: d.text("description"),
     disk: d.integer("disk").notNull(),
-    id: d.integer("id").primaryKey(),
+    id: d.text("id").primaryKey(),
     memory: d.integer("memory").notNull(),
     name: d.text("name").unique().notNull(),
     os: d.text("os").notNull(),
@@ -113,7 +113,7 @@ export const instanceTable = createTable(
     templateId: d
       .integer("template_id")
       .notNull()
-      .references(() => templateTable.id, { onDelete: "restrict" }),
+      .references(() => templateTable.pveVmid, { onDelete: "restrict" }),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()
