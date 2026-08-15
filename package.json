@@ -10,6 +10,7 @@
     "@orpc/zod": "^1.15.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "better-auth": "^1.6.27",
+    "bullmq": "^6.1.1",
     "drizzle-orm": "^0.45.2",
     "drizzle-seed": "^0.3.1",
     "drizzle-zod": "^0.8.3",
