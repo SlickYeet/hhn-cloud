@@ -50,7 +50,7 @@ export const templateTable = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     description: d.text("description"),
     disk: d.integer("disk").notNull(),
-    id: d.text("id").primaryKey(),
+    id: d.integer("id").primaryKey(),
     memory: d.integer("memory").notNull(),
     name: d.text("name").unique().notNull(),
     os: d.text("os").notNull(),
@@ -108,6 +108,7 @@ export const instanceTable = createTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     pveNode: d.text("pve_node").notNull(),
     pveVmid: d.integer("pve_vmid").unique().notNull(),
+    rootPassword: d.text("root_password").notNull(),
     status: instanceStatusEnum("status").notNull(),
     templateId: d
       .integer("template_id")
