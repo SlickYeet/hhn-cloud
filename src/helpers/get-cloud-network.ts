@@ -1,0 +1,38 @@
+import { eq } from "drizzle-orm"
+
+import { getNextAvailableIPAddress } from "@/helpers/get-next-available-ip-address"
+import { db } from "@/server/db"
+import { networkTable } from "@/server/db/schema"
+
+const CLOUD_NETWORK_VLAN_ID = 80
+
+export async function getCloudNetwork(): Promise<{
+  gateway: string
+  ip: string
+}> {
+  try {
+    const [network] = await db
+      .select()
+      .from(networkTable)
+      .where(eq(networkTable.vlanId, CLOUD_NETWORK_VLAN_ID))
+
+    if (!network) {
+      throw new Error(
+        `Cloud network with VLAN ID ${CLOUD_NETWORK_VLAN_ID} not found`,
+      )
+    }
+
+    const nextIPAddress = await getNextAvailableIPAddress()
+
+    if (!nextIPAddress) {
+      throw new Error("No available IP addresses in the cloud network")
+    }
+
+    return {
+      gateway: network.gateway,
+      ip: `${nextIPAddress}/${network.cidr}`,
+    }
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Unknown error")
+  }
+}
