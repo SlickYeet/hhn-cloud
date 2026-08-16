@@ -132,9 +132,9 @@ export const instanceTable = createTable(
 
 export type Instance = typeof instanceTable.$inferInsert
 export const insertInstanceSchema = createInsertSchema(instanceTable, {
-  cores: z.number().int().min(1).max(64),
+  cores: z.int().min(1).max(64),
   createdAt: z.coerce.date().optional(),
-  disk: z.number().int().min(1).max(1024),
+  disk: z.int().min(1).max(1024),
   memory: z
     .number()
     .int()
