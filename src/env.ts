@@ -11,6 +11,10 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NODE_ENV: process.env.NODE_ENV,
+    OPNSENSE_API_ENDPOINT: process.env.OPNSENSE_API_ENDPOINT,
+    OPNSENSE_API_KEY: process.env.OPNSENSE_API_KEY,
+    OPNSENSE_API_SECRET: process.env.OPNSENSE_API_SECRET,
+    OPNSENSE_SUBNET_UUID: process.env.OPNSENSE_SUBNET_UUID,
     PROXMOX_HOST: process.env.PROXMOX_HOST,
     PROXMOX_NODE: process.env.PROXMOX_NODE,
     PROXMOX_POOL: process.env.PROXMOX_POOL,
@@ -25,6 +29,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    OPNSENSE_API_ENDPOINT: z.string(),
+    OPNSENSE_API_KEY: z.string(),
+    OPNSENSE_API_SECRET: z.string(),
+    OPNSENSE_SUBNET_UUID: z.uuid(),
     PROXMOX_HOST: z.string(),
     PROXMOX_NODE: z.string(),
     PROXMOX_POOL: z.string(),
