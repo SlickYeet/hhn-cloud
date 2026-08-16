@@ -94,7 +94,6 @@ const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
 ]
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
-const PROXMOX_DEFAULT_POOL = env.PROXMOX_POOL
 
 export const instanceRouter = {
   create: publicProcedure
@@ -126,7 +125,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -174,7 +173,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -206,7 +205,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const instance = mockInstances.find(
@@ -235,7 +234,7 @@ export const instanceRouter = {
         message: "No instances found for the organization",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(({ errors, input }) => {
       if (!input.organizationId) throw errors.BAD_REQUEST()
 
       const instance = mockInstances.filter(
@@ -270,7 +269,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -305,7 +304,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -343,7 +342,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -378,7 +377,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
@@ -420,7 +419,7 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(async ({ context, errors, input }) => {
+    .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const proxmox = getProxmoxClient()
