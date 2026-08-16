@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
@@ -14,7 +13,7 @@ type CloneVMParams = {
   nextVmid: number
 }
 
-export async function cloneVM(
+export async function cloneInstance(
   proxmox: Proxmox.Api,
   data: CloneVMParams,
 ): Promise<string> {
@@ -39,9 +38,8 @@ export async function cloneVM(
 
       if (taskStatus.status === "stopped") {
         if (taskStatus.exitstatus && taskStatus.exitstatus !== "OK") {
-          throw new NextResponse(
+          throw new Error(
             `Clone ${data.nextVmid} failed: ${taskStatus.exitstatus}`,
-            { status: 500 },
           )
         }
 
@@ -58,11 +56,6 @@ export async function cloneVM(
       await new Promise((resolve) => setTimeout(resolve, TASK_POLL_INTERVAL_MS))
     }
   } catch (error) {
-    throw new NextResponse(
-      `Failed to clone VM ${data.templateId} to ${data.nextVmid}: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`,
-      { status: 500 },
-    )
+    throw new Error(error instanceof Error ? error.message : "Unknown error")
   }
 }
