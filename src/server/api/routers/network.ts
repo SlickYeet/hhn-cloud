@@ -5,6 +5,7 @@ import { selectNetworkSchema } from "@/server/db/schema"
 
 const mockNetworks: z.infer<typeof selectNetworkSchema>[] = [
   {
+    cidr: 24,
     createdAt: new Date(),
     dhcpEnabled: true,
     dnsServers: ["8.8.8.8", "8.8.4.4"],
@@ -16,6 +17,7 @@ const mockNetworks: z.infer<typeof selectNetworkSchema>[] = [
     vlanId: 10,
   },
   {
+    cidr: 24,
     createdAt: new Date(),
     dhcpEnabled: false,
     dnsServers: ["8.8.8.8", "8.8.4.4"],
@@ -42,7 +44,7 @@ export const networkRouter = {
         message: "Networks not found",
       },
     })
-    .handler(({ context, errors }) => {
+    .handler(({ errors }) => {
       const networks = mockNetworks
       if (!networks) throw errors.NOT_FOUND()
       return networks
