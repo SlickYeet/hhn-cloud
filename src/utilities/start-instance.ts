@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
@@ -28,9 +27,6 @@ export async function startInstance(
       await new Promise((resolve) => setTimeout(resolve, 1000))
     }
   } catch (error) {
-    throw new NextResponse(`Failed to start instance with vmid ${nextVmid}`, {
-      status: 500,
-      statusText: error instanceof Error ? error.message : "Unknown error",
-    })
+    throw new Error(error instanceof Error ? error.message : "Unknown error")
   }
 }
