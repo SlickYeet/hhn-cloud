@@ -14,6 +14,7 @@ export const env = createEnv({
     OPNSENSE_API_ENDPOINT: process.env.OPNSENSE_API_ENDPOINT,
     OPNSENSE_API_KEY: process.env.OPNSENSE_API_KEY,
     OPNSENSE_API_SECRET: process.env.OPNSENSE_API_SECRET,
+    OPNSENSE_CLOUD_NETWORK_VLAN_ID: process.env.OPNSENSE_CLOUD_NETWORK_VLAN_ID,
     OPNSENSE_SUBNET_UUID: process.env.OPNSENSE_SUBNET_UUID,
     PROXMOX_CLOUD_VM_VMID_RANGE: process.env.PROXMOX_CLOUD_VM_VMID_RANGE,
     PROXMOX_HOST: process.env.PROXMOX_HOST,
@@ -33,6 +34,7 @@ export const env = createEnv({
     OPNSENSE_API_ENDPOINT: z.string(),
     OPNSENSE_API_KEY: z.string(),
     OPNSENSE_API_SECRET: z.string(),
+    OPNSENSE_CLOUD_NETWORK_VLAN_ID: z.string(),
     OPNSENSE_SUBNET_UUID: z.uuid(),
     PROXMOX_CLOUD_VM_VMID_RANGE: z.string().transform((value) => {
       try {
