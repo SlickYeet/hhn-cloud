@@ -6,7 +6,7 @@ import { selectTemplateSchema } from "@/server/db/schema"
 const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
   {
     cloudInitEnabled: true,
-    cpu: 2,
+    cores: 2,
     createdAt: new Date(),
     description: "Ubuntu 20.04 LTS",
     disk: 20,
@@ -21,7 +21,7 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
   },
   {
     cloudInitEnabled: true,
-    cpu: 2,
+    cores: 2,
     createdAt: new Date(),
     description: "Debian 11 Bullseye",
     disk: 20,
@@ -36,7 +36,7 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
   },
   {
     cloudInitEnabled: true,
-    cpu: 2,
+    cores: 2,
     createdAt: new Date(),
     description: "CentOS 8 Stream",
     disk: 20,
@@ -51,7 +51,7 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
   },
   {
     cloudInitEnabled: true,
-    cpu: 2,
+    cores: 2,
     createdAt: new Date(),
     description: "Fedora 34 Workstation",
     disk: 20,
@@ -84,7 +84,7 @@ export const templateRouter = {
         message: "Template not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const template = mockTemplates.find(
@@ -109,7 +109,7 @@ export const templateRouter = {
         message: "Templates not found",
       },
     })
-    .handler(({ context, errors }) => {
+    .handler(({ errors }) => {
       const templates = mockTemplates
       if (!templates) throw errors.NOT_FOUND()
       return templates

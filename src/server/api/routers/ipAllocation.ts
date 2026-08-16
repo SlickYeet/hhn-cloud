@@ -70,7 +70,7 @@ export const ipAllocationRouter = {
         message: "IP allocations not found",
       },
     })
-    .handler(({ context, errors }) => {
+    .handler(({ errors }) => {
       const ipAllocations = mockIpAllocations
       if (!ipAllocations) throw errors.NOT_FOUND()
       return ipAllocations
