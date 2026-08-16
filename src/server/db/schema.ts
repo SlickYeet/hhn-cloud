@@ -143,8 +143,8 @@ export const insertInstanceSchema = createInsertSchema(instanceTable, {
   templateId: z
     .number()
     .int()
-    .min(env.PROXMOX_POOL_RANGE[0])
-    .max(env.PROXMOX_POOL_RANGE[1]),
+    .min(env.PROXMOX_TEMPLATE_VMID_RANGE[0])
+    .max(env.PROXMOX_TEMPLATE_VMID_RANGE[1]),
   updatedAt: z.coerce.date().optional(),
 })
 export const selectInstanceSchema = createSelectSchema(instanceTable)
