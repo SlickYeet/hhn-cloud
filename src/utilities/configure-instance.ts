@@ -35,11 +35,12 @@ export async function configureInstance(
       throw new Error("Failed to retrieve cloud network configuration")
     }
 
+    // TODO: make opnsense dhcp reservation
+
     const config: Omit<Proxmox.nodesQemuConfigVmConfig, "digest"> = {
       agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
       autostart: true,
-      // TODO: if Windows use "bios=ovmf"
-      bios: "seabios",
+      bios: "seabios", // TODO: if Windows use "bios=ovmf"
       cipassword: generateRootPassword(),
       ciupgrade: true,
       ciuser: "root",
@@ -48,8 +49,9 @@ export async function configureInstance(
       memory: String(template.memory),
       nameserver: network.gateway,
       net0: `virtio,bridge=vmbr0,tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
-      sshkeys: encodeURIComponent(""),
-    }
+      searchdomain: "local", // TODO: make configurable
+      sshkeys: encodeURIComponent(""), // TODO: add ssh keys
+    } as Proxmox.nodesQemuConfigVmConfig
 
     await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
