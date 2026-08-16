@@ -2,7 +2,7 @@ import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
 
-const PROXMOX_POOL_RANGE = env.PROXMOX_POOL_RANGE
+const PROXMOX_CLOUD_VM_VMID_RANGE = env.PROXMOX_CLOUD_VM_VMID_RANGE
 
 export async function getNextVmid(proxmox: Proxmox.Api): Promise<number> {
   try {
@@ -23,8 +23,8 @@ export async function getNextVmid(proxmox: Proxmox.Api): Promise<number> {
     }
 
     for (
-      let vmid = PROXMOX_POOL_RANGE[0];
-      vmid <= PROXMOX_POOL_RANGE[1];
+      let vmid = PROXMOX_CLOUD_VM_VMID_RANGE[0];
+      vmid <= PROXMOX_CLOUD_VM_VMID_RANGE[1];
       vmid++
     ) {
       if (!usedVMIDs.has(vmid)) return vmid
