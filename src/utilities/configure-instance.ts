@@ -51,14 +51,20 @@ export async function configureInstance(
       sshkeys: encodeURIComponent(""),
     }
 
-    const instanceConfig = await proxmox.nodes
+    await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
       .qemu.$(data.nextVmid)
       .config.$post(config)
 
-    console.log("Instance config updated:", instanceConfig)
+    const upid = await proxmox.nodes
+      .$(PROXMOX_DEFAULT_NODE)
+      .qemu.$(data.nextVmid)
+      .resize.$put({
+        disk: "scsi0",
+        size: `${template.disk}G`,
+      })
 
-    if (!instanceConfig) {
+    if (!upid) {
       throw new Error(`Failed to configure instance with vmid ${data.nextVmid}`)
     }
   } catch (error) {
