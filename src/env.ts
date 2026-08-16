@@ -14,6 +14,7 @@ export const env = createEnv({
     PROXMOX_HOST: process.env.PROXMOX_HOST,
     PROXMOX_NODE: process.env.PROXMOX_NODE,
     PROXMOX_POOL: process.env.PROXMOX_POOL,
+    PROXMOX_POOL_RANGE: process.env.PROXMOX_POOL_RANGE,
     PROXMOX_TOKEN_ID: process.env.PROXMOX_TOKEN_ID,
     PROXMOX_TOKEN_SECRET: process.env.PROXMOX_TOKEN_SECRET,
     REDIS_URL: process.env.REDIS_URL,
@@ -27,6 +28,25 @@ export const env = createEnv({
     PROXMOX_HOST: z.string(),
     PROXMOX_NODE: z.string(),
     PROXMOX_POOL: z.string(),
+    PROXMOX_POOL_RANGE: z.string().transform((value) => {
+      try {
+        const parsed = JSON.parse(value)
+        if (!Array.isArray(parsed) || parsed.length !== 2) {
+          throw new Error(
+            "PROXMOX_POOL_RANGE must be a JSON array with two elements",
+          )
+        }
+        const [min, max] = parsed
+        if (typeof min !== "number" || typeof max !== "number") {
+          throw new Error("PROXMOX_POOL_RANGE elements must be numbers")
+        }
+        return [min, max] as [number, number]
+      } catch (error) {
+        throw new Error(
+          `Invalid PROXMOX_POOL_RANGE: ${error instanceof Error ? error.message : "Unknown error"}`,
+        )
+      }
+    }),
     PROXMOX_TOKEN_ID: z.string(),
     PROXMOX_TOKEN_SECRET: z.string(),
     REDIS_URL: z.url(),
