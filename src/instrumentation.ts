@@ -1,3 +1,6 @@
 export async function register() {
-  await import("./server/api/server")
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    await import("./server/api/server")
+    await import("./server/workers/provision-worker")
+  }
 }
