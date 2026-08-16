@@ -3,6 +3,8 @@ import { index, pgEnum, pgTableCreator, uniqueIndex } from "drizzle-orm/pg-core"
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
+import { env } from "@/env"
+
 export const createTable = pgTableCreator((name) => `cloud_${name}`)
 
 export const sshKeyTable = createTable(
@@ -130,7 +132,19 @@ export const instanceTable = createTable(
 
 export type Instance = typeof instanceTable.$inferInsert
 export const insertInstanceSchema = createInsertSchema(instanceTable, {
+  cores: z.number().int().min(1).max(64),
   createdAt: z.coerce.date().optional(),
+  disk: z.number().int().min(1).max(1024),
+  memory: z
+    .number()
+    .int()
+    .min(512)
+    .max(1024 * 64),
+  templateId: z
+    .number()
+    .int()
+    .min(env.PROXMOX_POOL_RANGE[0])
+    .max(env.PROXMOX_POOL_RANGE[1]),
   updatedAt: z.coerce.date().optional(),
 })
 export const selectInstanceSchema = createSelectSchema(instanceTable)
