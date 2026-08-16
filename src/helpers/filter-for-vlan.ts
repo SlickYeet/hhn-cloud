@@ -1,21 +1,27 @@
 import { env } from "@/env"
 import type { Lease, Reservation, Subnet } from "@/schemas/opnsense"
 
-export function filterLeasesForVLAN80(leases: Lease[]): Lease[] | [] {
-  const filteredLeases = leases.filter((lease) => lease.if === "vlan0.80")
+const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
+
+export function filterLeasesForVLAN(leases: Lease[]): Lease[] | [] {
+  const filteredLeases = leases.filter(
+    (lease) => lease.if === `vlan0.${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
+  )
   return filteredLeases
 }
 
-export function filterReservationsForVLAN80(
+export function filterReservationsForVLAN(
   reservations: Reservation[] | [],
 ): Reservation[] {
   const filteredReservations = reservations.filter(
-    (reservation) => reservation["%subnet"] === "192.168.80.0/24",
+    (reservation) =>
+      reservation["%subnet"] ===
+      `192.168.${OPNSENSE_CLOUD_NETWORK_VLAN_ID}.0/24`,
   )
   return filteredReservations
 }
 
-export function filterSubnetForVLAN80(subnets: Subnet[]): Subnet {
+export function filterSubnetForVLAN(subnets: Subnet[]): Subnet {
   const filteredSubnet = subnets.find(
     (subnet) => subnet.uuid === env.OPNSENSE_SUBNET_UUID,
   )

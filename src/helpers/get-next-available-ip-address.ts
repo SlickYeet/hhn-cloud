@@ -1,16 +1,19 @@
+import { env } from "@/env"
 import {
-  filterLeasesForVLAN80,
-  filterReservationsForVLAN80,
-  filterSubnetForVLAN80,
-} from "@/helpers/filter-for-vlan80"
+  filterLeasesForVLAN,
+  filterReservationsForVLAN,
+  filterSubnetForVLAN,
+} from "@/helpers/filter-for-vlan"
 import { opnsenseClient } from "@/lib/opnsense"
+
+const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
 
 export async function getNextAvailableIPAddress(): Promise<string> {
   try {
     const usedIPs = new Set<string>()
 
     const leasesData = await opnsenseClient.get("/kea/leases4/search")
-    const leases = filterLeasesForVLAN80(leasesData.data.rows)
+    const leases = filterLeasesForVLAN(leasesData.data.rows)
 
     for (const lease of leases) {
       if (lease.address) {
@@ -21,7 +24,7 @@ export async function getNextAvailableIPAddress(): Promise<string> {
     const reservationsData = await opnsenseClient.get(
       "/kea/dhcpv4/search_reservation",
     )
-    const reservations = filterReservationsForVLAN80(reservationsData.data.rows)
+    const reservations = filterReservationsForVLAN(reservationsData.data.rows)
 
     for (const reservation of reservations) {
       if (reservation.ip_address) {
@@ -30,14 +33,14 @@ export async function getNextAvailableIPAddress(): Promise<string> {
     }
 
     const subnetData = await opnsenseClient.get("/kea/dhcpv4/search_subnet")
-    const subnet = filterSubnetForVLAN80(subnetData.data.rows)
+    const subnet = filterSubnetForVLAN(subnetData.data.rows)
 
     const [start, end] = subnet.pools
       .split(" - ")
       .map((ip) => parseInt(ip.split(".")[3], 10))
 
     for (let i = start; i <= end; i++) {
-      const ipAddress = `192.168.80.${i}`
+      const ipAddress = `192.168.${OPNSENSE_CLOUD_NETWORK_VLAN_ID}.${i}`
       if (!usedIPs.has(ipAddress)) {
         return ipAddress
       }

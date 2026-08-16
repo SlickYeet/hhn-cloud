@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm"
 
+import { env } from "@/env"
 import { getNextAvailableIPAddress } from "@/helpers/get-next-available-ip-address"
 import { db } from "@/server/db"
 import { networkTable } from "@/server/db/schema"
 
-const CLOUD_NETWORK_VLAN_ID = 80
+const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
 
 export async function getCloudNetwork(): Promise<{
   gateway: string
@@ -14,11 +15,11 @@ export async function getCloudNetwork(): Promise<{
     const [network] = await db
       .select()
       .from(networkTable)
-      .where(eq(networkTable.vlanId, CLOUD_NETWORK_VLAN_ID))
+      .where(eq(networkTable.vlanId, Number(OPNSENSE_CLOUD_NETWORK_VLAN_ID)))
 
     if (!network) {
       throw new Error(
-        `Cloud network with VLAN ID ${CLOUD_NETWORK_VLAN_ID} not found`,
+        `Cloud network with VLAN ID ${OPNSENSE_CLOUD_NETWORK_VLAN_ID} not found`,
       )
     }
 
