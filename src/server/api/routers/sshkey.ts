@@ -69,7 +69,7 @@ export const sshKeyRouter = {
         message: "SSH key not found",
       },
     })
-    .handler(({ context, errors, input }) => {
+    .handler(({ errors, input }) => {
       if (!input) throw errors.BAD_REQUEST()
 
       const newSshKey = {
@@ -98,7 +98,7 @@ export const sshKeyRouter = {
         message: "SSH keys not found",
       },
     })
-    .handler(({ context, errors }) => {
+    .handler(({ errors }) => {
       const sshKeys = mockSshKeys
       if (!sshKeys) throw errors.NOT_FOUND()
       return sshKeys
