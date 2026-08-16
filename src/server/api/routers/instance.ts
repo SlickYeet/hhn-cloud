@@ -2,8 +2,10 @@ import * as z from "zod"
 
 import { env } from "@/env"
 import { getProxmoxClient } from "@/lib/proxmox"
+import { createInstanceSchema } from "@/schemas/instance"
 import { publicProcedure } from "@/server/api"
 import { insertInstanceSchema, selectInstanceSchema } from "@/server/db/schema"
+import { addProvisionJob } from "@/server/workers/provision-queue"
 
 const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
   {
@@ -100,23 +102,17 @@ export const instanceRouter = {
     .route({
       method: "POST",
       path: "/instance/create",
+      successStatus: 202,
       summary: "Create a new instance",
       tags: ["Instances"],
     })
-    .input(
-      z.object(
-        insertInstanceSchema.omit({
-          createdAt: true,
-          deletedAt: true,
-          networkId: true,
-          pveNode: true,
-          pveVmid: true,
-          status: true,
-          updatedAt: true,
-        }).shape,
-      ),
+    .input(z.object(createInstanceSchema.shape))
+    .output(
+      z.object({
+        jobId: z.string(),
+        message: z.string(),
+      }),
     )
-    .output(z.object({ vmid: z.string() }))
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
@@ -128,31 +124,19 @@ export const instanceRouter = {
     .handler(async ({ errors, input }) => {
       if (!input) throw errors.BAD_REQUEST()
 
-      const proxmox = getProxmoxClient()
+      // 1. [] create instance in database
+      // 2. [x] add job to provision queue
+      // 3. [] return instance id to client and redirect to instance
+      // 4. [] poll for instance status until it is running
 
-      const newVmid = 8001
+      const { id } = await addProvisionJob(input)
 
-      await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(input.templateId)
-        .clone.$post({
-          full: true,
-          name: input.hostname,
-          newid: newVmid,
-          pool: PROXMOX_DEFAULT_POOL,
-        })
-
-      setTimeout(() => void 0, 5000)
-
-      const newInstance = await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(newVmid)
-        .status.current.$get()
-
-      if (!newInstance) throw errors.NOT_FOUND()
+      if (!id) throw errors.NOT_FOUND()
 
       return {
-        vmid: newInstance.vmid.toString(),
+        jobId: id,
+        message: "Your instance is being created.",
+        status: "queued", // later: newInstance.status
       }
     }),
 
