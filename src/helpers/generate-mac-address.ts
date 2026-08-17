@@ -1,4 +1,4 @@
-export function createMacAddress(): string {
+export function generateMacAddress(): string {
   const macAddress = [
     "BC",
     ...Array.from({ length: 5 }, () =>
