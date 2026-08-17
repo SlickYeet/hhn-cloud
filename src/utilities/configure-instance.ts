@@ -3,7 +3,6 @@ import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
 import { generateRootPassword } from "@/helpers/generate-root-password"
-import { getCloudNetwork } from "@/helpers/get-cloud-network"
 import { db } from "@/server/db"
 import { templateTable } from "@/server/db/schema"
 
@@ -13,6 +12,11 @@ const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
 type ConfigureInstanceParams = {
   nextVmid: number
   templateId: number
+  network: {
+    gateway: string
+    ip: string
+  }
+  macAddress: string
 }
 
 export async function configureInstance(
@@ -29,14 +33,6 @@ export async function configureInstance(
       throw new Error(`Template with id ${data.templateId} not found`)
     }
 
-    const network = await getCloudNetwork()
-
-    if (!network) {
-      throw new Error("Failed to retrieve cloud network configuration")
-    }
-
-    // TODO: make opnsense dhcp reservation
-
     const config: Omit<Proxmox.nodesQemuConfigVmConfig, "digest"> = {
       agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
       autostart: true,
@@ -45,10 +41,11 @@ export async function configureInstance(
       ciupgrade: true,
       ciuser: "root",
       cores: template.cores,
-      ipconfig0: `gw=${network.gateway},ip=${network.ip}`,
+      description: `Cloud instance created from template ${template.name}`,
+      ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
       memory: String(template.memory),
-      nameserver: network.gateway,
-      net0: `virtio,bridge=vmbr0,tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
+      nameserver: data.network.gateway,
+      net0: `virtio,bridge=vmbr0,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
       searchdomain: "local", // TODO: make configurable
       sshkeys: encodeURIComponent(""), // TODO: add ssh keys
     } as Proxmox.nodesQemuConfigVmConfig

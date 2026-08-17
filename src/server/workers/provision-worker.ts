@@ -1,12 +1,15 @@
 import type { Job } from "bullmq"
 import { createNodeRedisClient, Worker } from "bullmq"
 
+import { generateMacAddress } from "@/helpers/generate-mac-address"
+import { getCloudNetwork } from "@/helpers/get-cloud-network"
 import { getNextVmid } from "@/helpers/get-next-vmid"
 import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { createInstanceSchema } from "@/schemas/instance"
 import { cloneInstance } from "@/utilities/clone-instance"
 import { configureInstance } from "@/utilities/configure-instance"
+import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { startInstance } from "@/utilities/start-instance"
 
 import { PROVISION_QUEUE_KEY } from "./provision-queue"
@@ -28,8 +31,22 @@ export const provisionWorker = new Worker(
         nextVmid,
         templateId: data.templateId,
       })
-      // We can use UPID to track progress in stanges, for each task
+      // log new progress
+      const network = await getCloudNetwork()
+      if (!network) {
+        throw new Error("Failed to retrieve cloud network configuration")
+      }
+      // log new progress
+      const macAddress = generateMacAddress()
+      await createDhcpReservation(
+        network.ip.split("/")[0],
+        macAddress,
+        data.hostname,
+      )
+      // log new progress
       await configureInstance(proxmox, {
+        macAddress,
+        network,
         nextVmid,
         templateId: data.templateId,
       })
