@@ -1,10 +1,8 @@
-import { randomUUID } from "node:crypto"
 import type { Job } from "bullmq"
 import { createNodeRedisClient, Queue } from "bullmq"
-import type * as z from "zod"
+import * as z from "zod"
 
 import { getRedisClient } from "@/lib/redis"
-import type { createInstanceSchema } from "@/schemas/instance"
 
 export const PROVISION_QUEUE_KEY = "cloud-provision-queue"
 
@@ -14,7 +12,7 @@ const connection = createNodeRedisClient(redis)
 const provisionQueue = new Queue(PROVISION_QUEUE_KEY, {
   connection,
   defaultJobOptions: {
-    attempts: 3,
+    attempts: 1,
     backoff: {
       delay: 2000,
       type: "exponential",
@@ -24,10 +22,20 @@ const provisionQueue = new Queue(PROVISION_QUEUE_KEY, {
   },
 })
 
+export const schema = z.object({
+  instanceId: z.string(),
+  macAddress: z.mac(),
+  network: z.object({
+    gateway: z.ipv4(),
+    id: z.string(),
+    ip: z.ipv4(),
+  }),
+})
+
 export async function addProvisionJob(
-  data: z.infer<typeof createInstanceSchema>,
+  data: z.infer<typeof schema>,
 ): Promise<{ id: Job["id"]; status: string }> {
-  const jobId = `${data.hostname}-${data.templateId}-${randomUUID()}`
+  const jobId = `${data.instanceId}-${data.macAddress}`
 
   const provisionJob = await provisionQueue.add(PROVISION_QUEUE_KEY, data, {
     deduplication: {
