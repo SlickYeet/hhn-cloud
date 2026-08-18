@@ -333,7 +333,7 @@ export const verification = createTable(
 )
 
 export const organization = createTable("organization", (d) => ({
-  createdAt: d.timestamp("created_at").notNull(),
+  createdAt: d.timestamp("created_at").defaultNow().notNull(),
   id: d.text("id").primaryKey(),
   logo: d.text("logo"),
   metadata: d.text("metadata"),
@@ -344,7 +344,7 @@ export const organization = createTable("organization", (d) => ({
 export const member = createTable(
   "member",
   (d) => ({
-    createdAt: d.timestamp("created_at").notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
     organizationId: d
       .text("organization_id")
