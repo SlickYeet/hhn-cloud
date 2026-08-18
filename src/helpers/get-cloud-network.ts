@@ -9,6 +9,7 @@ const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
 
 export async function getCloudNetwork(): Promise<{
   gateway: string
+  id: string
   ip: string
 }> {
   try {
@@ -31,6 +32,7 @@ export async function getCloudNetwork(): Promise<{
 
     return {
       gateway: network.gateway,
+      id: network.id,
       ip: `${nextIPAddress}/${network.cidr}`,
     }
   } catch (error) {
