@@ -28,14 +28,17 @@ export const schema = z.object({
   network: z.object({
     gateway: z.ipv4(),
     id: z.string(),
-    ip: z.ipv4(),
+    ip: z.string().refine((val) => {
+      const ip = val.split("/")[0]
+      return z.ipv4().safeParse(ip).success
+    }),
   }),
 })
 
 export async function addProvisionJob(
   data: z.infer<typeof schema>,
 ): Promise<{ id: Job["id"]; status: string }> {
-  const jobId = `${data.instanceId}-${data.macAddress}`
+  const jobId = `${data.instanceId}-${data.macAddress.replace(/:/g, "-")}`
 
   const provisionJob = await provisionQueue.add(PROVISION_QUEUE_KEY, data, {
     deduplication: {
