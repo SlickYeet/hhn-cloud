@@ -393,6 +393,7 @@ export const instanceRelations = relations(instanceTable, ({ one, many }) => ({
     fields: [instanceTable.organizationId],
     references: [organization.id],
   }),
+  sshKeys: many(instanceSshKeyTable),
   template: one(templateTable, {
     fields: [instanceTable.templateId],
     references: [templateTable.id],
