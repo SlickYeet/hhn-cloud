@@ -16,7 +16,11 @@ import {
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { publicProcedure } from "@/server/api"
-import { instanceTable, templateTable } from "@/server/db/schema"
+import {
+  instanceTable,
+  ipAllocationTable,
+  templateTable,
+} from "@/server/db/schema"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
@@ -144,11 +148,6 @@ export const instanceRouter = {
       },
     })
     .handler(async ({ context, errors, input }) => {
-      // 1. [x] create instance in database
-      // 2. [x] add job to provision queue
-      // 3. [x] return instance id to client and redirect to instance
-      // 4. [] poll for instance status until it is running
-
       if (!input) throw errors.BAD_REQUEST()
 
       const network = await getCloudNetwork()
@@ -199,6 +198,25 @@ export const instanceRouter = {
 
         if (!newInstance) throw errors.CONFLICT()
 
+        const [ipAllocation] = await tx
+          .insert(ipAllocationTable)
+          .values({
+            gateway: network.gateway,
+            id: randomUUID(),
+            instanceId: newInstance[0].id,
+            ipAddress: network.ip.split("/")[0],
+            macAddress,
+            networkId: network.id,
+            status: "allocated",
+          })
+          .returning()
+
+        if (!ipAllocation) {
+          throw errors.INTERNAL_SERVER_ERROR({
+            message: "Failed to create IP allocation",
+          })
+        }
+
         await createDhcpReservation(
           network.ip.split("/")[0],
           macAddress,
@@ -216,7 +234,11 @@ export const instanceRouter = {
         network,
       })
 
-      if (!jobId) throw errors.INTERNAL_SERVER_ERROR()
+      if (!jobId) {
+        throw errors.INTERNAL_SERVER_ERROR({
+          message: "Provision job could not be created",
+        })
+      }
 
       return {
         instanceId: instance.id,
