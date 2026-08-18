@@ -1,10 +1,16 @@
+import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
+import type { db } from "@/server/db"
+import { instanceTable } from "@/server/db/schema"
 
 const PROXMOX_CLOUD_VM_VMID_RANGE = env.PROXMOX_CLOUD_VM_VMID_RANGE
 
-export async function getNextVmid(proxmox: Proxmox.Api): Promise<number> {
+export async function getNextVmid(
+  proxmox: Proxmox.Api,
+  tx: Parameters<Parameters<(typeof db)["transaction"]>[0]>[0],
+): Promise<number> {
   try {
     const clusterVMs = await proxmox.cluster.resources.$get({
       type: "vm",
@@ -27,7 +33,12 @@ export async function getNextVmid(proxmox: Proxmox.Api): Promise<number> {
       vmid <= PROXMOX_CLOUD_VM_VMID_RANGE[1];
       vmid++
     ) {
-      if (!usedVMIDs.has(vmid)) return vmid
+      const [instance] = await tx
+        .select()
+        .from(instanceTable)
+        .where(eq(instanceTable.pveVmid, vmid))
+
+      if (!usedVMIDs.has(vmid) && !instance) return vmid
     }
 
     throw new Error("No available VMIDs in the specified range.")
