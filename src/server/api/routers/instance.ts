@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { desc, eq, getTableColumns } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
@@ -13,13 +13,10 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
+import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { publicProcedure } from "@/server/api"
-import {
-  instanceTable,
-  ipAllocationTable,
-  templateTable,
-} from "@/server/db/schema"
+import { instanceTable, templateTable } from "@/server/db/schema"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
@@ -298,7 +295,8 @@ export const instanceRouter = {
     .output(
       z.array(
         selectInstanceSchema.extend({
-          ipAllocation: selectIpAllocationSchema,
+          ipAllocations: z.array(selectIpAllocationSchema),
+          sshKeys: z.array(selectInstanceSshKeySchema),
         }),
       ),
     )
@@ -313,18 +311,15 @@ export const instanceRouter = {
     .handler(async ({ context, errors, input }) => {
       if (!input.organizationId) throw errors.BAD_REQUEST()
 
-      const instances = await context.db
-        .select({
-          ...getTableColumns(instanceTable),
-          ipAllocation: getTableColumns(ipAllocationTable),
-        })
-        .from(instanceTable)
-        .innerJoin(
-          ipAllocationTable,
-          eq(instanceTable.id, ipAllocationTable.instanceId),
-        )
-        .where(eq(instanceTable.organizationId, input.organizationId))
-        .orderBy(desc(instanceTable.createdAt))
+      const instances = await context.db.query.instanceTable.findMany({
+        orderBy: (instances, { desc }) => desc(instances.createdAt),
+        where: (instances, { eq }) =>
+          eq(instances.organizationId, input.organizationId),
+        with: {
+          ipAllocations: true,
+          sshKeys: true,
+        },
+      })
 
       if (!instances || instances.length === 0) throw errors.NOT_FOUND()
 
