@@ -1,9 +1,5 @@
 import { relations } from "drizzle-orm"
 import { index, pgEnum, pgTableCreator, uniqueIndex } from "drizzle-orm/pg-core"
-import { createInsertSchema, createSelectSchema } from "drizzle-zod"
-import * as z from "zod"
-
-import { env } from "@/env"
 
 export const createTable = pgTableCreator((name) => `cloud_${name}`)
 
@@ -30,13 +26,6 @@ export const sshKeyTable = createTable(
     uniqueIndex("ssh_key_name_idx").on(t.organizationId, t.name),
   ],
 )
-
-export type SshKey = typeof sshKeyTable.$inferInsert
-export const insertSshKeySchema = createInsertSchema(sshKeyTable, {
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-})
-export const selectSshKeySchema = createSelectSchema(sshKeyTable)
 
 export const templateStatusEnum = pgEnum("template_status", [
   "active",
@@ -71,13 +60,6 @@ export const templateTable = createTable(
     index("template_description_idx").on(t.description),
   ],
 )
-
-export type Template = typeof templateTable.$inferInsert
-export const insertTemplateSchema = createInsertSchema(templateTable, {
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-})
-export const selectTemplateSchema = createSelectSchema(templateTable)
 
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
@@ -130,25 +112,6 @@ export const instanceTable = createTable(
   ],
 )
 
-export type Instance = typeof instanceTable.$inferInsert
-export const insertInstanceSchema = createInsertSchema(instanceTable, {
-  cores: z.int().min(1).max(64),
-  createdAt: z.coerce.date().optional(),
-  disk: z.int().min(1).max(1024),
-  memory: z
-    .number()
-    .int()
-    .min(512)
-    .max(1024 * 64),
-  templateId: z
-    .number()
-    .int()
-    .min(env.PROXMOX_TEMPLATE_VMID_RANGE[0])
-    .max(env.PROXMOX_TEMPLATE_VMID_RANGE[1]),
-  updatedAt: z.coerce.date().optional(),
-})
-export const selectInstanceSchema = createSelectSchema(instanceTable)
-
 export const instanceSshKeyTable = createTable(
   "instance_ssh_key",
   (d) => ({
@@ -169,16 +132,6 @@ export const instanceSshKeyTable = createTable(
     uniqueIndex("instance_ssh_key_unique_idx").on(t.instanceId, t.sshKeyId),
   ],
 )
-
-export type InstanceSshKey = typeof instanceSshKeyTable.$inferInsert
-export const insertInstanceSshKeySchema = createInsertSchema(
-  instanceSshKeyTable,
-  {
-    createdAt: z.coerce.date().optional(),
-  },
-)
-export const selectInstanceSshKeySchema =
-  createSelectSchema(instanceSshKeyTable)
 
 export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
   "allocated",
@@ -210,13 +163,6 @@ export const ipAllocationTable = createTable(
   (t) => [index("ip_allocation_ipAddress_idx").on(t.ipAddress)],
 )
 
-export type IpAllocation = typeof ipAllocationTable.$inferInsert
-export const insertIpAllocationSchema = createInsertSchema(ipAllocationTable, {
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-})
-export const selectIpAllocationSchema = createSelectSchema(ipAllocationTable)
-
 export const networkTable = createTable("network", (d) => ({
   cidr: d.integer("cidr").default(24).notNull(),
   createdAt: d.timestamp("created_at").defaultNow().notNull(),
@@ -233,13 +179,6 @@ export const networkTable = createTable("network", (d) => ({
     .notNull(),
   vlanId: d.integer("vlan_id").unique().notNull(),
 }))
-
-export type Network = typeof networkTable.$inferInsert
-export const insertNetworkSchema = createInsertSchema(networkTable, {
-  createdAt: z.coerce.date().optional(),
-  updatedAt: z.coerce.date().optional(),
-})
-export const selectNetworkSchema = createSelectSchema(networkTable)
 
 export const user = createTable(
   "user",

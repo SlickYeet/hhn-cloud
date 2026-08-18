@@ -1,6 +1,38 @@
+import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
-import { insertInstanceSchema } from "@/server/db/schema"
+import { env } from "@/env"
+import { instanceTable } from "@/server/db/schema"
+
+export type Instance = typeof instanceTable.$inferInsert
+
+const instanceSchemaConstraints = {
+  cores: z.int().min(1).max(64),
+  createdAt: z.coerce.date().optional(),
+  disk: z.int().min(1).max(1024),
+  memory: z
+    .int()
+    .min(512)
+    .max(1024 * 64),
+  pveVmid: z
+    .int()
+    .min(env.PROXMOX_CLOUD_VM_VMID_RANGE[0])
+    .max(env.PROXMOX_CLOUD_VM_VMID_RANGE[1]),
+  templateId: z
+    .int()
+    .min(env.PROXMOX_TEMPLATE_VMID_RANGE[0])
+    .max(env.PROXMOX_TEMPLATE_VMID_RANGE[1]),
+  updatedAt: z.coerce.date().optional(),
+}
+
+export const insertInstanceSchema = createInsertSchema(
+  instanceTable,
+  instanceSchemaConstraints,
+)
+export const selectInstanceSchema = createSelectSchema(
+  instanceTable,
+  instanceSchemaConstraints,
+)
 
 export const createInstanceSchema = insertInstanceSchema
   .omit({

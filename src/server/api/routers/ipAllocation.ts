@@ -1,7 +1,7 @@
 import * as z from "zod"
 
+import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { publicProcedure } from "@/server/api"
-import { selectIpAllocationSchema } from "@/server/db/schema"
 
 const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   {
