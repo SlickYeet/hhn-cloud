@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { eq } from "drizzle-orm"
+import { desc, eq, getTableColumns } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
@@ -8,14 +8,14 @@ import { generateRootPassword } from "@/helpers/generate-root-password"
 import { getCloudNetwork } from "@/helpers/get-cloud-network"
 import { getNextVmid } from "@/helpers/get-next-vmid"
 import { getProxmoxClient } from "@/lib/proxmox"
-import { createInstanceSchema } from "@/schemas/instance"
-import { publicProcedure } from "@/server/api"
 import {
+  createInstanceSchema,
   insertInstanceSchema,
-  instanceTable,
   selectInstanceSchema,
-  templateTable,
-} from "@/server/db/schema"
+} from "@/schemas/instance"
+import { selectNetworkSchema } from "@/schemas/network"
+import { publicProcedure } from "@/server/api"
+import { instanceTable, networkTable, templateTable } from "@/server/db/schema"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
@@ -291,7 +291,13 @@ export const instanceRouter = {
       tags: ["Instances"],
     })
     .input(z.object({ organizationId: z.string() }))
-    .output(z.array(selectInstanceSchema))
+    .output(
+      z.array(
+        selectInstanceSchema.extend({
+          network: selectNetworkSchema,
+        }),
+      ),
+    )
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
@@ -300,16 +306,22 @@ export const instanceRouter = {
         message: "No instances found for the organization",
       },
     })
-    .handler(({ errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.organizationId) throw errors.BAD_REQUEST()
 
-      const instance = mockInstances.filter(
-        (instance) => instance.organizationId === input.organizationId,
-      )
+      const instances = await context.db
+        .select({
+          ...getTableColumns(instanceTable),
+          network: getTableColumns(networkTable),
+        })
+        .from(instanceTable)
+        .innerJoin(networkTable, eq(instanceTable.networkId, networkTable.id))
+        .where(eq(instanceTable.organizationId, input.organizationId))
+        .orderBy(desc(instanceTable.createdAt))
 
-      if (!instance || instance.length === 0) throw errors.NOT_FOUND()
+      if (!instances || instances.length === 0) throw errors.NOT_FOUND()
 
-      return instance
+      return instances
     }),
 
   restart: publicProcedure
