@@ -143,6 +143,7 @@ export const ipAllocationTable = createTable(
   "ip_allocation",
   (d) => ({
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    gateway: d.inet("gateway").notNull(),
     id: d.text("id").primaryKey(),
     instanceId: d
       .text("instance_id")
