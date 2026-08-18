@@ -13,9 +13,13 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
-import { selectNetworkSchema } from "@/schemas/network"
+import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { publicProcedure } from "@/server/api"
-import { instanceTable, networkTable, templateTable } from "@/server/db/schema"
+import {
+  instanceTable,
+  ipAllocationTable,
+  templateTable,
+} from "@/server/db/schema"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
@@ -294,7 +298,7 @@ export const instanceRouter = {
     .output(
       z.array(
         selectInstanceSchema.extend({
-          network: selectNetworkSchema,
+          ipAllocation: selectIpAllocationSchema,
         }),
       ),
     )
@@ -312,10 +316,13 @@ export const instanceRouter = {
       const instances = await context.db
         .select({
           ...getTableColumns(instanceTable),
-          network: getTableColumns(networkTable),
+          ipAllocation: getTableColumns(ipAllocationTable),
         })
         .from(instanceTable)
-        .innerJoin(networkTable, eq(instanceTable.networkId, networkTable.id))
+        .innerJoin(
+          ipAllocationTable,
+          eq(instanceTable.id, ipAllocationTable.instanceId),
+        )
         .where(eq(instanceTable.organizationId, input.organizationId))
         .orderBy(desc(instanceTable.createdAt))
 
