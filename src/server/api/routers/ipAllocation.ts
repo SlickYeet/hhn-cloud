@@ -6,6 +6,7 @@ import { publicProcedure } from "@/server/api"
 const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   {
     createdAt: new Date(),
+    gateway: "192.168.80.1",
     id: "1",
     instanceId: "1",
     ipAddress: "192.168.80.1",
@@ -16,6 +17,7 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   },
   {
     createdAt: new Date(),
+    gateway: "192.168.80.1",
     id: "2",
     instanceId: "2",
     ipAddress: "192.168.80.2",
@@ -26,6 +28,7 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   },
   {
     createdAt: new Date(),
+    gateway: "192.168.81.1",
     id: "2",
     instanceId: "3",
     ipAddress: "192.168.81.1",
@@ -36,6 +39,7 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   },
   {
     createdAt: new Date(),
+    gateway: "192.168.80.1",
     id: "3",
     instanceId: "4",
     ipAddress: "192.168.80.3",
@@ -46,6 +50,7 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
   },
   {
     createdAt: new Date(),
+    gateway: "192.168.80.1",
     id: "4",
     instanceId: "5",
     ipAddress: "192.168.80.4",
