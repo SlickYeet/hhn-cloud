@@ -1,18 +1,16 @@
 import type { Job } from "bullmq"
 import { createNodeRedisClient, Worker } from "bullmq"
+import { eq } from "drizzle-orm"
 
-import { generateMacAddress } from "@/helpers/generate-mac-address"
-import { getCloudNetwork } from "@/helpers/get-cloud-network"
-import { getNextVmid } from "@/helpers/get-next-vmid"
 import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
-import { createInstanceSchema } from "@/schemas/instance"
+import { db } from "@/server/db"
+import { instanceTable } from "@/server/db/schema"
 import { cloneInstance } from "@/utilities/clone-instance"
 import { configureInstance } from "@/utilities/configure-instance"
-import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { startInstance } from "@/utilities/start-instance"
 
-import { PROVISION_QUEUE_KEY } from "./provision-queue"
+import { PROVISION_QUEUE_KEY, schema } from "./provision-queue"
 
 const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
@@ -22,38 +20,41 @@ export const provisionWorker = new Worker(
   PROVISION_QUEUE_KEY,
   async (job: Job): Promise<{ status: string; vmid: string }> => {
     try {
-      const data = createInstanceSchema.parse(job.data)
+      const data = schema.parse(job.data)
 
-      const nextVmid = await getNextVmid(proxmox)
+      const [instance] = await db
+        .update(instanceTable)
+        .set({ status: "provisioning" })
+        .where(eq(instanceTable.id, data.instanceId))
+        .returning()
+
+      if (!instance) throw new Error("Instance not found")
+
       // TODO: log new progress
       await cloneInstance(proxmox, {
-        hostname: data.hostname,
-        nextVmid,
-        templateId: data.templateId,
+        hostname: instance.hostname,
+        nextVmid: instance.pveVmid,
+        templateId: instance.templateId,
       })
-      // log new progress
-      const network = await getCloudNetwork()
-      if (!network) {
-        throw new Error("Failed to retrieve cloud network configuration")
-      }
-      // log new progress
-      const macAddress = generateMacAddress()
-      await createDhcpReservation(
-        network.ip.split("/")[0],
-        macAddress,
-        data.hostname,
-      )
+
       // log new progress
       await configureInstance(proxmox, {
-        macAddress,
-        network,
-        nextVmid,
-        templateId: data.templateId,
+        macAddress: data.macAddress,
+        network: data.network,
+        nextVmid: instance.pveVmid,
+        templateId: instance.templateId,
       })
-      // log new progress
-      const newInstance = await startInstance(proxmox, nextVmid)
-      // log new progress
 
+      // log new progress
+      const newInstance = await startInstance(proxmox, instance.pveVmid)
+
+      // log new progress
+      await db
+        .update(instanceTable)
+        .set({ status: "running" })
+        .where(eq(instanceTable.id, data.instanceId))
+
+      // log new progress
       return {
         status: "running",
         vmid: String(newInstance.vmid),
@@ -73,16 +74,18 @@ export const provisionWorker = new Worker(
   },
 )
 
-// TODO: clean up if worker fails
-provisionWorker.on("failed", async (error) => {
-  console.error("Worker failed:", error)
-  await provisionWorker.close()
-})
-
-// TODO: figure out what to do here
 provisionWorker.on("completed", async (job) => {
   console.info("Provision job completed:", job.id, job.returnvalue)
-  await provisionWorker.close()
+})
+
+provisionWorker.on("failed", async (job, error) => {
+  console.error("Worker failed:", job?.id, error)
+  if (job?.data.instanceId) {
+    await db
+      .update(instanceTable)
+      .set({ status: "failed" })
+      .where(eq(instanceTable.id, job.data.instanceId))
+  }
 })
 
 provisionWorker.run()
