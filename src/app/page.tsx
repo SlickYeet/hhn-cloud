@@ -5,8 +5,6 @@ export default async function Page() {
     organizationId: "org1",
   })
 
-  console.log("instance", instance)
-
   return (
     <main className="p-6">
       <h1 className="font-bold text-2xl">Home Page</h1>
