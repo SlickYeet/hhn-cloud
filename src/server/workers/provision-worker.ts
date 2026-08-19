@@ -16,7 +16,7 @@ const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
 const proxmox = getProxmoxClient()
 
-export const provisionWorker = new Worker(
+const provisionWorker = new Worker(
   PROVISION_QUEUE_KEY,
   async (job: Job): Promise<{ status: string; vmid: string }> => {
     try {
@@ -74,7 +74,7 @@ export const provisionWorker = new Worker(
   },
 )
 
-provisionWorker.on("completed", async (job) => {
+provisionWorker.on("completed", (job) => {
   console.info("Provision job completed:", job.id, job.returnvalue)
 })
 
