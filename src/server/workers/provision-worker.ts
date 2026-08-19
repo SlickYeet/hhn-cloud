@@ -44,7 +44,8 @@ const provisionWorker = new Worker(
         macAddress: data.macAddress,
         network: data.network,
         nextVmid: instance.pveVmid,
-        templateId: instance.templateId,
+        sshKeyId: data.sshKeyId,
+        template: data.template,
       })
 
       // log new progress

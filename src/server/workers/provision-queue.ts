@@ -3,6 +3,7 @@ import { createNodeRedisClient, Queue } from "bullmq"
 import * as z from "zod"
 
 import { getRedisClient } from "@/lib/redis"
+import { selectTemplateSchema } from "@/schemas/template"
 
 export const PROVISION_QUEUE_KEY = "cloud-provision-queue"
 
@@ -33,6 +34,8 @@ export const schema = z.object({
       return z.ipv4().safeParse(ip).success
     }),
   }),
+  sshKeyId: z.string(),
+  template: selectTemplateSchema,
 })
 
 export async function addProvisionJob(

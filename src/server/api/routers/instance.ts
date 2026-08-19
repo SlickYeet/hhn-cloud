@@ -276,6 +276,8 @@ export const instanceRouter = {
         instanceId: instance.id,
         macAddress,
         network,
+        sshKeyId: input.sshKeyId,
+        template,
       })
 
       if (!jobId) {

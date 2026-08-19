@@ -1,16 +1,18 @@
 import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
+import type * as z from "zod"
 
 import { env } from "@/env"
 import { generateRootPassword } from "@/lib/crypto"
+import type { selectTemplateSchema } from "@/schemas/template"
 import { db } from "@/server/db"
-import { templateTable } from "@/server/db/schema"
+import { sshKeyTable } from "@/server/db/schema"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const PROXMOX_DEFAULT_POOL = env.PROXMOX_POOL
 const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
-const TASK_POLL_INTERVAL_MS = 5000
-const TASK_TIMEOUT_MS = 10 * 60 * 1000
+const TASK_POLL_INTERVAL_MS = 1000
+const TASK_TIMEOUT_MS = 60_000
 
 export async function cloneInstance(
   proxmox: Proxmox.Api,
@@ -19,107 +21,71 @@ export async function cloneInstance(
     hostname: string
     nextVmid: number
   },
-): Promise<string> {
-  try {
-    const UPID = await proxmox.nodes
-      .$(PROXMOX_DEFAULT_NODE)
-      .qemu.$(data.templateId)
-      .clone.$post({
-        full: true,
-        name: data.hostname,
-        newid: data.nextVmid,
-        pool: PROXMOX_DEFAULT_POOL,
-      })
+): Promise<void> {
+  const upid = await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.templateId)
+    .clone.$post({
+      full: true,
+      name: data.hostname,
+      newid: data.nextVmid,
+      pool: PROXMOX_DEFAULT_POOL,
+    })
 
-    const startedAt = Date.now()
-
-    while (true) {
-      const taskStatus = await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .tasks.$(UPID)
-        .status.$get()
-
-      if (taskStatus.status === "stopped") {
-        if (taskStatus.exitstatus && taskStatus.exitstatus !== "OK") {
-          throw new Error(
-            `Clone ${data.nextVmid} failed: ${taskStatus.exitstatus}`,
-          )
-        }
-
-        return UPID
-      }
-
-      if (Date.now() - startedAt > TASK_TIMEOUT_MS) {
-        throw new Error(
-          `Clone ${data.nextVmid} timed out after ${TASK_TIMEOUT_MS / 1000 / 60} minutes`,
-        )
-      }
-
-      console.info(`Clone ${data.nextVmid} task status:`, taskStatus.status)
-      await new Promise((resolve) => setTimeout(resolve, TASK_POLL_INTERVAL_MS))
-    }
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Unknown error")
-  }
+  await waitForProxmoxTask(proxmox, upid)
 }
 
 export async function configureInstance(
   proxmox: Proxmox.Api,
   data: {
+    template: z.infer<typeof selectTemplateSchema>
     nextVmid: number
-    templateId: number
     network: {
       gateway: string
       ip: string
     }
+    sshKeyId: string
     macAddress: string
   },
 ): Promise<void> {
-  try {
-    const [template] = await db
-      .select()
-      .from(templateTable)
-      .where(eq(templateTable.pveVmid, data.templateId))
+  const [sshKey] = await db
+    .select()
+    .from(sshKeyTable)
+    .where(eq(sshKeyTable.id, data.sshKeyId))
 
-    if (!template) {
-      throw new Error(`Template with id ${data.templateId} not found`)
-    }
+  if (!sshKey) {
+    throw new Error(`SSH key with ID ${data.sshKeyId} not found`)
+  }
 
-    const config: Omit<Proxmox.nodesQemuConfigVmConfig, "digest"> = {
-      agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
-      autostart: true,
-      bios: "seabios", // TODO: if Windows use "bios=ovmf"
-      cipassword: generateRootPassword(),
-      ciupgrade: true,
-      ciuser: "root",
-      cores: template.cores,
-      description: `Cloud instance created from template ${template.name}`,
-      ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
-      memory: String(template.memory),
-      nameserver: data.network.gateway,
-      net0: `virtio,bridge=vmbr0,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
-      searchdomain: "local", // TODO: make configurable
-      sshkeys: encodeURIComponent(""), // TODO: add ssh keys
-    } as Proxmox.nodesQemuConfigVmConfig
+  const config: Omit<Proxmox.nodesQemuConfigVmConfig, "digest"> = {
+    agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
+    autostart: true,
+    bios: "seabios", // TODO: if Windows use "bios=ovmf"
+    cipassword: generateRootPassword(),
+    ciupgrade: true,
+    ciuser: "root",
+    cores: data.template.cores,
+    description: `Cloud instance created from template ${data.template.name}`,
+    ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
+    memory: String(data.template.memory),
+    nameserver: data.network.gateway,
+    net0: `virtio,bridge=vmbr0,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
+    searchdomain: "local", // TODO: make configurable
+    sshkeys: encodeURIComponent(`${sshKey.publicKey}`),
+  } as Proxmox.nodesQemuConfigVmConfig
 
-    await proxmox.nodes
-      .$(PROXMOX_DEFAULT_NODE)
-      .qemu.$(data.nextVmid)
-      .config.$post(config)
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.nextVmid)
+    .config.$post(config)
 
-    const upid = await proxmox.nodes
-      .$(PROXMOX_DEFAULT_NODE)
-      .qemu.$(data.nextVmid)
-      .resize.$put({
-        disk: "scsi0",
-        size: `${template.disk}G`,
-      })
+  const upid = await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.nextVmid)
+    .resize.$put({ disk: "scsi0", size: `${data.template.disk}G` })
 
-    if (!upid) {
-      throw new Error(`Failed to configure instance with vmid ${data.nextVmid}`)
-    }
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Unknown error")
+  if (!upid) {
+    throw new Error(`Failed to configure instance with vmid ${data.nextVmid}`)
   }
 }
 
@@ -127,25 +93,111 @@ export async function startInstance(
   proxmox: Proxmox.Api,
   nextVmid: number,
 ): Promise<{ vmid: number }> {
-  try {
-    await proxmox.nodes
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(nextVmid)
+    .status.start.$post()
+
+  const deadline = Date.now() + TASK_TIMEOUT_MS
+
+  while (Date.now() < deadline) {
+    const current = await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
       .qemu.$(nextVmid)
-      .status.start.$post()
+      .status.current.$get()
 
-    while (true) {
-      const newInstance = await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(nextVmid)
-        .status.current.$get()
-
-      if (newInstance.status === "running") {
-        return newInstance
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+    if (current.status === "running") {
+      return { vmid: current.vmid }
     }
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Unknown error")
+
+    await new Promise((resolve) => setTimeout(resolve, TASK_POLL_INTERVAL_MS))
   }
+
+  throw new Error(`Timed out waiting for instance ${nextVmid} to start`)
+}
+
+function isVmNotFoundError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.includes("does not exist")
+}
+
+export async function stopInstanceIfRunning(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<void> {
+  let instanceStatus: Awaited<ReturnType<typeof getStatus>>
+
+  async function getStatus() {
+    return proxmox.nodes
+      .$(PROXMOX_DEFAULT_NODE)
+      .qemu.$(vmid)
+      .status.current.$get()
+  }
+
+  try {
+    instanceStatus = await getStatus()
+  } catch (error) {
+    if (isVmNotFoundError(error)) {
+      console.info(`Instance ${vmid} does not exist. Nothing to stop.`)
+      return
+    }
+    throw error
+  }
+
+  if (instanceStatus.status !== "running") {
+    console.info(
+      `Instance ${vmid} is not running (${instanceStatus.status}). Skipping.`,
+    )
+    return
+  }
+
+  const upid = await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(vmid)
+    .status.stop.$post()
+
+  await waitForProxmoxTask(proxmox, upid)
+}
+
+export async function destroyInstance(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<void> {
+  let upid: string
+
+  try {
+    upid = await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).$delete()
+  } catch (error) {
+    if (isVmNotFoundError(error)) {
+      console.info(`Instance ${vmid} already destroyed.`)
+      return
+    }
+    console.error(`Error destroying instance with vmid ${vmid}:`, error)
+    throw error
+  }
+
+  await waitForProxmoxTask(proxmox, upid)
+}
+
+async function waitForProxmoxTask(
+  proxmox: Proxmox.Api,
+  upid: string,
+): Promise<void> {
+  const deadline = Date.now() + TASK_TIMEOUT_MS
+
+  while (Date.now() < deadline) {
+    const task = await proxmox.nodes
+      .$(PROXMOX_DEFAULT_NODE)
+      .tasks.$(upid)
+      .status.$get()
+    if (task.status === "stopped") {
+      if (task.exitstatus !== "OK") {
+        throw new Error(`Task ${upid} failed: ${task.exitstatus}`)
+      }
+      return
+    }
+    await new Promise((resolve) => setTimeout(resolve, TASK_POLL_INTERVAL_MS))
+  }
+
+  throw new Error(`Timed out waiting for task ${upid}`)
 }
