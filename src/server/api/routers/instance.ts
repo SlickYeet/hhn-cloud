@@ -227,7 +227,6 @@ export const instanceRouter = {
             ipAddress: network.ip.split("/")[0],
             macAddress,
             networkId: network.id,
-            status: "allocated",
           })
           .returning()
           .catch((error) => {

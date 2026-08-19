@@ -133,12 +133,6 @@ export const instanceSshKeyTable = createTable(
   ],
 )
 
-export const ipAllocationStatusEnum = pgEnum("ip_allocation_status", [
-  "allocated",
-  "available",
-  "unavailable",
-])
-
 export const ipAllocationTable = createTable(
   "ip_allocation",
   (d) => ({
@@ -154,7 +148,6 @@ export const ipAllocationTable = createTable(
       .text("network_id")
       .notNull()
       .references(() => networkTable.id, { onDelete: "restrict" }),
-    status: ipAllocationStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()

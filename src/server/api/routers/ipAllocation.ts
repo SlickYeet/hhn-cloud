@@ -12,7 +12,6 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
     ipAddress: "192.168.80.1",
     macAddress: "00:1A:2B:3C:4D:5E",
     networkId: "network1",
-    status: "allocated",
     updatedAt: new Date(),
   },
   {
@@ -23,7 +22,6 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
     ipAddress: "192.168.80.2",
     macAddress: "00:1A:2B:3C:4D:5F",
     networkId: "network1",
-    status: "allocated",
     updatedAt: new Date(),
   },
   {
@@ -34,7 +32,6 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
     ipAddress: "192.168.81.1",
     macAddress: "00:1A:2B:3C:4D:5F",
     networkId: "network2",
-    status: "allocated",
     updatedAt: new Date(),
   },
   {
@@ -45,7 +42,6 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
     ipAddress: "192.168.80.3",
     macAddress: "00:1A:2B:3C:4D:60",
     networkId: "network1",
-    status: "allocated",
     updatedAt: new Date(),
   },
   {
@@ -56,7 +52,6 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
     ipAddress: "192.168.80.4",
     macAddress: "00:1A:2B:3C:4D:61",
     networkId: "network1",
-    status: "allocated",
     updatedAt: new Date(),
   },
 ]
