@@ -273,7 +273,7 @@ export const instanceRouter = {
         }
       })
 
-      const { id: jobId } = await addProvisionJob({
+      const { jobId } = await addProvisionJob({
         instanceId: instance.id,
         macAddress,
         network,

@@ -37,18 +37,13 @@ export const schema = z.object({
 
 export async function addProvisionJob(
   data: z.infer<typeof schema>,
-): Promise<{ id: Job["id"]; status: string }> {
+): Promise<{ jobId: Job["id"] }> {
   const jobId = `${data.instanceId}-${data.macAddress.replace(/:/g, "-")}`
 
   const provisionJob = await provisionQueue.add(PROVISION_QUEUE_KEY, data, {
-    deduplication: {
-      id: jobId,
-    },
+    deduplication: { id: jobId },
     jobId,
   })
 
-  return {
-    id: provisionJob.id,
-    status: "queued",
-  }
+  return { jobId: provisionJob.id }
 }
