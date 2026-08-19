@@ -67,6 +67,7 @@ export const instanceStatusEnum = pgEnum("instance_status", [
   "running",
   "stopped",
   "restarting",
+  "pending_deletion",
   "deleting",
   "deleted",
   "failed",
