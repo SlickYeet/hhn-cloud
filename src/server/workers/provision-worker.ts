@@ -6,9 +6,11 @@ import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable } from "@/server/db/schema"
-import { cloneInstance } from "@/utilities/clone-instance"
-import { configureInstance } from "@/utilities/configure-instance"
-import { startInstance } from "@/utilities/start-instance"
+import {
+  cloneInstance,
+  configureInstance,
+  startInstance,
+} from "@/server/services/instance"
 
 import { PROVISION_QUEUE_KEY, schema } from "./provision-queue"
 

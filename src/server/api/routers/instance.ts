@@ -3,10 +3,7 @@ import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
-import { generateMacAddress } from "@/helpers/generate-mac-address"
-import { generateRootPassword } from "@/helpers/generate-root-password"
-import { getCloudNetwork } from "@/helpers/get-cloud-network"
-import { getNextVmid } from "@/helpers/get-next-vmid"
+import { generateMacAddress, generateRootPassword } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
 import {
   createInstanceSchema,
@@ -23,10 +20,12 @@ import {
   sshKeyTable,
   templateTable,
 } from "@/server/db/schema"
+import { isUniqueConstraintError } from "@/server/db/utils"
+import { getNextVmid } from "@/server/queries/instance"
+import { getCloudNetwork } from "@/server/queries/network"
+import { createDhcpReservation } from "@/server/services/network"
 import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
 import { addProvisionJob } from "@/server/workers/provision-queue"
-import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
-import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
 
 const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
   {

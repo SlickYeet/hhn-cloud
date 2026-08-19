@@ -1,14 +1,18 @@
+import { eq } from "drizzle-orm"
+
 import { env } from "@/env"
+import { opnsenseClient } from "@/lib/opnsense"
+import { db } from "@/server/db"
+import { networkTable } from "@/server/db/schema"
 import {
   filterLeasesForVLAN,
   filterReservationsForVLAN,
   filterSubnetForVLAN,
-} from "@/helpers/filter-for-vlan"
-import { opnsenseClient } from "@/lib/opnsense"
+} from "@/server/services/network"
 
 const OPNSENSE_CLOUD_NETWORK_VLAN_ID = env.OPNSENSE_CLOUD_NETWORK_VLAN_ID
 
-export async function getNextAvailableIPAddress(): Promise<string> {
+async function getNextAvailableIPAddress(): Promise<string> {
   const usedIPs = new Set<string>()
 
   const leasesData = await opnsenseClient.get("/kea/leases4/search")
@@ -46,4 +50,37 @@ export async function getNextAvailableIPAddress(): Promise<string> {
   }
 
   throw new Error("No available IP addresses in the cloud network")
+}
+
+export async function getCloudNetwork(): Promise<{
+  gateway: string
+  id: string
+  ip: string
+}> {
+  try {
+    const [network] = await db
+      .select()
+      .from(networkTable)
+      .where(eq(networkTable.vlanId, Number(OPNSENSE_CLOUD_NETWORK_VLAN_ID)))
+
+    if (!network) {
+      throw new Error(
+        `Cloud network with VLAN ID ${OPNSENSE_CLOUD_NETWORK_VLAN_ID} not found`,
+      )
+    }
+
+    const nextIPAddress = await getNextAvailableIPAddress()
+
+    if (!nextIPAddress) {
+      throw new Error("No available IP addresses in the cloud network")
+    }
+
+    return {
+      gateway: network.gateway,
+      id: network.id,
+      ip: `${nextIPAddress}/${network.cidr}`,
+    }
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : "Unknown error")
+  }
 }
