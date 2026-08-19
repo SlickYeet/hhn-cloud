@@ -1,8 +1,15 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono, Roboto } from "next/font/google"
+
+import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
 import "@/server/api/server"
+
+const robotoHeading = Roboto({
+  subsets: ["latin"],
+  variable: "--font-heading",
+})
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -25,12 +32,12 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html className={cn(robotoHeading.variable)} lang="en">
       <head>
         <meta content="HHN Cloud" name="apple-mobile-web-app-title" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={cn(geistSans.variable, geistMono.variable, "antialiased")}
       >
         {children}
       </body>
