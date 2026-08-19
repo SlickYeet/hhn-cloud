@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { eq } from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
@@ -23,6 +23,7 @@ import {
   sshKeyTable,
   templateTable,
 } from "@/server/db/schema"
+import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 import { createDhcpReservation } from "@/utilities/create-dhcp-reservation"
 import { isUniqueConstraintError } from "@/utilities/is-unique-constraint-error"
@@ -299,26 +300,83 @@ export const instanceRouter = {
       tags: ["Instances"],
     })
     .input(z.object({ id: z.string() }))
-    .output(z.object({ id: z.string() }))
+    .output(
+      z.object({
+        instanceId: z.string(),
+        jobId: z.string(),
+        message: z.string(),
+      }),
+    )
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
+      },
+      INTERNAL_SERVER_ERROR: {
+        message: "An unexpected error occurred while processing the request",
       },
       NOT_FOUND: {
         message: "Instance not found",
       },
     })
-    .handler(async ({ errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const vmid = Number(input.id)
-
-      await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).$delete({
-        "destroy-unreferenced-disks": true,
-        purge: true,
+      const existingInstance = await context.db.query.instanceTable.findFirst({
+        where: (instance, { eq }) => eq(instance.id, input.id),
       })
 
-      return { id: input.id }
+      if (!existingInstance) {
+        throw errors.NOT_FOUND({
+          message: `Instance ${input.id} not found`,
+        })
+      }
+
+      if (existingInstance.deletedAt) {
+        throw errors.BAD_REQUEST({
+          message: `Instance ${input.id} is already deleted`,
+        })
+      }
+
+      const instance = await context.db.transaction(async (tx) => {
+        const instanceRow = await tx
+          .update(instanceTable)
+          .set({
+            deletedAt: new Date(),
+            status: "pending_deletion",
+          })
+          .where(
+            and(
+              eq(instanceTable.id, input.id),
+              isNull(instanceTable.deletedAt),
+            ),
+          )
+          .returning()
+
+        const [deletedInstance] = instanceRow
+        if (!deletedInstance) {
+          throw errors.NOT_FOUND({
+            message: `Instance ${input.id} not found or already deleted`,
+          })
+        }
+
+        return deletedInstance
+      })
+
+      const { jobId } = await addDeleteInstanceJob({
+        instanceId: instance.id,
+      })
+
+      if (!jobId) {
+        throw errors.INTERNAL_SERVER_ERROR({
+          message: "Delete instance job could not be created",
+        })
+      }
+
+      return {
+        instanceId: instance.id,
+        jobId,
+        message: "Your instance is being deleted.",
+      }
     }),
 
   get: publicProcedure
