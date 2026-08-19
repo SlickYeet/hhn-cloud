@@ -315,19 +315,18 @@ export const instanceRouter = {
     })
     .input(z.object({ organizationId: z.string() }))
     .output(
-      z.array(
-        selectInstanceSchema.extend({
-          ipAllocations: z.array(selectIpAllocationSchema),
-          sshKeys: z.array(selectInstanceSshKeySchema),
-        }),
-      ),
+      z
+        .array(
+          selectInstanceSchema.extend({
+            ipAllocations: z.array(selectIpAllocationSchema),
+            sshKeys: z.array(selectInstanceSshKeySchema),
+          }),
+        )
+        .nullable(),
     )
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
-      },
-      NOT_FOUND: {
-        message: "No instances found for the organization",
       },
     })
     .handler(async ({ context, errors, input }) => {
@@ -343,7 +342,7 @@ export const instanceRouter = {
         },
       })
 
-      if (!instances || instances.length === 0) throw errors.NOT_FOUND()
+      if (!instances || instances.length === 0) return null
 
       return instances
     }),
