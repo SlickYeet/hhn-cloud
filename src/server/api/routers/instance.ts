@@ -17,8 +17,10 @@ import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { publicProcedure } from "@/server/api"
 import {
+  instanceSshKeyTable,
   instanceTable,
   ipAllocationTable,
+  sshKeyTable,
   templateTable,
 } from "@/server/db/schema"
 import { addProvisionJob } from "@/server/workers/provision-queue"
@@ -170,10 +172,21 @@ export const instanceRouter = {
         })
       }
 
-      const [instance] = await context.db.transaction(async (tx) => {
+      const [sshKey] = await context.db
+        .select()
+        .from(sshKeyTable)
+        .where(eq(sshKeyTable.id, input.sshKeyId))
+
+      if (!sshKey) {
+        throw errors.NOT_FOUND({
+          message: `SSH key ${input.sshKeyId} not found`,
+        })
+      }
+
+      const instance = await context.db.transaction(async (tx) => {
         const nextVmid = await getNextVmid(proxmox, tx)
 
-        const newInstance = await tx
+        const instanceRow = await tx
           .insert(instanceTable)
           .values({
             cores: template.cores,
@@ -196,24 +209,56 @@ export const instanceRouter = {
             throw error
           })
 
-        if (!newInstance) throw errors.CONFLICT()
+        if (!instanceRow) {
+          throw errors.CONFLICT({
+            message: `VMID ${nextVmid} already exists`,
+          })
+        }
 
-        const [ipAllocation] = await tx
+        const [newInstance] = instanceRow
+        if (!newInstance) throw errors.INTERNAL_SERVER_ERROR()
+
+        const ipAllocations = await tx
           .insert(ipAllocationTable)
           .values({
             gateway: network.gateway,
             id: randomUUID(),
-            instanceId: newInstance[0].id,
+            instanceId: newInstance.id,
             ipAddress: network.ip.split("/")[0],
             macAddress,
             networkId: network.id,
             status: "allocated",
           })
           .returning()
+          .catch((error) => {
+            if (
+              isUniqueConstraintError(
+                error,
+                "cloud_ip_allocation_ip_address_unique",
+              )
+            )
+              return null
+            throw error
+          })
 
-        if (!ipAllocation) {
+        if (!ipAllocations) {
+          throw errors.CONFLICT({
+            message: `IP ${network.ip.split("/")[0]} already allocated`,
+          })
+        }
+
+        const [instanceSshKey] = await tx
+          .insert(instanceSshKeyTable)
+          .values({
+            id: randomUUID(),
+            instanceId: newInstance.id,
+            sshKeyId: input.sshKeyId,
+          })
+          .returning()
+
+        if (!instanceSshKey) {
           throw errors.INTERNAL_SERVER_ERROR({
-            message: "Failed to create IP allocation",
+            message: "Failed to associate SSH key with instance",
           })
         }
 
@@ -223,10 +268,10 @@ export const instanceRouter = {
           input.hostname,
         )
 
-        return newInstance
+        return {
+          id: newInstance.id,
+        }
       })
-
-      if (!instance) throw errors.NOT_FOUND()
 
       const { id: jobId } = await addProvisionJob({
         instanceId: instance.id,
