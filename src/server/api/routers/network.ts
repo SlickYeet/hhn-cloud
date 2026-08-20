@@ -1,7 +1,7 @@
 import * as z from "zod"
 
 import { selectNetworkSchema } from "@/schemas/network"
-import { publicProcedure } from "@/server/api"
+import { publicProcedure } from "@/server/api/base"
 
 const mockNetworks: z.infer<typeof selectNetworkSchema>[] = [
   {

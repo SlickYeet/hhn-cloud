@@ -12,7 +12,7 @@ import {
 } from "@/schemas/instance"
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
-import { publicProcedure } from "@/server/api"
+import { publicProcedure } from "@/server/api/base"
 import {
   instanceSshKeyTable,
   instanceTable,

@@ -1,7 +1,7 @@
 import * as z from "zod"
 
 import { selectTemplateSchema } from "@/schemas/template"
-import { publicProcedure } from "@/server/api"
+import { publicProcedure } from "@/server/api/base"
 
 const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
   {

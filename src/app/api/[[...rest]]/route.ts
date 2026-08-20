@@ -4,6 +4,7 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 
+import { createRPCContext } from "@/server/api/base"
 import { router } from "@/server/api/routers"
 
 const openAPIHandler = new OpenAPIHandler(router, {
@@ -28,9 +29,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
 
 async function handleOpenAPIRequest(request: Request) {
   const { matched, response } = await openAPIHandler.handle(request, {
-    context: {
-      headers: request.headers,
-    },
+    context: await createRPCContext(request),
     prefix: "/api",
   })
 

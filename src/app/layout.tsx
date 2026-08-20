@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Roboto } from "next/font/google"
 
+import { Providers } from "@/components/providers"
 import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
-import "@/server/api/server"
+import "@/lib/api/server"
 
 const robotoHeading = Roboto({
   subsets: ["latin"],
@@ -39,7 +40,7 @@ export default function RootLayout({
       <body
         className={cn(geistSans.variable, geistMono.variable, "antialiased")}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

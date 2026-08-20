@@ -1,7 +1,7 @@
 import * as z from "zod"
 
 import { insertSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
-import { publicProcedure } from "@/server/api"
+import { publicProcedure } from "@/server/api/base"
 
 const mockSshKeys: z.infer<typeof selectSshKeySchema>[] = [
   {

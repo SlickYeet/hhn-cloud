@@ -1,6 +1,7 @@
 import { createORPCClient } from "@orpc/client"
 import { RPCLink } from "@orpc/client/fetch"
 import type { RouterClient } from "@orpc/server"
+import { createTanstackQueryUtils } from "@orpc/tanstack-query"
 
 import { env } from "@/env"
 import type { router } from "@/server/api/routers"
@@ -12,7 +13,7 @@ export function getBaseUrl() {
 }
 
 declare global {
-  var $api: RouterClient<typeof router> | undefined
+  var $client: RouterClient<typeof router> | undefined
 }
 
 const link = new RPCLink({
@@ -25,9 +26,11 @@ const link = new RPCLink({
     if (typeof window === "undefined") {
       throw new Error("RPCLink is not allowed on the server side.")
     }
-    return `${getBaseUrl()}/rpc`
+    return `${getBaseUrl()}/api/orpc`
   },
 })
 
-export const api: RouterClient<typeof router> =
-  globalThis.$api ?? createORPCClient(link)
+export const client: RouterClient<typeof router> =
+  globalThis.$client ?? createORPCClient(link)
+
+export const api = createTanstackQueryUtils(client)

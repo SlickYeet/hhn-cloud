@@ -2,6 +2,7 @@ import { onError } from "@orpc/server"
 import { RPCHandler } from "@orpc/server/fetch"
 
 import { env } from "@/env"
+import { createRPCContext } from "@/server/api/base"
 import { router } from "@/server/api/routers"
 
 const handler = new RPCHandler(router, {
@@ -20,10 +21,8 @@ const handler = new RPCHandler(router, {
 
 async function handleRequest(request: Request) {
   const { response } = await handler.handle(request, {
-    context: {
-      headers: request.headers,
-    },
-    prefix: "/rpc",
+    context: await createRPCContext(request),
+    prefix: "/api/orpc",
   })
 
   return response ?? new Response("Not found", { status: 404 })

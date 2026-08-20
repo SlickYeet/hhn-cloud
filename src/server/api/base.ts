@@ -5,7 +5,19 @@ import { env } from "@/env"
 import { auth } from "@/server/auth"
 import { db } from "@/server/db"
 
-const base = os.$context<{ headers: Headers }>()
+export async function createRPCContext(opts: { headers: Headers }) {
+  const session = await auth.api.getSession({
+    headers: opts.headers,
+  })
+
+  return {
+    db,
+    headers: opts.headers,
+    session,
+  }
+}
+
+const base = os.$context<Awaited<ReturnType<typeof createRPCContext>>>()
 
 const timingMiddleware = base.middleware(async ({ next, path }) => {
   const start = Date.now()
@@ -23,40 +35,21 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
   return result
 })
 
-const databaseMiddleware = base.middleware(async ({ next }) => {
-  return next({
-    context: {
-      db,
-    },
-  })
-})
-
 const authMiddleware = oo.spec(
   base.middleware(async ({ context, next }) => {
-    const session = await auth.api.getSession({
-      headers: context.headers,
-    })
-
-    if (!session) {
+    if (!context.session?.user) {
       throw new ORPCError("UNAUTHORIZED")
     }
 
     return next({
       context: {
-        session: { ...session, user: session.user },
+        session: { ...context.session, user: context.session.user },
       },
     })
   }),
-  {
-    security: [{ bearerAuth: [] }],
-  },
+  { security: [{ bearerAuth: [] }] },
 )
 
-export const publicProcedure = base
-  .use(timingMiddleware)
-  .use(databaseMiddleware)
+export const publicProcedure = base.use(timingMiddleware)
 
-export const protectedProcedure = base
-  .use(timingMiddleware)
-  .use(databaseMiddleware)
-  .use(authMiddleware)
+export const protectedProcedure = base.use(timingMiddleware).use(authMiddleware)
