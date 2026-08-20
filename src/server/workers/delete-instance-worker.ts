@@ -2,15 +2,19 @@ import type { Job } from "bullmq"
 import { createNodeRedisClient, Worker } from "bullmq"
 import { eq } from "drizzle-orm"
 
-// import { getProxmoxClient } from "@/lib/proxmox"
+import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable, ipAllocationTable } from "@/server/db/schema"
+import {
+  destroyInstance,
+  stopInstanceIfRunning,
+} from "@/server/services/instance"
 import { DELETE_INSTANCE_QUEUE_KEY } from "@/server/workers/delete-instance-queue"
 
 const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
-// const proxmox = getProxmoxClient()
+const proxmox = getProxmoxClient()
 
 const deleteInstanceWorker = new Worker(
   DELETE_INSTANCE_QUEUE_KEY,
@@ -42,8 +46,8 @@ const deleteInstanceWorker = new Worker(
       .set({ status: "deleting" })
       .where(eq(instanceTable.id, instanceId))
 
-    // await stopInstanceIfRunning(proxmox, instance.pveVmid)
-    // await destoryInstance(proxmox, instance.pveVmid)
+    await stopInstanceIfRunning(proxmox, instance.pveVmid)
+    await destroyInstance(proxmox, instance.pveVmid)
 
     const ipAllocation = instance.ipAllocations[0]
     if (ipAllocation) {
