@@ -3,14 +3,8 @@ import { RPCLink } from "@orpc/client/fetch"
 import type { RouterClient } from "@orpc/server"
 import { createTanstackQueryUtils } from "@orpc/tanstack-query"
 
-import { env } from "@/env"
+import { getBaseUrl } from "@/lib/utils"
 import type { router } from "@/server/api/routers"
-
-export function getBaseUrl() {
-  if (typeof window !== "undefined") return window.location.origin
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return env.NEXT_PUBLIC_URL
-}
 
 declare global {
   var $client: RouterClient<typeof router> | undefined
