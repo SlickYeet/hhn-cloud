@@ -12,7 +12,7 @@ import {
   startInstance,
 } from "@/server/services/instance"
 
-import { PROVISION_QUEUE_KEY, schema } from "./provision-queue"
+import { addProvisionJobSchema, PROVISION_QUEUE_KEY } from "./provision-queue"
 
 const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
@@ -22,7 +22,7 @@ const provisionWorker = new Worker(
   PROVISION_QUEUE_KEY,
   async (job: Job): Promise<{ status: string; vmid: string }> => {
     try {
-      const data = schema.parse(job.data)
+      const data = addProvisionJobSchema.parse(job.data)
 
       const [instance] = await db
         .update(instanceTable)
@@ -44,6 +44,7 @@ const provisionWorker = new Worker(
         macAddress: data.macAddress,
         network: data.network,
         nextVmid: instance.pveVmid,
+        rootPassword: data.rootPassword,
         sshKeyId: data.sshKeyId,
         template: data.template,
       })

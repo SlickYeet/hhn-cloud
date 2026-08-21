@@ -3,7 +3,11 @@ import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
-import { generateMacAddress, generateRootPassword } from "@/lib/crypto"
+import {
+  encryptPassword,
+  generateMacAddress,
+  generateRootPassword,
+} from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
 import {
   createInstanceSchema,
@@ -160,6 +164,7 @@ export const instanceRouter = {
       }
 
       const macAddress = generateMacAddress()
+      const rootPassword = generateRootPassword()
 
       const [template] = await context.db
         .select()
@@ -198,7 +203,7 @@ export const instanceRouter = {
             organizationId: input.organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
-            rootPassword: generateRootPassword(),
+            rootPassword: encryptPassword(rootPassword),
             status: "queued",
             templateId: input.templateId,
           })
@@ -273,6 +278,7 @@ export const instanceRouter = {
         instanceId: instance.id,
         macAddress,
         network,
+        rootPassword,
         sshKeyId: input.sshKeyId,
         template,
       })

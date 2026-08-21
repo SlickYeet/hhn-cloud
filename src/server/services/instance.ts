@@ -3,7 +3,6 @@ import type { Proxmox } from "proxmox-api"
 import type * as z from "zod"
 
 import { env } from "@/env"
-import { generateRootPassword } from "@/lib/crypto"
 import type { selectTemplateSchema } from "@/schemas/template"
 import { db } from "@/server/db"
 import { sshKeyTable } from "@/server/db/schema"
@@ -44,6 +43,7 @@ export async function configureInstance(
       gateway: string
       ip: string
     }
+    rootPassword: string
     sshKeyId: string
     macAddress: string
   },
@@ -61,7 +61,7 @@ export async function configureInstance(
     agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
     autostart: true,
     bios: "seabios", // TODO: if Windows use "bios=ovmf"
-    cipassword: generateRootPassword(),
+    cipassword: data.rootPassword,
     ciupgrade: true,
     ciuser: "root",
     cores: data.template.cores,

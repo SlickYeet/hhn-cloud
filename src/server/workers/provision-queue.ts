@@ -23,7 +23,7 @@ const provisionQueue = new Queue(PROVISION_QUEUE_KEY, {
   },
 })
 
-export const schema = z.object({
+export const addProvisionJobSchema = z.object({
   instanceId: z.string(),
   macAddress: z.mac(),
   network: z.object({
@@ -34,12 +34,13 @@ export const schema = z.object({
       return z.ipv4().safeParse(ip).success
     }),
   }),
+  rootPassword: z.string(),
   sshKeyId: z.string(),
   template: selectTemplateSchema,
 })
 
 export async function addProvisionJob(
-  data: z.infer<typeof schema>,
+  data: z.infer<typeof addProvisionJobSchema>,
 ): Promise<{ jobId: Job["id"] }> {
   const jobId = `${data.instanceId}-${data.macAddress.replace(/:/g, "-")}`
 
