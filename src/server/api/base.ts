@@ -47,7 +47,7 @@ const authMiddleware = oo.spec(
       },
     })
   }),
-  { security: [{ bearerAuth: [] }] },
+  { security: [{ apiKey: [] }] },
 )
 
 export const publicProcedure = base.use(timingMiddleware)

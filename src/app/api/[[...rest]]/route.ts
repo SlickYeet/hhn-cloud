@@ -4,6 +4,7 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 
+import { getBaseUrl } from "@/lib/utils"
 import { createRPCContext } from "@/server/api/base"
 import { router } from "@/server/api/routers"
 
@@ -18,10 +19,21 @@ const openAPIHandler = new OpenAPIHandler(router, {
     new OpenAPIReferencePlugin({
       schemaConverters: [new ZodToJsonSchemaConverter()],
       specGenerateOptions: {
+        components: {
+          securitySchemes: {
+            apiKey: {
+              in: "header",
+              name: "x-api-key",
+              summary: "API Key Authentication",
+              type: "apiKey",
+            },
+          },
+        },
         info: {
           title: "HHN Cloud API",
           version: "1",
         },
+        servers: [{ url: `${getBaseUrl()}/api` }],
       },
     }),
   ],
