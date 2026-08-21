@@ -8,5 +8,4 @@ export default defineConfig({
   },
   dialect: "postgresql",
   schema: "./src/server/db/schema.ts",
-  tablesFilter: ["cloud_*"],
 })

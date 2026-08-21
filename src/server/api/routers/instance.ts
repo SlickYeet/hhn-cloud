@@ -204,7 +204,7 @@ export const instanceRouter = {
           })
           .returning()
           .catch((error) => {
-            const constraintName = "cloud_instance_pve_vmid_unique"
+            const constraintName = "instance_pve_vmid_unique"
             if (isUniqueConstraintError(error, constraintName)) return null
             throw error
           })
@@ -231,10 +231,7 @@ export const instanceRouter = {
           .returning()
           .catch((error) => {
             if (
-              isUniqueConstraintError(
-                error,
-                "cloud_ip_allocation_ip_address_unique",
-              )
+              isUniqueConstraintError(error, "ip_allocation_ip_address_unique")
             )
               return null
             throw error

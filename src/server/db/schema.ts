@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm"
 import { index, pgEnum, pgTableCreator, uniqueIndex } from "drizzle-orm/pg-core"
 
-export const createTable = pgTableCreator((name) => `cloud_${name}`)
+export const createTable = pgTableCreator((name) => name)
 
 export const sshKeyTable = createTable(
   "ssh_key",
