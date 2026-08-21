@@ -10,6 +10,7 @@ import {
   destroyInstance,
   stopInstanceIfRunning,
 } from "@/server/services/instance"
+import { releaseIpAddress } from "@/server/services/network"
 import { DELETE_INSTANCE_QUEUE_KEY } from "@/server/workers/delete-instance-queue"
 
 const redis = getRedisClient()
@@ -19,17 +20,6 @@ const proxmox = getProxmoxClient()
 const deleteInstanceWorker = new Worker(
   DELETE_INSTANCE_QUEUE_KEY,
   async (job: Job): Promise<{ status: string; instanceId: string }> => {
-    /**
-     * TODO: below
-     * 1. [x] Fetch instance using job.data.instanceId
-     * 2. [x] Set instance status to "deleting"
-     * 3. [ ] Stop instance if running
-     * 4. [ ] Destroy on proxmox
-     * 5. [ ] Remove dhcp reservation (and lease maybe?)
-     * 6. [x] Delete ip allocation from db
-     * 7. [x] Set instance status to "deleted" and deletedAt to now
-     */
-
     const { instanceId } = job.data
 
     const instance = await db.query.instanceTable.findFirst({
@@ -51,8 +41,7 @@ const deleteInstanceWorker = new Worker(
 
     const ipAllocation = instance.ipAllocations[0]
     if (ipAllocation) {
-      // await removeDhcpReservation(ipAllocation.ipAddress)
-      // await removeDhcpLease(ipAllocation.ipAddress)
+      await releaseIpAddress(ipAllocation.id)
       await db
         .delete(ipAllocationTable)
         .where(eq(ipAllocationTable.id, ipAllocation.id))
