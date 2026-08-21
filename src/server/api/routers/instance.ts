@@ -412,7 +412,7 @@ export const instanceRouter = {
   list: publicProcedure
     .route({
       method: "GET",
-      path: "/instances",
+      path: "/instance/list",
       summary: "List an organization's instances",
       tags: ["Instances"],
     })
