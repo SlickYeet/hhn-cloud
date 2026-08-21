@@ -41,7 +41,7 @@ const deleteInstanceWorker = new Worker(
 
     const ipAllocation = instance.ipAllocations[0]
     if (ipAllocation) {
-      await releaseIpAddress(ipAllocation.id)
+      await releaseIpAddress(ipAllocation.ipAddress)
       await db
         .delete(ipAllocationTable)
         .where(eq(ipAllocationTable.id, ipAllocation.id))
