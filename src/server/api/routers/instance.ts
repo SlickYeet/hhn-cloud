@@ -296,7 +296,7 @@ export const instanceRouter = {
   delete: publicProcedure
     .route({
       method: "DELETE",
-      path: "/instance/{id}",
+      path: "/instance/{id}/delete",
       summary: "Delete an instance",
       tags: ["Instances"],
     })
@@ -383,7 +383,7 @@ export const instanceRouter = {
   get: publicProcedure
     .route({
       method: "GET",
-      path: "/instance/{id}",
+      path: "/instance/{id}/get",
       summary: "Get an instance by ID",
       tags: ["Instances"],
     })
