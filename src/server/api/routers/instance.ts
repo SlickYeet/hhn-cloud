@@ -168,7 +168,7 @@ export const instanceRouter = {
 
       if (!template) {
         throw errors.NOT_FOUND({
-          message: `Template ${input.templateId} not found`,
+          message: "Template not found",
         })
       }
 
@@ -179,7 +179,7 @@ export const instanceRouter = {
 
       if (!sshKey) {
         throw errors.NOT_FOUND({
-          message: `SSH key ${input.sshKeyId} not found`,
+          message: "SSH key not found",
         })
       }
 
@@ -325,7 +325,7 @@ export const instanceRouter = {
 
       if (!existingInstance) {
         throw errors.NOT_FOUND({
-          message: `Instance ${input.id} not found`,
+          message: "Instance not found",
         })
       }
 
