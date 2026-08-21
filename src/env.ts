@@ -9,6 +9,7 @@ export const env = createEnv({
   runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
+    ENCRYPTION_KEY_V1: process.env.ENCRYPTION_KEY_V1,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NODE_ENV: process.env.NODE_ENV,
     OPNSENSE_API_ENDPOINT: process.env.OPNSENSE_API_ENDPOINT,
@@ -28,6 +29,7 @@ export const env = createEnv({
   server: {
     BETTER_AUTH_SECRET: z.string(),
     DATABASE_URL: z.url(),
+    ENCRYPTION_KEY_V1: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
