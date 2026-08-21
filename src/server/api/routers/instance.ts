@@ -401,6 +401,8 @@ export const instanceRouter = {
       },
     })
     .handler(({ errors, input }) => {
+      // omit rootPassword from the output
+
       if (!input.id) throw errors.BAD_REQUEST()
 
       const instance = mockInstances.find(
@@ -423,7 +425,7 @@ export const instanceRouter = {
     .output(
       z
         .array(
-          selectInstanceSchema.extend({
+          selectInstanceSchema.omit({ rootPassword: true }).extend({
             ipAllocations: z.array(selectIpAllocationSchema),
             sshKeys: z.array(selectInstanceSshKeySchema),
           }),
@@ -439,6 +441,9 @@ export const instanceRouter = {
       if (!input.organizationId) throw errors.BAD_REQUEST()
 
       const instances = await context.db.query.instanceTable.findMany({
+        columns: {
+          rootPassword: false,
+        },
         orderBy: (instances, { desc }) => desc(instances.createdAt),
         where: (instances, { eq }) =>
           eq(instances.organizationId, input.organizationId),

@@ -1,5 +1,4 @@
 import { api } from "@/lib/api/server"
-import { decryptPassword } from "@/lib/crypto"
 
 export default async function Page() {
   const instances = await api.instance.list({
@@ -13,8 +12,6 @@ export default async function Page() {
         <p className="mt-4">No instances found for the organization</p>
       ) : (
         instances.map((i) => {
-          const rootPassword = decryptPassword(i.rootPassword)
-
           return (
             <div
               className="mt-4 grid grid-cols-1 gap-2 border border-neutral-600 p-4 md:grid-cols-3"
@@ -36,7 +33,6 @@ export default async function Page() {
               <p>MAC Address: {i.ipAllocations[0]?.macAddress}</p>
               <p>Gateway: {i.ipAllocations[0]?.gateway}</p>
               <p>VMID: {i.pveVmid}</p>
-              <p>Root Password: {rootPassword}</p>
               <p>Status: {i.status}</p>
             </div>
           )
