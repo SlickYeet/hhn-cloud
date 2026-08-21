@@ -1,6 +1,7 @@
 import type { Job } from "bullmq"
 import { createNodeRedisClient, Queue } from "bullmq"
 
+import { env } from "@/env"
 import { getRedisClient } from "@/lib/redis"
 
 export const DELETE_INSTANCE_QUEUE_KEY = "cloud-delete-instance-queue"
@@ -17,7 +18,7 @@ const deleteInstanceQueue = new Queue(DELETE_INSTANCE_QUEUE_KEY, {
       delay: 2000,
       type: "exponential",
     },
-    delay: SEVEN_DAYS_MS,
+    delay: env.NODE_ENV === "production" ? SEVEN_DAYS_MS : 0,
     removeOnComplete: { age: 3600, count: 1000 },
     removeOnFail: { age: 24 * 3600 },
   },
