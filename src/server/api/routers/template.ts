@@ -70,7 +70,7 @@ export const templateRouter = {
   get: publicProcedure
     .route({
       method: "GET",
-      path: "/template/:id",
+      path: "/template/{id}",
       summary: "Get a template by ID",
       tags: ["Templates"],
     })

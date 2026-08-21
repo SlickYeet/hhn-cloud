@@ -296,7 +296,7 @@ export const instanceRouter = {
   delete: publicProcedure
     .route({
       method: "DELETE",
-      path: "/instance/:id",
+      path: "/instance/{id}",
       summary: "Delete an instance",
       tags: ["Instances"],
     })
@@ -383,7 +383,7 @@ export const instanceRouter = {
   get: publicProcedure
     .route({
       method: "GET",
-      path: "/instance/:id",
+      path: "/instance/{id}",
       summary: "Get an instance by ID",
       tags: ["Instances"],
     })
@@ -453,7 +453,7 @@ export const instanceRouter = {
   restart: publicProcedure
     .route({
       method: "POST",
-      path: "/instance/:id/restart",
+      path: "/instance/{id}/restart",
       summary: "Restart an instance",
       tags: ["Instances"],
     })
@@ -489,7 +489,7 @@ export const instanceRouter = {
   shutdown: publicProcedure
     .route({
       method: "POST",
-      path: "/instance/:id/shutdown",
+      path: "/instance/{id}/shutdown",
       summary: "Shutdown an instance",
       tags: ["Instances"],
     })
@@ -522,7 +522,7 @@ export const instanceRouter = {
   start: publicProcedure
     .route({
       method: "POST",
-      path: "/instance/:id/start",
+      path: "/instance/{id}/start",
       summary: "Start an instance",
       tags: ["Instances"],
     })
@@ -558,7 +558,7 @@ export const instanceRouter = {
   stop: publicProcedure
     .route({
       method: "POST",
-      path: "/instance/:id/stop",
+      path: "/instance/{id}/stop",
       summary: "Stop an instance",
       tags: ["Instances"],
     })
@@ -591,19 +591,17 @@ export const instanceRouter = {
   update: publicProcedure
     .route({
       method: "PUT",
-      path: "/instance/:id",
+      path: "/instance/{id}",
       summary: "Update an instance",
       tags: ["Instances"],
     })
     .input(
       z.object(
-        insertInstanceSchema
-          .pick({
-            hostname: true,
-            id: true,
-            organizationId: true,
-          })
-          .partial().shape,
+        insertInstanceSchema.pick({
+          hostname: true,
+          id: true,
+          organizationId: true,
+        }).shape,
       ),
     )
     .output(z.object({ id: z.string() }))
