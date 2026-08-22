@@ -1,6 +1,25 @@
 import { createEnv } from "@t3-oss/env-nextjs"
 import { z } from "zod"
 
+const createVmidRangeSchema = (key: string) =>
+  z.string().transform((value) => {
+    try {
+      const parsed = JSON.parse(value)
+      if (!Array.isArray(parsed) || parsed.length !== 2) {
+        throw new Error(`${key} must be a JSON array with two elements`)
+      }
+      const [min, max] = parsed
+      if (typeof min !== "number" || typeof max !== "number") {
+        throw new Error(`${key} elements must be numbers`)
+      }
+      return [min, max] as [number, number]
+    } catch (error) {
+      throw new Error(
+        `Invalid ${key}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      )
+    }
+  })
+
 export const env = createEnv({
   client: {
     NEXT_PUBLIC_URL: z.url(),
@@ -38,51 +57,15 @@ export const env = createEnv({
     OPNSENSE_API_SECRET: z.string(),
     OPNSENSE_CLOUD_NETWORK_VLAN_ID: z.string(),
     OPNSENSE_SUBNET_UUID: z.uuid(),
-    PROXMOX_CLOUD_VM_VMID_RANGE: z.string().transform((value) => {
-      try {
-        const parsed = JSON.parse(value)
-        if (!Array.isArray(parsed) || parsed.length !== 2) {
-          throw new Error(
-            "PROXMOX_CLOUD_VM_VMID_RANGE must be a JSON array with two elements",
-          )
-        }
-        const [min, max] = parsed
-        if (typeof min !== "number" || typeof max !== "number") {
-          throw new Error(
-            "PROXMOX_CLOUD_VM_VMID_RANGE elements must be numbers",
-          )
-        }
-        return [min, max] as [number, number]
-      } catch (error) {
-        throw new Error(
-          `Invalid PROXMOX_CLOUD_VM_VMID_RANGE: ${error instanceof Error ? error.message : "Unknown error"}`,
-        )
-      }
-    }),
+    PROXMOX_CLOUD_VM_VMID_RANGE: createVmidRangeSchema(
+      "PROXMOX_CLOUD_VM_VMID_RANGE",
+    ),
     PROXMOX_HOST: z.string(),
     PROXMOX_NODE: z.string(),
     PROXMOX_POOL: z.string(),
-    PROXMOX_TEMPLATE_VMID_RANGE: z.string().transform((value) => {
-      try {
-        const parsed = JSON.parse(value)
-        if (!Array.isArray(parsed) || parsed.length !== 2) {
-          throw new Error(
-            "PROXMOX_TEMPLATE_VMID_RANGE must be a JSON array with two elements",
-          )
-        }
-        const [min, max] = parsed
-        if (typeof min !== "number" || typeof max !== "number") {
-          throw new Error(
-            "PROXMOX_TEMPLATE_VMID_RANGE elements must be numbers",
-          )
-        }
-        return [min, max] as [number, number]
-      } catch (error) {
-        throw new Error(
-          `Invalid PROXMOX_TEMPLATE_VMID_RANGE: ${error instanceof Error ? error.message : "Unknown error"}`,
-        )
-      }
-    }),
+    PROXMOX_TEMPLATE_VMID_RANGE: createVmidRangeSchema(
+      "PROXMOX_TEMPLATE_VMID_RANGE",
+    ),
     PROXMOX_TOKEN_ID: z.string(),
     PROXMOX_TOKEN_SECRET: z.string(),
     REDIS_URL: z.url(),
