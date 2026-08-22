@@ -48,20 +48,20 @@
   "private": true,
   "scripts": {
     "auth:generate": "npx @better-auth/cli@latest generate --config ./src/server/auth/index.ts --yes",
-    "build": "next build",
+    "build": "bun --bun next build",
     "clean": "rm -rf .next node_modules bun.lock && bun install",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:reset": "bun ./src/scripts/reset-db.ts",
     "db:studio": "drizzle-kit studio",
-    "dev": "next dev",
+    "dev": "bun --bun next dev",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:unsafe": "biome check --write --unsafe .",
     "lint:write": "biome check --write .",
     "shadcn": "bunx --bun shadcn@latest",
-    "start": "bun run db:migrate && next start"
+    "start": "bun run db:migrate && bun --bun next start"
   },
   "type": "module",
   "version": "0.1.0"
