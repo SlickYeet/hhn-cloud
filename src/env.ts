@@ -22,6 +22,7 @@ const createVmidRangeSchema = (key: string) =>
 
 export const env = createEnv({
   client: {
+    NEXT_PUBLIC_OAUTH_PROVIDER_ID: z.string(),
     NEXT_PUBLIC_URL: z.url(),
   },
   emptyStringAsUndefined: true,
@@ -29,8 +30,12 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     ENCRYPTION_KEY_V1: process.env.ENCRYPTION_KEY_V1,
+    NEXT_PUBLIC_OAUTH_PROVIDER_ID: process.env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NODE_ENV: process.env.NODE_ENV,
+    OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID,
+    OAUTH_CLIENT_SECRET: process.env.OAUTH_CLIENT_SECRET,
+    OAUTH_DISCOVERY_URL: process.env.OAUTH_DISCOVERY_URL,
     OPNSENSE_API_ENDPOINT: process.env.OPNSENSE_API_ENDPOINT,
     OPNSENSE_API_KEY: process.env.OPNSENSE_API_KEY,
     OPNSENSE_API_SECRET: process.env.OPNSENSE_API_SECRET,
@@ -52,6 +57,9 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    OAUTH_CLIENT_ID: z.string(),
+    OAUTH_CLIENT_SECRET: z.string(),
+    OAUTH_DISCOVERY_URL: z.string(),
     OPNSENSE_API_ENDPOINT: z.string(),
     OPNSENSE_API_KEY: z.string(),
     OPNSENSE_API_SECRET: z.string(),
