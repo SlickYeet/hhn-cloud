@@ -200,29 +200,6 @@ export const user = createTable(
   ],
 )
 
-export const session = createTable(
-  "session",
-  (d) => ({
-    activeOrganizationId: d.text("active_organization_id"),
-    createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    expiresAt: d.timestamp("expires_at").notNull(),
-    id: d.text("id").primaryKey(),
-    impersonatedBy: d.text("impersonated_by"),
-    ipAddress: d.text("ip_address"),
-    token: d.text("token").notNull().unique(),
-    updatedAt: d
-      .timestamp("updated_at")
-      .$onUpdate(() => /* @__PURE__ */ new Date())
-      .notNull(),
-    userAgent: d.text("user_agent"),
-    userId: d
-      .text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-  }),
-  (t) => [index("session_userId_idx").on(t.userId)],
-)
-
 export const account = createTable(
   "account",
   (d) => ({
@@ -326,13 +303,13 @@ export const apiKey = createTable(
     configId: d.text("config_id").default("default").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     enabled: d.boolean("enabled").default(true),
-    expiresAt: d.timestamp("expires_at").notNull(),
+    expiresAt: d.timestamp("expires_at"),
     id: d.text("id").primaryKey(),
-    key: d.text("key").notNull().unique(),
+    key: d.text("key").notNull(),
     lastRefillAt: d.timestamp("last_refill_at"),
     lastRequest: d.timestamp("last_request"),
     metadata: d.text("metadata"),
-    name: d.text("name").notNull(),
+    name: d.text("name"),
     permissions: d.text("permissions"),
     prefix: d.text("prefix"),
     rateLimitEnabled: d.boolean("rate_limit_enabled").default(true),
@@ -357,14 +334,6 @@ export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   invitations: many(invitation),
   members: many(member),
-  sessions: many(session),
-}))
-
-export const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
 }))
 
 export const accountRelations = relations(account, ({ one }) => ({
