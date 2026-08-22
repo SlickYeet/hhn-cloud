@@ -46,7 +46,6 @@ export const auth = betterAuth({
           clientId: env.OAUTH_CLIENT_ID,
           clientSecret: env.OAUTH_CLIENT_SECRET,
           discoveryUrl: env.OAUTH_DISCOVERY_URL,
-          pkce: true,
           providerId: env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
           scopes: ["openid", "email", "profile"],
         },
