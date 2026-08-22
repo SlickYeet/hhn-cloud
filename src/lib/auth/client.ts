@@ -1,3 +1,4 @@
+import { apiKeyClient } from "@better-auth/api-key/client"
 import {
   adminClient,
   inferAdditionalFields,
@@ -17,6 +18,7 @@ export const authClient = createAuthClient({
     organizationClient({
       schema: inferOrgAdditionalFields<typeof auth>(),
     }),
+    apiKeyClient(),
   ],
 })
 
