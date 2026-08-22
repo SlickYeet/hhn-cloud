@@ -14,8 +14,6 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
-import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
-import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { protectedProcedure } from "@/server/api/base"
 import {
   instanceSshKeyTable,
@@ -303,14 +301,7 @@ export const instanceRouter = {
       tags: ["Instances"],
     })
     .input(z.object({ id: z.string() }))
-    .output(
-      z.object(
-        selectInstanceSchema.omit({ rootPassword: true }).extend({
-          ipAllocations: z.array(selectIpAllocationSchema),
-          sshKeys: z.array(selectInstanceSshKeySchema),
-        }).shape,
-      ),
-    )
+    .output(z.object(selectInstanceSchema.shape))
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
@@ -346,16 +337,7 @@ export const instanceRouter = {
       tags: ["Instances"],
     })
     .input(z.object({ organizationId: z.string() }))
-    .output(
-      z
-        .array(
-          selectInstanceSchema.omit({ rootPassword: true }).extend({
-            ipAllocations: z.array(selectIpAllocationSchema),
-            sshKeys: z.array(selectInstanceSshKeySchema),
-          }),
-        )
-        .nullable(),
-    )
+    .output(z.array(selectInstanceSchema).nullable())
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",

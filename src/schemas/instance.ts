@@ -2,6 +2,8 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
 import { env } from "@/env"
+import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
+import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { instanceTable } from "@/server/db/schema"
 
 export type Instance = typeof instanceTable.$inferInsert
@@ -33,6 +35,11 @@ export const selectInstanceSchema = createSelectSchema(
   instanceTable,
   instanceSchemaConstraints,
 )
+  .omit({ rootPassword: true })
+  .extend({
+    ipAllocations: z.array(selectIpAllocationSchema),
+    sshKeys: z.array(selectInstanceSshKeySchema),
+  })
 
 export const createInstanceSchema = insertInstanceSchema
   .omit({
