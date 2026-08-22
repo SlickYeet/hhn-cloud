@@ -320,6 +320,39 @@ export const invitation = createTable(
   ],
 )
 
+export const apiKey = createTable(
+  "apikey",
+  (d) => ({
+    configId: d.text("config_id").default("default").notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    enabled: d.boolean("enabled").default(true),
+    expiresAt: d.timestamp("expires_at").notNull(),
+    id: d.text("id").primaryKey(),
+    key: d.text("key").notNull().unique(),
+    lastRefillAt: d.timestamp("last_refill_at"),
+    lastRequest: d.timestamp("last_request"),
+    metadata: d.text("metadata"),
+    name: d.text("name").notNull(),
+    permissions: d.text("permissions"),
+    prefix: d.text("prefix"),
+    rateLimitEnabled: d.boolean("rate_limit_enabled").default(true),
+    rateLimitMax: d.integer("rate_limit_max").default(10),
+    rateLimitTimeWindow: d.integer("rate_limit_time_window").default(86400000),
+    referenceId: d.text("reference_id").notNull(),
+    refillAmount: d.integer("refill_amount"),
+    refillInterval: d.integer("refill_interval"),
+    remaining: d.integer("remaining"),
+    requestCount: d.integer("request_count").default(0),
+    start: d.text("start"),
+    updatedAt: d.timestamp("updated_at").notNull(),
+  }),
+  (t) => [
+    index("apikey_configId_idx").on(t.configId),
+    index("apikey_referenceId_idx").on(t.referenceId),
+    index("apikey_key_idx").on(t.key),
+  ],
+)
+
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   invitations: many(invitation),
