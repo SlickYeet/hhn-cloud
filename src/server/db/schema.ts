@@ -302,7 +302,7 @@ export const invitation = createTable(
   ],
 )
 
-export const apiKey = createTable(
+export const apikey = createTable(
   "apikey",
   (d) => ({
     configId: d.text("config_id").default("default").notNull(),
