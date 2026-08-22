@@ -16,7 +16,7 @@ import {
 } from "@/schemas/instance"
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
-import { publicProcedure } from "@/server/api/base"
+import { protectedProcedure } from "@/server/api/base"
 import {
   instanceSshKeyTable,
   instanceTable,
@@ -31,99 +31,11 @@ import { createDhcpReservation } from "@/server/services/network"
 import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
 import { addProvisionJob } from "@/server/workers/provision-queue"
 
-const mockInstances: z.infer<typeof selectInstanceSchema>[] = [
-  {
-    cores: 2,
-    createdAt: new Date(),
-    deletedAt: null,
-    disk: 50,
-    hostname: "Instance 1",
-    id: "1",
-    memory: 4096,
-    networkId: "network1",
-    organizationId: "org1",
-    pveNode: "node1",
-    pveVmid: 101,
-    rootPassword: "password123",
-    status: "running",
-    templateId: 9001,
-    updatedAt: new Date(),
-  },
-  {
-    cores: 2,
-    createdAt: new Date(),
-    deletedAt: null,
-    disk: 50,
-    hostname: "Instance 2",
-    id: "2",
-    memory: 4096,
-    networkId: "network2",
-    organizationId: "org2",
-    pveNode: "node2",
-    pveVmid: 102,
-    rootPassword: "password456",
-    status: "queued",
-    templateId: 9002,
-    updatedAt: new Date(),
-  },
-  {
-    cores: 4,
-    createdAt: new Date(),
-    deletedAt: null,
-    disk: 100,
-    hostname: "Instance 3",
-    id: "3",
-    memory: 8192,
-    networkId: "network3",
-    organizationId: "org3",
-    pveNode: "node3",
-    pveVmid: 103,
-    rootPassword: "password789",
-    status: "provisioning",
-    templateId: 9003,
-    updatedAt: new Date(),
-  },
-  {
-    cores: 2,
-    createdAt: new Date(),
-    deletedAt: null,
-    disk: 50,
-    hostname: "Instance 4",
-    id: "4",
-    memory: 4096,
-    networkId: "network4",
-    organizationId: "org4",
-    pveNode: "node4",
-    pveVmid: 104,
-    rootPassword: "password000",
-    status: "failed",
-    templateId: 9004,
-    updatedAt: new Date(),
-  },
-  {
-    cores: 2,
-    createdAt: new Date(),
-    deletedAt: new Date(),
-    disk: 50,
-    hostname: "Instance 5",
-    id: "5",
-    memory: 4096,
-    networkId: "network5",
-    organizationId: "org4",
-    pveNode: "node5",
-    pveVmid: 105,
-    rootPassword: "password111",
-    status: "deleted",
-    templateId: 9005,
-    updatedAt: new Date(),
-  },
-]
-
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const proxmox = getProxmoxClient()
 
 export const instanceRouter = {
-  create: publicProcedure
+  create: protectedProcedure
     .route({
       method: "POST",
       path: "/instance/create",
@@ -296,7 +208,7 @@ export const instanceRouter = {
       }
     }),
 
-  delete: publicProcedure
+  delete: protectedProcedure
     .route({
       method: "DELETE",
       path: "/instance/{id}/delete",
@@ -383,7 +295,7 @@ export const instanceRouter = {
       }
     }),
 
-  get: publicProcedure
+  get: protectedProcedure
     .route({
       method: "GET",
       path: "/instance/{id}/get",
@@ -391,7 +303,14 @@ export const instanceRouter = {
       tags: ["Instances"],
     })
     .input(z.object({ id: z.string() }))
-    .output(selectInstanceSchema)
+    .output(
+      z.object(
+        selectInstanceSchema.omit({ rootPassword: true }).extend({
+          ipAllocations: z.array(selectIpAllocationSchema),
+          sshKeys: z.array(selectInstanceSshKeySchema),
+        }).shape,
+      ),
+    )
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
@@ -400,21 +319,26 @@ export const instanceRouter = {
         message: "Instance not found",
       },
     })
-    .handler(({ errors, input }) => {
-      // omit rootPassword from the output
-
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const instance = mockInstances.find(
-        (instance) => instance.id === input.id,
-      )
+      const instance = await context.db.query.instanceTable.findFirst({
+        columns: {
+          rootPassword: false,
+        },
+        where: (instance, { eq }) => eq(instance.id, input.id),
+        with: {
+          ipAllocations: true,
+          sshKeys: true,
+        },
+      })
 
       if (!instance) throw errors.NOT_FOUND()
 
       return instance
     }),
 
-  list: publicProcedure
+  list: protectedProcedure
     .route({
       method: "GET",
       path: "/instance/list",
@@ -458,7 +382,7 @@ export const instanceRouter = {
       return instances
     }),
 
-  restart: publicProcedure
+  restart: protectedProcedure
     .route({
       method: "POST",
       path: "/instance/{id}/restart",
@@ -494,7 +418,7 @@ export const instanceRouter = {
       return { id: input.id }
     }),
 
-  shutdown: publicProcedure
+  shutdown: protectedProcedure
     .route({
       method: "POST",
       path: "/instance/{id}/shutdown",
@@ -527,7 +451,7 @@ export const instanceRouter = {
       return { id: input.id }
     }),
 
-  start: publicProcedure
+  start: protectedProcedure
     .route({
       method: "POST",
       path: "/instance/{id}/start",
@@ -563,7 +487,7 @@ export const instanceRouter = {
       return { id: input.id }
     }),
 
-  stop: publicProcedure
+  stop: protectedProcedure
     .route({
       method: "POST",
       path: "/instance/{id}/stop",
@@ -596,7 +520,7 @@ export const instanceRouter = {
       return { id: input.id }
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .route({
       method: "PUT",
       path: "/instance/{id}",
