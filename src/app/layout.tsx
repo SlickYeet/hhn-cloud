@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html className={cn(robotoHeading.variable)} lang="en">
+    <html className={cn("dark", robotoHeading.variable)} lang="en">
       <head>
         <meta content="HHN Cloud" name="apple-mobile-web-app-title" />
       </head>

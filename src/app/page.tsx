@@ -1,13 +1,28 @@
+import { headers } from "next/headers"
+
+import { APIKey } from "@/components/api-key"
+import { AuthButtons } from "@/components/auth-buttons"
 import { api } from "@/lib/api/server"
+import { auth } from "@/server/auth"
 
 export default async function Page() {
-  const instances = await api.instance.list({
-    organizationId: "org1",
+  const session = await auth.api.getSession({
+    headers: await headers(),
   })
+
+  const instances = session?.session
+    ? await api.instance.list({
+        organizationId: "org1",
+      })
+    : null
 
   return (
     <main className="p-6">
-      <h1 className="font-bold text-2xl">Home Page</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold text-2xl">Home Page</h1>
+        <AuthButtons session={session?.session} />
+      </div>
+      {session?.session && <APIKey />}
       {!instances || instances.length === 0 ? (
         <p className="mt-4">No instances found for the organization</p>
       ) : (
