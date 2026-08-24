@@ -7,6 +7,7 @@ import { admin, genericOAuth, organization } from "better-auth/plugins"
 import { APP_NAME } from "@/constants/app"
 import { env } from "@/env"
 import { getRedisClient } from "@/lib/redis"
+import { ac, adminRole, memberRole } from "@/server/auth/ac"
 import { db } from "@/server/db"
 import { user as userTable } from "@/server/db/schema"
 
@@ -51,7 +52,13 @@ export const auth = betterAuth({
         },
       ],
     }),
-    organization(),
+    organization({
+      ac,
+      roles: {
+        admin: adminRole,
+        member: memberRole,
+      },
+    }),
     apiKey(),
     nextCookies(),
   ],
