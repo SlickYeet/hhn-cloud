@@ -32,9 +32,9 @@ const openAPIHandler = new OpenAPIHandler(router, {
         },
         info: {
           title: "HHN Cloud API",
-          version: "1",
+          version: "1.0.0",
         },
-        servers: [{ url: `${getBaseUrl()}/api` }],
+        servers: [{ url: `${getBaseUrl()}/api/v1` }],
       },
     }),
   ],
@@ -43,7 +43,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
 async function handleOpenAPIRequest(request: Request) {
   const { matched, response } = await openAPIHandler.handle(request, {
     context: await createRPCContext(request),
-    prefix: "/api",
+    prefix: "/api/v1",
   })
 
   if (matched) return response
