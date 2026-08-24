@@ -89,6 +89,13 @@ export const instanceRouter = {
         })
       }
 
+      const organizationId = context.session.session.activeOrganizationId
+      if (!organizationId) {
+        throw errors.BAD_REQUEST({
+          message: "No active organization found for the user",
+        })
+      }
+
       const instance = await context.db.transaction(async (tx) => {
         const nextVmid = await getNextVmid(proxmox, tx)
 
@@ -101,7 +108,7 @@ export const instanceRouter = {
             id: randomUUID(),
             memory: template.memory,
             networkId: network.id,
-            organizationId: input.organizationId,
+            organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             rootPassword: encryptPassword(rootPassword),
