@@ -22,6 +22,7 @@ import {
   sshKeyTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
+import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { resolveTemplate } from "@/server/queries/template"
@@ -89,7 +90,10 @@ export const instanceRouter = {
         })
       }
 
-      const organizationId = context.session.session.activeOrganizationId
+      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+      const organizationId =
+        context.session.session.activeOrganizationId || apiKey?.referenceId
       if (!organizationId) {
         throw errors.BAD_REQUEST({
           message: "No active organization found for the user",
@@ -329,12 +333,14 @@ export const instanceRouter = {
 
   list: protectedProcedure
     .route({
+      description:
+        "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
       method: "GET",
       path: "/instance/list",
       summary: "List an organization's instances",
       tags: ["Instances"],
     })
-    .input(z.object({ organizationId: z.string() }))
+    .input(z.object({ organizationId: z.string().optional() }))
     .output(z.array(selectInstanceSchema).nullable())
     .errors({
       BAD_REQUEST: {
@@ -342,22 +348,22 @@ export const instanceRouter = {
       },
     })
     .handler(async ({ context, errors, input }) => {
-      if (!input.organizationId) throw errors.BAD_REQUEST()
+      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+      const organizationId = input.organizationId || apiKey?.referenceId
+      if (!organizationId) throw errors.BAD_REQUEST()
 
       const instances = await context.db.query.instanceTable.findMany({
         columns: {
           rootPassword: false,
         },
         orderBy: (instances, { desc }) => desc(instances.createdAt),
-        where: (instances, { eq }) =>
-          eq(instances.organizationId, input.organizationId),
+        where: (i, { eq }) => eq(i.organizationId, organizationId),
         with: {
           ipAllocations: true,
           sshKeys: true,
         },
       })
-
-      if (!instances || instances.length === 0) return null
 
       return instances
     }),
