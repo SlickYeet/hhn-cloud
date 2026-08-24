@@ -36,7 +36,7 @@ export const addProvisionJobSchema = z.object({
   }),
   rootPassword: z.string(),
   sshKeyId: z.string(),
-  template: selectTemplateSchema,
+  template: selectTemplateSchema.shape,
 })
 
 export async function addProvisionJob(

@@ -46,6 +46,7 @@ export const templateTable = createTable(
     name: d.text("name").unique().notNull(),
     os: d.text("os").notNull(),
     pveVmid: d.integer("pve_vmid").unique().notNull(),
+    slug: d.text("slug").unique().notNull(),
     status: templateStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")
@@ -96,9 +97,9 @@ export const instanceTable = createTable(
     rootPassword: d.text("root_password").notNull(),
     status: instanceStatusEnum("status").notNull(),
     templateId: d
-      .integer("template_id")
+      .text("template_id")
       .notNull()
-      .references(() => templateTable.pveVmid, { onDelete: "restrict" }),
+      .references(() => templateTable.id, { onDelete: "restrict" }),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()

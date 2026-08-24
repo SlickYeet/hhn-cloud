@@ -20,11 +20,11 @@ import {
   instanceTable,
   ipAllocationTable,
   sshKeyTable,
-  templateTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
+import { resolveTemplate } from "@/server/queries/template"
 import { createDhcpReservation } from "@/server/services/network"
 import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
 import { addProvisionJob } from "@/server/workers/provision-queue"
@@ -76,16 +76,7 @@ export const instanceRouter = {
       const macAddress = generateMacAddress()
       const rootPassword = generateRootPassword()
 
-      const [template] = await context.db
-        .select()
-        .from(templateTable)
-        .where(eq(templateTable.pveVmid, input.templateId))
-
-      if (!template) {
-        throw errors.NOT_FOUND({
-          message: `Template ${input.templateId} not found`,
-        })
-      }
+      const template = await resolveTemplate(input.templateId, errors)
 
       const [sshKey] = await context.db
         .select()
@@ -115,7 +106,7 @@ export const instanceRouter = {
             pveVmid: nextVmid,
             rootPassword: encryptPassword(rootPassword),
             status: "queued",
-            templateId: input.templateId,
+            templateId: template.id,
           })
           .returning()
           .catch((error) => {

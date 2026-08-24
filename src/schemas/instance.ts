@@ -21,7 +21,7 @@ const instanceSchemaConstraints = {
     .min(env.PROXMOX_CLOUD_VM_VMID_RANGE[0])
     .max(env.PROXMOX_CLOUD_VM_VMID_RANGE[1]),
   templateId: z
-    .int()
+    .uuid()
     .min(env.PROXMOX_TEMPLATE_VMID_RANGE[0])
     .max(env.PROXMOX_TEMPLATE_VMID_RANGE[1]),
   updatedAt: z.coerce.date().optional(),
@@ -50,12 +50,16 @@ export const createInstanceSchema = insertInstanceSchema
     id: true,
     memory: true,
     networkId: true,
+    organizationId: true,
     pveNode: true,
     pveVmid: true,
     rootPassword: true,
     status: true,
+    templateId: true,
     updatedAt: true,
   })
   .extend({
     sshKeyId: z.string(),
+    // inject a custom templateId to allow both uuid and slug
+    templateId: z.union([z.uuid(), z.string()]),
   })
