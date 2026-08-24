@@ -11,10 +11,9 @@ export default async function Page() {
     headers: await headers(),
   })
 
+  const organizationId = session?.session?.activeOrganizationId || ""
   const instances = session?.session
-    ? await api.instance.list({
-        organizationId: "org1",
-      })
+    ? await api.instance.list({ organizationId })
     : null
 
   return (
