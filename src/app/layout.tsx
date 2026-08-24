@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Source_Code_Pro, Source_Serif_4 } from "next/font/google"
 
 import { Providers } from "@/components/providers"
+import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
 import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
@@ -35,8 +36,8 @@ const sourceSerif4 = Source_Serif_4({
 })
 
 export const metadata: Metadata = {
-  description: "HHN Cloud",
-  title: "HHN Cloud",
+  description: APP_DESCRIPTION,
+  title: APP_NAME,
 }
 
 export default function RootLayout({
@@ -47,7 +48,7 @@ export default function RootLayout({
   return (
     <html className="dark" lang="en">
       <head>
-        <meta content="HHN Cloud" name="apple-mobile-web-app-title" />
+        <meta content={APP_NAME} name="apple-mobile-web-app-title" />
       </head>
       <body
         className={cn(
