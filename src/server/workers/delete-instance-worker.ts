@@ -27,9 +27,7 @@ const deleteInstanceWorker = new Worker(
       with: { ipAllocations: true },
     })
 
-    if (!instance) {
-      return { instanceId, status: "deleted" }
-    }
+    if (!instance) return { instanceId, status: "deleted" }
 
     await db
       .update(instanceTable)
@@ -39,6 +37,7 @@ const deleteInstanceWorker = new Worker(
     await stopInstanceIfRunning(proxmox, instance.pveVmid)
     await destroyInstance(proxmox, instance.pveVmid)
 
+    // TODO: Handle multiple IP allocations
     const ipAllocation = instance.ipAllocations[0]
     if (ipAllocation) {
       await releaseIpAddress(ipAllocation.ipAddress)
@@ -46,6 +45,8 @@ const deleteInstanceWorker = new Worker(
         .delete(ipAllocationTable)
         .where(eq(ipAllocationTable.id, ipAllocation.id))
     }
+
+    // TODO: Delete SSH key associations
 
     await db
       .update(instanceTable)
