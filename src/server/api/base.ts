@@ -30,7 +30,7 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
   const result = await next()
 
   const end = Date.now()
-  console.info(`Request to ${path} took ${end - start}ms`)
+  console.info(`Request to /${path.join("/")} took ${end - start}ms`)
 
   return result
 })
