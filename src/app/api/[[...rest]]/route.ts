@@ -4,6 +4,7 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins"
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4"
 
+import { GLOBAL_API_KEY_HEADERS } from "@/constants/auth"
 import { getBaseUrl } from "@/lib/utils"
 import { createRPCContext } from "@/server/api/base"
 import { router } from "@/server/api/routers"
@@ -23,7 +24,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
           securitySchemes: {
             apiKey: {
               in: "header",
-              name: "x-api-key",
+              name: GLOBAL_API_KEY_HEADERS[0],
               summary: "API Key Authentication",
               type: "apiKey",
             },

@@ -5,6 +5,11 @@ import { nextCookies } from "better-auth/next-js"
 import { admin, genericOAuth, organization } from "better-auth/plugins"
 
 import { APP_NAME } from "@/constants/app"
+import {
+  GLOBAL_API_KEY_CONFIG_ID,
+  GLOBAL_API_KEY_HEADERS,
+  GLOBAL_API_KEY_PREFIX,
+} from "@/constants/auth"
 import { env } from "@/env"
 import { getRedisClient } from "@/lib/redis"
 import { ac, adminRole, memberRole } from "@/server/auth/ac"
@@ -60,8 +65,9 @@ export const auth = betterAuth({
       },
     }),
     apiKey({
-      configId: "org-keys",
-      defaultPrefix: "org_",
+      apiKeyHeaders: GLOBAL_API_KEY_HEADERS,
+      configId: GLOBAL_API_KEY_CONFIG_ID,
+      defaultPrefix: GLOBAL_API_KEY_PREFIX,
       enableMetadata: true,
       fallbackToDatabase: true,
       rateLimit: {
