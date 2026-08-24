@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Roboto } from "next/font/google"
+import { Source_Code_Pro, Source_Serif_4 } from "next/font/google"
 
 import { Providers } from "@/components/providers"
 import { cn } from "@/lib/utils"
@@ -7,19 +7,31 @@ import { cn } from "@/lib/utils"
 import "@/styles/globals.css"
 import "@/lib/api/server"
 
-const robotoHeading = Roboto({
-  subsets: ["latin"],
-  variable: "--font-heading",
+const sourceCodePro = Source_Code_Pro({
+  subsets: [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese",
+  ],
+  variable: "--font-source-code-pro",
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
 })
 
-const geistSans = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist-sans",
-})
-
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
+const sourceSerif4 = Source_Serif_4({
+  subsets: [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese",
+  ],
+  variable: "--font-source-serif-4",
+  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
 })
 
 export const metadata: Metadata = {
@@ -33,12 +45,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html className={cn("dark", robotoHeading.variable)} lang="en">
+    <html className="dark" lang="en">
       <head>
         <meta content="HHN Cloud" name="apple-mobile-web-app-title" />
       </head>
       <body
-        className={cn(geistSans.variable, geistMono.variable, "antialiased")}
+        className={cn(
+          "antialiased",
+          sourceCodePro.variable,
+          sourceSerif4.variable,
+          sourceCodePro.variable,
+        )}
       >
         <Providers>{children}</Providers>
       </body>
