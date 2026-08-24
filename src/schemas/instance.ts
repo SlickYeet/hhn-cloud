@@ -20,10 +20,7 @@ const instanceSchemaConstraints = {
     .int()
     .min(env.PROXMOX_CLOUD_VM_VMID_RANGE[0])
     .max(env.PROXMOX_CLOUD_VM_VMID_RANGE[1]),
-  templateId: z
-    .uuid()
-    .min(env.PROXMOX_TEMPLATE_VMID_RANGE[0])
-    .max(env.PROXMOX_TEMPLATE_VMID_RANGE[1]),
+  templateId: z.uuid(),
   updatedAt: z.coerce.date().optional(),
 }
 
