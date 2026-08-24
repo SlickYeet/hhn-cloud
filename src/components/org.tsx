@@ -21,7 +21,15 @@ export function Org({ session }: { session: Session }) {
       slug: "my-org",
       userId: session.userId,
     })
-    if (data) setOrgs([data])
+
+    if (data) {
+      await authClient.organization.setActive({
+        organizationId: data.id,
+        organizationSlug: data.slug,
+      })
+
+      setOrgs([data])
+    }
   }
 
   React.useEffect(() => {
