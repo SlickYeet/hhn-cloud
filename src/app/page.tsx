@@ -2,6 +2,7 @@ import { headers } from "next/headers"
 
 import { APIKey } from "@/components/api-key"
 import { AuthButtons } from "@/components/auth-buttons"
+import { Org } from "@/components/org"
 import { api } from "@/lib/api/server"
 import { auth } from "@/server/auth"
 
@@ -22,6 +23,7 @@ export default async function Page() {
         <h1 className="font-bold text-2xl">Home Page</h1>
         <AuthButtons session={session?.session} />
       </div>
+      {session?.session && <Org session={session.session} />}
       {session?.session && <APIKey />}
       {!instances || instances.length === 0 ? (
         <p className="mt-4">No instances found for the organization</p>
