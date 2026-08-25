@@ -113,7 +113,7 @@ export default function Page() {
             </span>
           </Link>
           <Button
-            className="relative"
+            className="relative bg-accent hover:bg-accent/80 dark:bg-accent dark:hover:bg-accent/80"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             size="icon-sm"
             variant="outline"
