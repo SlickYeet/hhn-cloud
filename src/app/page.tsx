@@ -1,4 +1,6 @@
+import { IconArrowRight } from "@tabler/icons-react"
 import { headers } from "next/headers"
+import Link from "next/link"
 
 import { APIKey } from "@/components/api-key"
 import { AuthButtons } from "@/components/auth-buttons"
@@ -54,6 +56,12 @@ export default async function Page() {
           )
         })
       )}
+
+      <div className="mt-4">
+        <Link className="text-blue-500 hover:underline" href="/dashboard">
+          Dashboard <IconArrowRight className="inline-block size-4" />
+        </Link>
+      </div>
     </main>
   )
 }
