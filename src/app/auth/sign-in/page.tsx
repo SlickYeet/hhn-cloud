@@ -41,7 +41,7 @@ export default function Page() {
     try {
       setIsLoading(true)
       await authClient.signIn.social({
-        callbackURL: "/",
+        callbackURL: "/dashboard",
         fetchOptions: {
           onError({ error }) {
             console.error(error)
