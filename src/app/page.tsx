@@ -1,7 +1,8 @@
+import { IconArrowRight } from "@tabler/icons-react"
 import { headers } from "next/headers"
+import Link from "next/link"
 
 import { APIKey } from "@/components/api-key"
-import { AuthButtons } from "@/components/auth-buttons"
 import { Org } from "@/components/org"
 import { api } from "@/lib/api/server"
 import { auth } from "@/server/auth"
@@ -18,10 +19,7 @@ export default async function Page() {
 
   return (
     <main className="p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-bold text-2xl">Home Page</h1>
-        <AuthButtons session={session?.session} />
-      </div>
+      <h1 className="font-bold text-2xl">Home Page</h1>
       {session?.session && <Org session={session.session} />}
       {session?.session && <APIKey />}
       {!instances || instances.length === 0 ? (
@@ -54,6 +52,24 @@ export default async function Page() {
           )
         })
       )}
+
+      <div className="mt-4 flex flex-col gap-2">
+        {session?.session ? (
+          <Link
+            className="flex items-center gap-0.5 text-blue-500 hover:underline"
+            href="/dashboard"
+          >
+            Dashboard <IconArrowRight className="inline-block size-4" />
+          </Link>
+        ) : (
+          <Link
+            className="flex items-center gap-0.5 text-blue-500 hover:underline"
+            href="/auth/sign-in"
+          >
+            Sign In <IconArrowRight className="inline-block size-4" />
+          </Link>
+        )}
+      </div>
     </main>
   )
 }
