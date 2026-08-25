@@ -29,7 +29,7 @@ function getQueryClient() {
   }
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function ORPCProvider({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient()
 
   return (
