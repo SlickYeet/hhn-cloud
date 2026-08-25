@@ -16,14 +16,14 @@ const TASK_TIMEOUT_MS = 180_000
 export async function cloneInstance(
   proxmox: Proxmox.Api,
   data: {
-    templateId: number
+    templateVmid: number
     hostname: string
     nextVmid: number
   },
 ): Promise<void> {
   const upid = await proxmox.nodes
     .$(PROXMOX_DEFAULT_NODE)
-    .qemu.$(data.templateId)
+    .qemu.$(data.templateVmid)
     .clone.$post({
       full: true,
       name: data.hostname,

@@ -32,11 +32,17 @@ const provisionWorker = new Worker(
 
       if (!instance) throw new Error("Instance not found")
 
+      const template = await db.query.templateTable.findFirst({
+        where: (t, { eq }) => eq(t.id, instance.templateId),
+      })
+
+      if (!template) throw new Error("Template not found")
+
       // TODO: log new progress
       await cloneInstance(proxmox, {
         hostname: instance.hostname,
         nextVmid: instance.pveVmid,
-        templateId: instance.templateId,
+        templateVmid: template.pveVmid,
       })
 
       // log new progress
@@ -46,7 +52,7 @@ const provisionWorker = new Worker(
         nextVmid: instance.pveVmid,
         rootPassword: data.rootPassword,
         sshKeyId: data.sshKeyId,
-        template: data.template,
+        template,
       })
 
       // log new progress
