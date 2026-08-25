@@ -1,7 +1,39 @@
 "use client"
 
-import { ThemeProvider as NextThemeProvider } from "next-themes"
-import type * as React from "react"
+import { ThemeProvider as NextThemeProvider, useTheme } from "next-themes"
+import * as React from "react"
+
+function ThemeShortcut() {
+  const { setTheme, resolvedTheme } = useTheme()
+
+  React.useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (
+        (e.key === "d" || e.key === "D") &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey
+      ) {
+        if (
+          (e.target instanceof HTMLElement && e.target.isContentEditable) ||
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLSelectElement
+        ) {
+          return
+        }
+
+        e.preventDefault()
+        setTheme(resolvedTheme === "dark" ? "light" : "dark")
+      }
+    }
+
+    document.addEventListener("keydown", down)
+    return () => document.removeEventListener("keydown", down)
+  }, [resolvedTheme, setTheme])
+
+  return null
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const scriptProps =
@@ -16,6 +48,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       enableSystem
       scriptProps={scriptProps}
     >
+      <ThemeShortcut />
       {children}
     </NextThemeProvider>
   )
