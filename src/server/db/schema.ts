@@ -183,6 +183,9 @@ export const user = createTable(
     banned: d.boolean("banned").default(false),
     banReason: d.text("ban_reason"),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    defaultOrganizationId: d
+      .text("default_organization_id")
+      .references(() => organization.id, { onDelete: "set null" }),
     email: d.text("email").notNull().unique(),
     emailVerified: d.boolean("email_verified").default(false).notNull(),
     id: d.text("id").primaryKey(),
@@ -198,6 +201,7 @@ export const user = createTable(
   (t) => [
     index("user_name_idx").on(t.name),
     index("user_email_idx").on(t.email),
+    index("user_defaultOrganizationId_idx").on(t.defaultOrganizationId),
   ],
 )
 

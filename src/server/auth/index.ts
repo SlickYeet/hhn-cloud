@@ -15,6 +15,7 @@ import { getRedisClient } from "@/lib/redis"
 import { ac, adminRole, memberRole } from "@/server/auth/ac"
 import { db } from "@/server/db"
 import { user as userTable } from "@/server/db/schema"
+import { getInitialOrganizationId } from "@/server/queries/organization"
 
 const redis = getRedisClient()
 
@@ -32,6 +33,16 @@ export const auth = betterAuth({
   baseURL: env.NEXT_PUBLIC_URL,
   database: drizzleAdapter(db, { provider: "pg" }),
   databaseHooks: {
+    session: {
+      create: {
+        async before(session) {
+          const orgId = await getInitialOrganizationId(session.userId)
+          return {
+            data: { ...session, activeOrganizationId: orgId },
+          }
+        },
+      },
+    },
     user: {
       create: {
         async after() {
@@ -104,4 +115,17 @@ export const auth = betterAuth({
     },
   },
   secret: env.BETTER_AUTH_SECRET,
+  user: {
+    additionalFields: {
+      defaultOrganizationId: {
+        index: true,
+        references: {
+          field: "id",
+          model: "organization",
+          onDelete: "set null",
+        },
+        type: "string",
+      },
+    },
+  },
 })
