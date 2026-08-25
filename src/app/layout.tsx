@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
-import { Source_Code_Pro, Source_Serif_4 } from "next/font/google"
+import { Roboto_Mono, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
-import { Providers } from "@/components/providers"
+import { ORPCProvider } from "@/components/providers/orpc"
+import { ThemeProvider } from "@/components/providers/theme"
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
 import { cn } from "@/lib/utils"
 
@@ -22,7 +23,13 @@ const sourceCodePro = Source_Code_Pro({
   weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
 })
 
-const sourceSerif4 = Source_Serif_4({
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin", "latin-ext", "vietnamese"],
+  variable: "--font-space-grotesk",
+  weight: ["300", "400", "500", "600", "700"],
+})
+
+const robotoMono = Roboto_Mono({
   subsets: [
     "latin",
     "latin-ext",
@@ -31,8 +38,8 @@ const sourceSerif4 = Source_Serif_4({
     "greek",
     "vietnamese",
   ],
-  variable: "--font-source-serif-4",
-  weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-roboto-mono",
+  weight: ["100", "200", "300", "400", "500", "600", "700"],
 })
 
 export const metadata: Metadata = {
@@ -46,19 +53,23 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html className="dark" lang="en">
+    <html
+      className={cn(
+        "antialiased",
+        sourceCodePro.variable,
+        spaceGrotesk.variable,
+        robotoMono.variable,
+      )}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <meta content={APP_NAME} name="apple-mobile-web-app-title" />
       </head>
-      <body
-        className={cn(
-          "antialiased",
-          sourceCodePro.variable,
-          sourceSerif4.variable,
-          sourceCodePro.variable,
-        )}
-      >
-        <Providers>{children}</Providers>
+      <body>
+        <ORPCProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </ORPCProvider>
       </body>
     </html>
   )
