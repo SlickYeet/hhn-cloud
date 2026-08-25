@@ -205,8 +205,6 @@ export const user = createTable(
   ],
 )
 
-export type User = typeof user.$inferSelect
-
 export const account = createTable(
   "account",
   (d) => ({

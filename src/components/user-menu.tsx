@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { authClient } from "@/lib/auth/client"
-import type { User } from "@/server/db/schema"
+import type { User } from "@/server/auth/utils"
 
 export function UserMenu({ user }: { user: User }) {
   async function handleSignOut() {
