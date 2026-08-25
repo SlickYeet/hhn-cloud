@@ -1,6 +1,6 @@
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
-import { IconChevronRight, IconDots } from "@tabler/icons-react"
+import { IconDots, IconSlash } from "@tabler/icons-react"
 import type * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -84,7 +84,7 @@ function BreadcrumbSeparator({
       role="presentation"
       {...props}
     >
-      {children ?? <IconChevronRight />}
+      {children ?? <IconSlash />}
     </li>
   )
 }
