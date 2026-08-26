@@ -72,7 +72,7 @@ export default function RootLayout({
         <ORPCProvider>
           <ThemeProvider>
             {children}
-            <Toaster />
+            <Toaster richColors />
           </ThemeProvider>
         </ORPCProvider>
       </body>
