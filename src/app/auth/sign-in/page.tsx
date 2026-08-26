@@ -1,6 +1,6 @@
 "use client"
 
-import { IconMoonStars, IconSun } from "@tabler/icons-react"
+import { IconLogin2, IconMoonStars, IconSun } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -124,18 +124,21 @@ export default function Page() {
           </Button>
         </header>
         <main className="relative z-10 flex flex-1 items-center justify-center px-4 pt-2 pb-14 sm:px-6">
-          <div className="w-full max-w-md rounded-2xl border bg-card/95 shadow-2xl backdrop-blur-2xl supports-backdrop-filter:bg-card/85 lg:max-w-lg dark:bg-popover/95 dark:supports-backdrop-filter:bg-popover/85">
+          <div className="w-full max-w-md rounded-2xl border bg-linear-to-b bg-size-[100%_101%] from-primary/10 to-50% to-card/50 shadow-2xl backdrop-blur-2xl lg:max-w-lg dark:from-primary/15">
             <div className="flex flex-col gap-6 p-6 sm:p-8 [&_input]:bg-background/80 dark:[&_input]:bg-input/60">
-              <div className="flex flex-col gap-2">
-                <h1 className="font-semibold text-2xl tracking-tight">
-                  Sign in to {APP_NAME}
+              <div className="mb-4 flex flex-col items-center gap-2">
+                <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-sky-600/10 sm:mx-0 dark:bg-sky-400/10">
+                  <IconLogin2 className="size-6 text-sky-600 dark:text-sky-400" />
+                </div>
+                <h1 className="text-center font-semibold text-2xl tracking-tight">
+                  {APP_NAME}
                 </h1>
-                <p className="text-pretty text-muted-foreground text-sm">
+                <p className="text-pretty text-center text-muted-foreground text-sm">
                   {APP_DESCRIPTION}.
                 </p>
               </div>
               <Button disabled={isLoading} onClick={handleLogin}>
-                {isLoading ? <Spinner /> : "Sign in with HHN"}
+                {isLoading ? <Spinner /> : "Sign in"}
               </Button>
             </div>
           </div>
