@@ -41,6 +41,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Spinner } from "@/components/ui/spinner"
 import { RESOURCE_PLANS } from "@/constants/resource-plans"
 import { api } from "@/lib/api/client"
 import { getOperatingSystemIcon, getResourcePlanIcon } from "@/lib/utils"
@@ -301,7 +302,8 @@ export function CreateInstanceModal({
             form="create-instance-form"
             type="submit"
           >
-            <IconCirclePlus /> Create Instance
+            {isSubmitting ? <Spinner /> : <IconCirclePlus />}
+            Create Instance
           </Button>
         </DialogFooter>
       </DialogContent>
