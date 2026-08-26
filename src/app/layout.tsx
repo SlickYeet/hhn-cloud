@@ -5,6 +5,7 @@ import { Roboto_Mono, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
 import { ORPCProvider } from "@/components/providers/orpc"
 import { ThemeProvider } from "@/components/providers/theme"
+import { Toaster } from "@/components/ui/sonner"
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
 import { cn } from "@/lib/utils"
 
@@ -69,7 +70,10 @@ export default function RootLayout({
       </head>
       <body>
         <ORPCProvider>
-          <ThemeProvider>{children}</ThemeProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </ORPCProvider>
       </body>
     </html>
