@@ -22,7 +22,7 @@ const handler = new RPCHandler(router, {
 async function handleRequest(request: Request) {
   const { response } = await handler.handle(request, {
     context: await createRPCContext(request),
-    prefix: "/api/orpc",
+    prefix: "/rpc",
   })
 
   return response ?? new Response("Not found", { status: 404 })

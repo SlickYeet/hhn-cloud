@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
@@ -58,12 +59,14 @@ const mockIpAllocations: z.infer<typeof selectIpAllocationSchema>[] = [
 
 export const ipAllocationRouter = {
   list: publicProcedure
-    .route({
-      method: "GET",
-      path: "/ip-allocations",
-      summary: "List all IP allocations",
-      tags: ["IP Allocations"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/ip-allocations",
+        summary: "List all IP allocations",
+        tags: ["IP Allocations"],
+      }),
+    )
     .output(z.array(selectIpAllocationSchema))
     .errors({
       NOT_FOUND: {

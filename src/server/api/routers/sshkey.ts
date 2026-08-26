@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
 import { insertSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
@@ -53,12 +54,14 @@ const mockSshKeys: z.infer<typeof selectSshKeySchema>[] = [
 
 export const sshKeyRouter = {
   create: publicProcedure
-    .route({
-      method: "POST",
-      path: "/sshkey/create",
-      summary: "Create a new SSH key",
-      tags: ["SSH Keys"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/sshkey/create",
+        summary: "Create a new SSH key",
+        tags: ["SSH Keys"],
+      }),
+    )
     .input(z.object(insertSshKeySchema.shape))
     .output(z.object(selectSshKeySchema.shape))
     .errors({
@@ -86,12 +89,14 @@ export const sshKeyRouter = {
     }),
 
   list: publicProcedure
-    .route({
-      method: "GET",
-      path: "/sshkeys",
-      summary: "List all SSH keys",
-      tags: ["SSH Keys"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/sshkeys",
+        summary: "List all SSH keys",
+        tags: ["SSH Keys"],
+      }),
+    )
     .output(z.array(selectSshKeySchema))
     .errors({
       NOT_FOUND: {

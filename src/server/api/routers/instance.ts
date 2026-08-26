@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import { openapi } from "@orpc/openapi"
 import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
@@ -35,13 +36,15 @@ const proxmox = getProxmoxClient()
 
 export const instanceRouter = {
   create: protectedProcedure
-    .route({
-      method: "POST",
-      path: "/instance/create",
-      successStatus: 202,
-      summary: "Create a new instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/instance/create",
+        successStatus: 202,
+        summary: "Create a new instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object(createInstanceSchema.shape))
     .output(
       z.object({
@@ -209,12 +212,14 @@ export const instanceRouter = {
     }),
 
   delete: protectedProcedure
-    .route({
-      method: "DELETE",
-      path: "/instance/{id}/delete",
-      summary: "Delete an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "DELETE",
+        path: "/instance/{id}/delete",
+        summary: "Delete an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(
       z.object({
@@ -296,12 +301,14 @@ export const instanceRouter = {
     }),
 
   get: protectedProcedure
-    .route({
-      method: "GET",
-      path: "/instance/{id}/get",
-      summary: "Get an instance by ID",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/instance/{id}/get",
+        summary: "Get an instance by ID",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(z.object(selectInstanceSchema.shape))
     .errors({
@@ -332,14 +339,16 @@ export const instanceRouter = {
     }),
 
   list: protectedProcedure
-    .route({
-      description:
-        "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
-      method: "GET",
-      path: "/instance/list",
-      summary: "List an organization's instances",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        description:
+          "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
+        method: "GET",
+        path: "/instance/list",
+        summary: "List an organization's instances",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ organizationId: z.string().optional() }))
     .output(z.array(selectInstanceSchema).nullable())
     .errors({
@@ -369,12 +378,14 @@ export const instanceRouter = {
     }),
 
   restart: protectedProcedure
-    .route({
-      method: "POST",
-      path: "/instance/{id}/restart",
-      summary: "Restart an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/instance/{id}/restart",
+        summary: "Restart an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .errors({
@@ -405,12 +416,14 @@ export const instanceRouter = {
     }),
 
   shutdown: protectedProcedure
-    .route({
-      method: "POST",
-      path: "/instance/{id}/shutdown",
-      summary: "Shutdown an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/instance/{id}/shutdown",
+        summary: "Shutdown an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .errors({
@@ -438,12 +451,14 @@ export const instanceRouter = {
     }),
 
   start: protectedProcedure
-    .route({
-      method: "POST",
-      path: "/instance/{id}/start",
-      summary: "Start an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/instance/{id}/start",
+        summary: "Start an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .errors({
@@ -474,12 +489,14 @@ export const instanceRouter = {
     }),
 
   stop: protectedProcedure
-    .route({
-      method: "POST",
-      path: "/instance/{id}/stop",
-      summary: "Stop an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/instance/{id}/stop",
+        summary: "Stop an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .errors({
@@ -507,12 +524,14 @@ export const instanceRouter = {
     }),
 
   update: protectedProcedure
-    .route({
-      method: "PUT",
-      path: "/instance/{id}",
-      summary: "Update an instance",
-      tags: ["Instances"],
-    })
+    .meta(
+      openapi({
+        method: "PUT",
+        path: "/instance/{id}",
+        summary: "Update an instance",
+        tags: ["Instances"],
+      }),
+    )
     .input(
       z.object(
         insertInstanceSchema.pick({
