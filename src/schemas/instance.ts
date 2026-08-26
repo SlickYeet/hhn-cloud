@@ -18,8 +18,8 @@ const instanceSchemaConstraints = {
     .max(1024 * 64),
   pveVmid: z
     .int()
-    .min(env.PROXMOX_CLOUD_VM_VMID_RANGE[0])
-    .max(env.PROXMOX_CLOUD_VM_VMID_RANGE[1]),
+    .min(env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[0])
+    .max(env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[1]),
   // TODO: swap to .uuid()
   templateId: z.string(),
   updatedAt: z.coerce.date().optional(),

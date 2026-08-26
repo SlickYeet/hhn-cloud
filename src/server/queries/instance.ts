@@ -5,7 +5,8 @@ import { env } from "@/env"
 import type { db } from "@/server/db"
 import { instanceTable } from "@/server/db/schema"
 
-const PROXMOX_CLOUD_VM_VMID_RANGE = env.PROXMOX_CLOUD_VM_VMID_RANGE
+const NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE =
+  env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE
 
 export async function getNextVmid(
   proxmox: Proxmox.Api,
@@ -29,8 +30,8 @@ export async function getNextVmid(
     }
 
     for (
-      let vmid = PROXMOX_CLOUD_VM_VMID_RANGE[0];
-      vmid <= PROXMOX_CLOUD_VM_VMID_RANGE[1];
+      let vmid = NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[0];
+      vmid <= NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[1];
       vmid++
     ) {
       const [instance] = await tx

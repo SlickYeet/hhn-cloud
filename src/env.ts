@@ -23,6 +23,12 @@ const createVmidRangeSchema = (key: string) =>
 export const env = createEnv({
   client: {
     NEXT_PUBLIC_OAUTH_PROVIDER_ID: z.string(),
+    NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE: createVmidRangeSchema(
+      "NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE",
+    ),
+    NEXT_PUBLIC_PROXMOX_TEMPLATE_VMID_RANGE: createVmidRangeSchema(
+      "NEXT_PUBLIC_PROXMOX_TEMPLATE_VMID_RANGE",
+    ),
     NEXT_PUBLIC_URL: z.url(),
   },
   emptyStringAsUndefined: true,
@@ -31,6 +37,10 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     ENCRYPTION_KEY_V1: process.env.ENCRYPTION_KEY_V1,
     NEXT_PUBLIC_OAUTH_PROVIDER_ID: process.env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
+    NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE:
+      process.env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE,
+    NEXT_PUBLIC_PROXMOX_TEMPLATE_VMID_RANGE:
+      process.env.NEXT_PUBLIC_PROXMOX_TEMPLATE_VMID_RANGE,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
     NODE_ENV: process.env.NODE_ENV,
     OAUTH_CLIENT_ID: process.env.OAUTH_CLIENT_ID,
@@ -41,11 +51,9 @@ export const env = createEnv({
     OPNSENSE_API_SECRET: process.env.OPNSENSE_API_SECRET,
     OPNSENSE_CLOUD_NETWORK_VLAN_ID: process.env.OPNSENSE_CLOUD_NETWORK_VLAN_ID,
     OPNSENSE_SUBNET_UUID: process.env.OPNSENSE_SUBNET_UUID,
-    PROXMOX_CLOUD_VM_VMID_RANGE: process.env.PROXMOX_CLOUD_VM_VMID_RANGE,
     PROXMOX_HOST: process.env.PROXMOX_HOST,
     PROXMOX_NODE: process.env.PROXMOX_NODE,
     PROXMOX_POOL: process.env.PROXMOX_POOL,
-    PROXMOX_TEMPLATE_VMID_RANGE: process.env.PROXMOX_TEMPLATE_VMID_RANGE,
     PROXMOX_TOKEN_ID: process.env.PROXMOX_TOKEN_ID,
     PROXMOX_TOKEN_SECRET: process.env.PROXMOX_TOKEN_SECRET,
     REDIS_URL: process.env.REDIS_URL,
@@ -65,15 +73,9 @@ export const env = createEnv({
     OPNSENSE_API_SECRET: z.string(),
     OPNSENSE_CLOUD_NETWORK_VLAN_ID: z.string(),
     OPNSENSE_SUBNET_UUID: z.uuid(),
-    PROXMOX_CLOUD_VM_VMID_RANGE: createVmidRangeSchema(
-      "PROXMOX_CLOUD_VM_VMID_RANGE",
-    ),
     PROXMOX_HOST: z.string(),
     PROXMOX_NODE: z.string(),
     PROXMOX_POOL: z.string(),
-    PROXMOX_TEMPLATE_VMID_RANGE: createVmidRangeSchema(
-      "PROXMOX_TEMPLATE_VMID_RANGE",
-    ),
     PROXMOX_TOKEN_ID: z.string(),
     PROXMOX_TOKEN_SECRET: z.string(),
     REDIS_URL: z.url(),
