@@ -1,6 +1,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
+import { RESOURCE_PLANS_ENUM } from "@/constants/resource-plans"
 import { env } from "@/env"
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
@@ -57,6 +58,7 @@ export const createInstanceSchema = insertInstanceSchema
     updatedAt: true,
   })
   .extend({
+    plan: RESOURCE_PLANS_ENUM,
     sshKeyId: z.string(),
     // inject a custom templateId to allow both uuid and slug
     templateId: z.union([z.uuid(), z.string()]),

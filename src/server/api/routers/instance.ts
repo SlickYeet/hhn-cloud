@@ -3,6 +3,7 @@ import { openapi } from "@orpc/openapi"
 import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
+import { RESOURCE_PLANS } from "@/constants/resource-plans"
 import { env } from "@/env"
 import {
   encryptPassword,
@@ -26,7 +27,6 @@ import { isUniqueConstraintError } from "@/server/db/utils"
 import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
-import { resolveTemplate } from "@/server/queries/template"
 import { createDhcpReservation } from "@/server/services/network"
 import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
 import { addProvisionJob } from "@/server/workers/provision-queue"
@@ -80,7 +80,12 @@ export const instanceRouter = {
       const macAddress = generateMacAddress()
       const rootPassword = generateRootPassword()
 
-      const template = await resolveTemplate(input.templateId, errors)
+      const plan = RESOURCE_PLANS.find((p) => p.id === input.plan)
+      if (!plan) {
+        throw errors.BAD_REQUEST({
+          message: `Invalid plan: ${input.plan}`,
+        })
+      }
 
       const [sshKey] = await context.db
         .select()
@@ -109,18 +114,18 @@ export const instanceRouter = {
         const instanceRow = await tx
           .insert(instanceTable)
           .values({
-            cores: template.cores,
-            disk: template.disk,
+            cores: plan.cores,
+            disk: plan.disk,
             hostname: input.hostname,
             id: randomUUID(),
-            memory: template.memory,
+            memory: plan.memory,
             networkId: network.id,
             organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             rootPassword: encryptPassword(rootPassword),
             status: "queued",
-            templateId: template.id,
+            templateId: input.templateId,
           })
           .returning()
           .catch((error) => {
@@ -193,9 +198,9 @@ export const instanceRouter = {
         instanceId: instance.id,
         macAddress,
         network,
+        plan,
         rootPassword,
         sshKeyId: input.sshKeyId,
-        template,
       })
 
       if (!jobId) {

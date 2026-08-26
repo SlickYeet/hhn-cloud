@@ -50,9 +50,9 @@ const provisionWorker = new Worker(
         macAddress: data.macAddress,
         network: data.network,
         nextVmid: instance.pveVmid,
+        plan: data.plan,
         rootPassword: data.rootPassword,
         sshKeyId: data.sshKeyId,
-        template,
       })
 
       // log new progress

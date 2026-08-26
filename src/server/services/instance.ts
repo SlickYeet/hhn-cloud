@@ -1,9 +1,8 @@
 import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
-import type * as z from "zod"
 
+import type { ResourcePlan } from "@/constants/resource-plans"
 import { env } from "@/env"
-import type { selectTemplateSchema } from "@/schemas/template"
 import { db } from "@/server/db"
 import { sshKeyTable } from "@/server/db/schema"
 
@@ -37,12 +36,12 @@ export async function cloneInstance(
 export async function configureInstance(
   proxmox: Proxmox.Api,
   data: {
-    template: z.infer<typeof selectTemplateSchema>
     nextVmid: number
     network: {
       gateway: string
       ip: string
     }
+    plan: ResourcePlan
     rootPassword: string
     sshKeyId: string
     macAddress: string
@@ -64,10 +63,10 @@ export async function configureInstance(
     cipassword: data.rootPassword,
     ciupgrade: true,
     ciuser: "root",
-    cores: data.template.cores,
-    description: `Cloud instance created from template ${data.template.name}`,
+    cores: data.plan.cores,
+    description: `Cloud instance created from template ${data.plan.name}`,
     ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
-    memory: String(data.template.memory),
+    memory: String(data.plan.memory),
     nameserver: data.network.gateway,
     net0: `virtio,bridge=vmbr0,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
     searchdomain: "local", // TODO: make configurable
@@ -82,7 +81,7 @@ export async function configureInstance(
   const upid = await proxmox.nodes
     .$(PROXMOX_DEFAULT_NODE)
     .qemu.$(data.nextVmid)
-    .resize.$put({ disk: "scsi0", size: `${data.template.disk}G` })
+    .resize.$put({ disk: "scsi0", size: `${data.plan.disk}G` })
 
   if (!upid) {
     throw new Error(`Failed to configure instance with vmid ${data.nextVmid}`)
