@@ -1,12 +1,12 @@
-import { IconCirclePlus, IconServer2 } from "@tabler/icons-react"
+import { IconServer2 } from "@tabler/icons-react"
 import { noop } from "@tanstack/react-query"
 import { redirect } from "next/navigation"
 
 import { HydrateClient } from "@/components/providers/hydrate-client"
 import { getQueryClient } from "@/components/providers/query-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
 import { api } from "@/lib/api/client"
+import { CreateInstanceModal } from "@/modules/dashboard/ui/create-instance-modal"
 import { InstanceList } from "@/modules/dashboard/ui/instance-list"
 import { getSession } from "@/server/auth/utils"
 
@@ -21,6 +21,8 @@ export default async function Page() {
   await queryClient
     .query(api.instance.list.queryOptions({ input: { organizationId } }))
     .catch(noop)
+  await queryClient.query(api.template.list.queryOptions()).catch(noop)
+  await queryClient.query(api.sshKey.list.queryOptions()).catch(noop)
 
   return (
     <main className="relative z-1 size-full flex-1 before:absolute before:inset-x-0 before:top-0 before:-z-1 before:h-105 before:bg-primary">
@@ -41,10 +43,7 @@ export default async function Page() {
             </div>
           </div>
           <div>
-            <Button size="lg" variant="secondary">
-              <IconCirclePlus />
-              New instance
-            </Button>
+            <CreateInstanceModal organizationId={organizationId} />
           </div>
         </div>
 
