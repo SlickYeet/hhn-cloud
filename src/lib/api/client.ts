@@ -16,12 +16,13 @@ const link = new RPCLink({
     const { headers } = await import("next/headers")
     return await headers()
   },
-  url: () => {
+  origin: () => {
     if (typeof window === "undefined") {
-      throw new Error("RPCLink is not allowed on the server side.")
+      throw new Error("This link is not allowed on the server side.")
     }
-    return `${getBaseUrl()}/api/orpc`
+    return getBaseUrl()
   },
+  url: "/rpc",
 })
 
 export const client: RouterClient<typeof router> =

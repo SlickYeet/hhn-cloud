@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
 import { selectNetworkSchema } from "@/schemas/network"
@@ -32,12 +33,14 @@ const mockNetworks: z.infer<typeof selectNetworkSchema>[] = [
 
 export const networkRouter = {
   list: publicProcedure
-    .route({
-      method: "GET",
-      path: "/networks",
-      summary: "List all networks",
-      tags: ["Networks"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/networks",
+        summary: "List all networks",
+        tags: ["Networks"],
+      }),
+    )
     .output(z.array(selectNetworkSchema))
     .errors({
       NOT_FOUND: {

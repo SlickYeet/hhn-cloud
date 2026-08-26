@@ -1,14 +1,26 @@
 import { IconCirclePlus, IconServer2 } from "@tabler/icons-react"
+import { noop } from "@tanstack/react-query"
 import { redirect } from "next/navigation"
 
+import { HydrateClient } from "@/components/providers/hydrate-client"
+import { getQueryClient } from "@/components/providers/query-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { api } from "@/lib/api/client"
+import { InstanceList } from "@/modules/dashboard/ui/instance-list"
 import { getSession } from "@/server/auth/utils"
 
 export default async function Page() {
   const session = await getSession()
   if (!session?.user) return redirect("/auth/sign-in")
+
+  const organizationId =
+    session.session.activeOrganizationId || session.user.defaultOrganizationId
+
+  const queryClient = getQueryClient()
+  await queryClient
+    .query(api.instance.list.queryOptions({ input: { organizationId } }))
+    .catch(noop)
 
   return (
     <main className="relative z-1 size-full flex-1 before:absolute before:inset-x-0 before:top-0 before:-z-1 before:h-105 before:bg-primary">
@@ -36,11 +48,9 @@ export default async function Page() {
           </div>
         </div>
 
-        <Card>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">No instances found.</p>
-          </CardContent>
-        </Card>
+        <HydrateClient>
+          <InstanceList organizationId={organizationId} />
+        </HydrateClient>
       </div>
     </main>
   )

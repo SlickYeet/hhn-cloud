@@ -1,3 +1,4 @@
+import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
 import { selectTemplateSchema } from "@/schemas/template"
@@ -72,12 +73,14 @@ const mockTemplates: z.infer<typeof selectTemplateSchema>[] = [
 
 export const templateRouter = {
   get: publicProcedure
-    .route({
-      method: "GET",
-      path: "/template/{id}",
-      summary: "Get a template by ID",
-      tags: ["Templates"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/template/{id}",
+        summary: "Get a template by ID",
+        tags: ["Templates"],
+      }),
+    )
     .input(z.object({ id: z.string() }))
     .output(selectTemplateSchema)
     .errors({
@@ -101,12 +104,14 @@ export const templateRouter = {
     }),
 
   list: publicProcedure
-    .route({
-      method: "GET",
-      path: "/templates",
-      summary: "List all templates",
-      tags: ["Templates"],
-    })
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/templates",
+        summary: "List all templates",
+        tags: ["Templates"],
+      }),
+    )
     .output(z.array(selectTemplateSchema))
     .errors({
       NOT_FOUND: {

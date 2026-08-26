@@ -12,5 +12,3 @@ globalThis.$client = createRouterClient(router, {
       headers: await headers(),
     }),
 })
-
-export const api = globalThis.$client

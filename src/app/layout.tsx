@@ -1,3 +1,5 @@
+import "@/lib/api/server"
+
 import type { Metadata } from "next"
 import { Roboto_Mono, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
@@ -7,7 +9,6 @@ import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
 import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
-import "@/lib/api/server"
 
 const sourceCodePro = Source_Code_Pro({
   subsets: [

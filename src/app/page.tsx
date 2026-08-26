@@ -4,7 +4,7 @@ import Link from "next/link"
 
 import { APIKey } from "@/components/api-key"
 import { Org } from "@/components/org"
-import { api } from "@/lib/api/server"
+import { api } from "@/lib/api/client"
 import { auth } from "@/server/auth"
 
 export default async function Page() {
@@ -14,7 +14,7 @@ export default async function Page() {
 
   const organizationId = session?.session?.activeOrganizationId || ""
   const instances = session?.session
-    ? await api.instance.list({ organizationId })
+    ? await api.instance.list.call({ organizationId })
     : null
 
   return (
