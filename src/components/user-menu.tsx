@@ -2,11 +2,16 @@
 
 import {
   IconCirclePlus,
+  IconDeviceLaptop,
   IconLogout,
+  IconMoon,
   IconSettings,
+  IconSun,
+  IconSunMoon,
   IconUser,
   IconUsers,
 } from "@tabler/icons-react"
+import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -18,10 +23,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { authClient } from "@/lib/auth/client"
 import type { User } from "@/server/auth/utils"
 
+const THEME_TOGGLE_ITEMS = [
+  { icon: IconSun, label: "Light", value: "light" },
+  { icon: IconMoon, label: "Dark", value: "dark" },
+  { icon: IconDeviceLaptop, label: "System", value: "system" },
+]
+
 export function UserMenu({ user }: { user: User }) {
+  const { theme, setTheme } = useTheme()
+
   async function handleSignOut() {
     await authClient.signOut()
   }
@@ -72,6 +86,41 @@ export function UserMenu({ user }: { user: User }) {
             <IconSettings />
             <span>Settings</span>
           </DropdownMenuItem>
+          <div className="flex select-none items-center justify-between gap-2 px-3 py-2">
+            <div className="flex flex-1 items-center gap-2">
+              <IconSunMoon className="size-4" />
+              <span>Theme</span>
+            </div>
+            <ToggleGroup className="overflow-hidden rounded-full bg-primary/10 p-0.5">
+              {THEME_TOGGLE_ITEMS.map((item) => {
+                const Icon = item.icon
+                return (
+                  <ToggleGroupItem
+                    aria-label={`Toggle ${item.label}`}
+                    className="relative inline-flex size-6 min-w-6 cursor-pointer items-center justify-center whitespace-nowrap px-0! outline-none hover:bg-transparent focus-visible:ring-[3px] data-pressed:bg-transparent! [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                    data-pressed={item.value === theme}
+                    key={item.value}
+                    onClick={() => setTheme(item.value)}
+                    value={item.value}
+                  >
+                    <div
+                      className="flex h-full w-full items-center justify-center text-foreground **:data-[slot=active-toggle-group-item]:rounded-full! **:data-[slot=active-toggle-group-item]:bg-background"
+                      data-slot="toggle-group-item-motion"
+                    >
+                      <span className="z-1">
+                        <Icon className="size-3.5 text-primary" />
+                      </span>
+                      <span
+                        className="absolute inset-0 z-0 rounded-md"
+                        data-slot="active-toggle-group-item"
+                        style={{ opacity: item.value === theme ? 1 : 0 }}
+                      />
+                    </div>
+                  </ToggleGroupItem>
+                )
+              })}
+            </ToggleGroup>
+          </div>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
