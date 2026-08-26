@@ -8,10 +8,10 @@ import {
   IconMenu,
   IconServer2,
 } from "@tabler/icons-react"
-import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { Icons } from "@/components/icons"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,7 +52,7 @@ export function DashboardHeader({ session }: { session: Session }) {
             </Button>
             <Link href="/dashboard">
               <div className="flex items-center">
-                <Image alt={APP_NAME} height={32} src="/logo.svg" width={32} />
+                <Icons.logo className="size-8" />
                 <span className="ml-2.5 hidden font-semibold text-xl sm:block">
                   {APP_NAME}
                 </span>

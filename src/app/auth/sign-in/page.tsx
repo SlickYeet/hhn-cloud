@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 import * as React from "react"
 
+import { Icons } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
@@ -107,7 +108,7 @@ export default function Page() {
             className="flex items-center gap-2.5 rounded-lg outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
             href="/"
           >
-            <Image alt="Logo" height={24} src="../../icon0.svg" width={24} />
+            <Icons.logo className="size-6" />
             <span className="font-semibold text-base tracking-tight">
               {APP_NAME}
             </span>
