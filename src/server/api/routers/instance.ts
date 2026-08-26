@@ -367,7 +367,8 @@ export const instanceRouter = {
           rootPassword: false,
         },
         orderBy: (instances, { desc }) => desc(instances.createdAt),
-        where: (i, { eq }) => eq(i.organizationId, organizationId),
+        where: (i, { and, eq }) =>
+          and(eq(i.organizationId, organizationId), isNull(i.deletedAt)),
         with: {
           ipAllocations: true,
           sshKeys: true,
