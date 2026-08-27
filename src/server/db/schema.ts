@@ -111,6 +111,33 @@ export const operatingSystemTable = createTable(
   ],
 )
 
+export const resourcePlanStatusEnum = pgEnum("resource_plan_status", [
+  "active",
+  "inactive",
+  "deleted",
+])
+
+export const resourcePlanTable = createTable(
+  "resource_plan",
+  (d) => ({
+    cores: d.integer("cores").notNull(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    description: d.text("description").notNull(),
+    disk: d.integer("disk").notNull(),
+    id: d.text("id").primaryKey(),
+    memory: d.integer("memory").notNull(),
+    name: d.text("name").notNull(),
+    slug: d.text("slug").unique().notNull(),
+    status: resourcePlanStatusEnum("status").notNull(),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  }),
+  (t) => [index("resource_plan_slug_idx").on(t.slug)],
+)
+
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
   "provisioning",
@@ -147,6 +174,10 @@ export const instanceTable = createTable(
       .references(() => organization.id, { onDelete: "cascade" }),
     pveNode: d.text("pve_node").notNull(),
     pveVmid: d.integer("pve_vmid").unique().notNull(),
+    resourcePlanId: d
+      .text("resource_plan_id")
+      .notNull()
+      .references(() => resourcePlanTable.id, { onDelete: "restrict" }),
     rootPassword: d.text("root_password").notNull(),
     status: instanceStatusEnum("status").notNull(),
     updatedAt: d
@@ -160,6 +191,7 @@ export const instanceTable = createTable(
     index("instance_organizationId_idx").on(t.organizationId),
     index("instance_pveNode_idx").on(t.pveNode),
     index("instance_pveVmid_idx").on(t.pveVmid),
+    index("instance_resourcePlanId_idx").on(t.resourcePlanId),
   ],
 )
 
@@ -452,6 +484,10 @@ export const instanceRelations = relations(instanceTable, ({ one, many }) => ({
     fields: [instanceTable.organizationId],
     references: [organization.id],
   }),
+  resourcePlan: one(resourcePlanTable, {
+    fields: [instanceTable.resourcePlanId],
+    references: [resourcePlanTable.id],
+  }),
   sshKeys: many(instanceSshKeyTable),
 }))
 
@@ -494,6 +530,13 @@ export const operatingSystemRelations = relations(
       fields: [operatingSystemTable.releaseId],
       references: [operatingSystemReleaseTable.id],
     }),
+  }),
+)
+
+export const resourcePlanRelations = relations(
+  resourcePlanTable,
+  ({ many }) => ({
+    instances: many(instanceTable),
   }),
 )
 
