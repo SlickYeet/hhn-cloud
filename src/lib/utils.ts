@@ -14,8 +14,9 @@ import type { ClassValue } from "clsx"
 import { clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
-import type { ResourcePlan } from "@/constants/resource-plans"
+import { Icons } from "@/components/icons"
 import { env } from "@/env"
+import type { ResourcePlan } from "@/schemas/resource-plan"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -43,6 +44,17 @@ export function getResourcePlanIcon(planId: ResourcePlan["id"]) {
       return IconStack3Filled
     default:
       return IconStack
+  }
+}
+
+export function getOperatingSystemCategoryIcon(category: string | undefined) {
+  switch (category?.toLowerCase()) {
+    case "linux":
+      return Icons.linux
+    case "windows":
+      return Icons.windows
+    default:
+      return IconSquare
   }
 }
 
