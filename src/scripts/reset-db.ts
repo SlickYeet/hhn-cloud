@@ -10,7 +10,7 @@ async function main() {
   const redis = getRedisClient()
 
   try {
-    console.log("Resetting database...")
+    console.info("Resetting database...")
     await reset(db, schema)
     await redis.flushAll()
   } catch (error) {
@@ -21,7 +21,7 @@ async function main() {
 
 main()
   .then(() => {
-    console.log("Database reset successfully.")
+    console.info("Database reset successfully.")
     process.exit(0)
   })
   .catch((error) => {
