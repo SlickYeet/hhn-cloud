@@ -137,16 +137,14 @@ export async function stopInstanceIfRunning(
     instanceStatus = await getStatus()
   } catch (error) {
     if (isVmNotFoundError(error)) {
-      console.info(`Instance ${vmid} does not exist. Nothing to stop.`)
+      console.warn(`Instance ${vmid} does not exist.`)
       return
     }
     throw error
   }
 
   if (instanceStatus.status !== "running") {
-    console.info(
-      `Instance ${vmid} is not running (${instanceStatus.status}). Skipping.`,
-    )
+    console.warn(`Instance ${vmid} is not running (${instanceStatus.status}).`)
     return
   }
 
@@ -168,7 +166,7 @@ export async function destroyInstance(
     upid = await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).$delete()
   } catch (error) {
     if (isVmNotFoundError(error)) {
-      console.info(`Instance ${vmid} already destroyed.`)
+      console.warn(`Instance ${vmid} already destroyed.`)
       return
     }
     console.error(`Error destroying instance with vmid ${vmid}:`, error)
