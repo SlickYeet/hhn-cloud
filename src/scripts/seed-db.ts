@@ -8,8 +8,6 @@ import {
 } from "@/server/db/schema"
 
 async function main() {
-  console.info("Seeding database...")
-
   const [linuxCategory, windowsCategory] = await Promise.all([
     db
       .insert(operatingSystemCategoryTable)
@@ -91,11 +89,14 @@ async function main() {
       status: "inactive",
     },
   ])
-
-  console.info("Database seeded!")
 }
 
-main().catch((error) => {
-  console.error("Seeding database failed:", error)
-  process.exit(1)
-})
+main()
+  .then(() => {
+    console.info("Database seeded successfully.")
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error("Failed to seed database:", error)
+    process.exit(1)
+  })

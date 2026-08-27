@@ -1,12 +1,10 @@
-import { drizzle } from "drizzle-orm/postgres-js"
 import { reset } from "drizzle-seed"
 
-import { env } from "@/env"
 import { getRedisClient } from "@/lib/redis"
+import { db } from "@/server/db"
 import * as schema from "@/server/db/schema"
 
 async function main() {
-  const db = drizzle(env.DATABASE_URL)
   const redis = getRedisClient()
 
   try {
