@@ -3,7 +3,6 @@ import * as z from "zod"
 
 import { selectOperatingSystemSchema } from "@/schemas/operatingSystem"
 import { protectedProcedure } from "@/server/api/base"
-import { db } from "@/server/db"
 
 export const operatingSystemRouter = {
   get: protectedProcedure
@@ -25,19 +24,20 @@ export const operatingSystemRouter = {
         message: "Operating system not found",
       },
     })
-    .handler(async ({ errors, input }) => {
+    .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
-      const operatingSystem = await db.query.operatingSystemTable.findFirst({
-        where: (os, { eq }) => eq(os.id, input.id),
-        with: {
-          release: {
-            with: {
-              category: true,
+      const operatingSystem =
+        await context.db.query.operatingSystemTable.findFirst({
+          where: (os, { eq }) => eq(os.id, input.id),
+          with: {
+            release: {
+              with: {
+                category: true,
+              },
             },
           },
-        },
-      })
+        })
 
       if (!operatingSystem) throw errors.NOT_FOUND()
 
@@ -54,23 +54,19 @@ export const operatingSystemRouter = {
       }),
     )
     .output(z.array(selectOperatingSystemSchema))
-    .errors({
-      NOT_FOUND: {
-        message: "No operating systems found",
-      },
-    })
-    .handler(async ({ errors }) => {
-      const operatingSystems = await db.query.operatingSystemTable.findMany({
-        with: {
-          release: {
-            with: {
-              category: true,
+    .handler(async ({ context }) => {
+      const operatingSystems =
+        await context.db.query.operatingSystemTable.findMany({
+          with: {
+            release: {
+              with: {
+                category: true,
+              },
             },
           },
-        },
-      })
+        })
 
-      if (!operatingSystems) throw errors.NOT_FOUND()
+      if (!operatingSystems || operatingSystems.length === 0) return []
 
       return operatingSystems
     }),

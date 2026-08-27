@@ -15,14 +15,9 @@ export const resourcePlanRouter = {
       }),
     )
     .output(z.array(selectResourcePlanSchema))
-    .errors({
-      NOT_FOUND: {
-        message: "No resource plans found",
-      },
-    })
-    .handler(async ({ context, errors }) => {
+    .handler(async ({ context }) => {
       const resourcePlans = await context.db.query.resourcePlanTable.findMany()
-      if (!resourcePlans || resourcePlans.length === 0) throw errors.NOT_FOUND()
+      if (!resourcePlans || resourcePlans.length === 0) return []
       return resourcePlans
     }),
 }

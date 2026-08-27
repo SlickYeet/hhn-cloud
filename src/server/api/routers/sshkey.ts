@@ -2,58 +2,11 @@ import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
 import { insertSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
-import { publicProcedure } from "@/server/api/base"
-
-const mockSshKeys: z.infer<typeof selectSshKeySchema>[] = [
-  {
-    createdAt: new Date(),
-    fingerprint: "SHA256:abc123",
-    id: "1",
-    name: "SSH Key 1",
-    organizationId: "org1",
-    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC...",
-    updatedAt: new Date(),
-  },
-  {
-    createdAt: new Date(),
-    fingerprint: "SHA256:def456",
-    id: "2",
-    name: "SSH Key 2",
-    organizationId: "org1",
-    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD...",
-    updatedAt: new Date(),
-  },
-  {
-    createdAt: new Date(),
-    fingerprint: "SHA256:ghi789",
-    id: "3",
-    name: "SSH Key 3",
-    organizationId: "org2",
-    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQE...",
-    updatedAt: new Date(),
-  },
-  {
-    createdAt: new Date(),
-    fingerprint: "SHA256:jkl012",
-    id: "4",
-    name: "SSH Key 4",
-    organizationId: "org2",
-    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQF...",
-    updatedAt: new Date(),
-  },
-  {
-    createdAt: new Date(),
-    fingerprint: "SHA256:mno345",
-    id: "5",
-    name: "SSH Key 5",
-    organizationId: "org3",
-    publicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQG...",
-    updatedAt: new Date(),
-  },
-]
+import { protectedProcedure } from "@/server/api/base"
+import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 
 export const sshKeyRouter = {
-  create: publicProcedure
+  create: protectedProcedure
     .meta(
       openapi({
         method: "POST",
@@ -71,24 +24,16 @@ export const sshKeyRouter = {
       NOT_FOUND: {
         message: "SSH key not found",
       },
+      NOT_IMPLEMENTED: {
+        message: "Not implemented",
+      },
     })
     .handler(({ errors, input }) => {
       if (!input) throw errors.BAD_REQUEST()
-
-      const newSshKey = {
-        ...input,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
-      mockSshKeys.push(newSshKey)
-
-      if (!newSshKey.id) throw errors.NOT_FOUND()
-
-      return newSshKey
+      throw errors.NOT_IMPLEMENTED()
     }),
 
-  list: publicProcedure
+  list: protectedProcedure
     .meta(
       openapi({
         method: "GET",
@@ -99,13 +44,27 @@ export const sshKeyRouter = {
     )
     .output(z.array(selectSshKeySchema))
     .errors({
-      NOT_FOUND: {
-        message: "SSH keys not found",
+      BAD_REQUEST: {
+        message: "Invalid request",
       },
     })
-    .handler(({ errors }) => {
-      const sshKeys = mockSshKeys
-      if (!sshKeys) throw errors.NOT_FOUND()
+    .handler(async ({ context, errors }) => {
+      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+      const organizationId =
+        context.session.session.activeOrganizationId || apiKey?.referenceId
+      if (!organizationId) {
+        throw errors.BAD_REQUEST({
+          message: "No active organization found for the user",
+        })
+      }
+
+      const sshKeys = await context.db.query.sshKeyTable.findMany({
+        where: (sshKey, { eq }) => eq(sshKey.organizationId, organizationId),
+      })
+
+      if (!sshKeys || sshKeys.length === 0) return []
+
       return sshKeys
     }),
 }

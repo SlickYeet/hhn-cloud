@@ -374,11 +374,10 @@ export const instanceRouter = {
       BAD_REQUEST: {
         message: "Invalid request",
       },
-      NOT_FOUND: {
-        message: "No instances found",
-      },
     })
     .handler(async ({ context, errors, input }) => {
+      if (!input) throw errors.BAD_REQUEST()
+
       const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
 
       const organizationId = input?.organizationId || apiKey?.referenceId
@@ -397,7 +396,7 @@ export const instanceRouter = {
         },
       })
 
-      if (!instances || instances.length === 0) throw errors.NOT_FOUND()
+      if (!instances || instances.length === 0) return []
 
       return instances
     }),
