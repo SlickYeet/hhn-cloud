@@ -6,18 +6,18 @@ import { publicProcedure } from "@/server/api/base"
 
 const mockOperatingSystems: z.infer<typeof selectOperatingSystemSchema>[] = [
   {
-    category: {
-      createdAt: new Date(),
-      id: "1",
-      name: "linux",
-      updatedAt: new Date(),
-    },
     cloudInitEnabled: true,
     createdAt: new Date(),
     id: "1",
     name: "Ubuntu 22.04 LTS",
     pveVmid: 9000,
     release: {
+      category: {
+        createdAt: new Date(),
+        id: "1",
+        name: "linux",
+        updatedAt: new Date(),
+      },
       categoryId: "1",
       codename: "Jammy Jellyfish",
       createdAt: new Date(),
@@ -33,18 +33,18 @@ const mockOperatingSystems: z.infer<typeof selectOperatingSystemSchema>[] = [
     updatedAt: new Date(),
   },
   {
-    category: {
-      createdAt: new Date(),
-      id: "1",
-      name: "linux",
-      updatedAt: new Date(),
-    },
     cloudInitEnabled: true,
     createdAt: new Date(),
     id: "2",
     name: "Debian 11",
     pveVmid: 9001,
     release: {
+      category: {
+        createdAt: new Date(),
+        id: "1",
+        name: "linux",
+        updatedAt: new Date(),
+      },
       categoryId: "1",
       codename: "Bullseye",
       createdAt: new Date(),
@@ -60,18 +60,18 @@ const mockOperatingSystems: z.infer<typeof selectOperatingSystemSchema>[] = [
     updatedAt: new Date(),
   },
   {
-    category: {
-      createdAt: new Date(),
-      id: "1",
-      name: "linux",
-      updatedAt: new Date(),
-    },
     cloudInitEnabled: true,
     createdAt: new Date(),
     id: "3",
     name: "CentOS 8",
     pveVmid: 9002,
     release: {
+      category: {
+        createdAt: new Date(),
+        id: "1",
+        name: "linux",
+        updatedAt: new Date(),
+      },
       categoryId: "1",
       codename: "CentOS 8",
       createdAt: new Date(),
@@ -87,18 +87,18 @@ const mockOperatingSystems: z.infer<typeof selectOperatingSystemSchema>[] = [
     updatedAt: new Date(),
   },
   {
-    category: {
-      createdAt: new Date(),
-      id: "1",
-      name: "linux",
-      updatedAt: new Date(),
-    },
     cloudInitEnabled: true,
     createdAt: new Date(),
     id: "4",
     name: "Fedora 36",
     pveVmid: 9003,
     release: {
+      category: {
+        createdAt: new Date(),
+        id: "1",
+        name: "linux",
+        updatedAt: new Date(),
+      },
       categoryId: "1",
       codename: "Fedora 36",
       createdAt: new Date(),
@@ -114,18 +114,18 @@ const mockOperatingSystems: z.infer<typeof selectOperatingSystemSchema>[] = [
     updatedAt: new Date(),
   },
   {
-    category: {
-      createdAt: new Date(),
-      id: "2",
-      name: "windows",
-      updatedAt: new Date(),
-    },
     cloudInitEnabled: true,
     createdAt: new Date(),
     id: "5",
     name: "Windows Server 2022",
     pveVmid: 9004,
     release: {
+      category: {
+        createdAt: new Date(),
+        id: "2",
+        name: "windows",
+        updatedAt: new Date(),
+      },
       categoryId: "2",
       codename: "Windows Server 2022",
       createdAt: new Date(),

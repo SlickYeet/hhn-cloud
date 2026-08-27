@@ -19,13 +19,6 @@ const operatingSystemSchemaConstraints = {
   updatedAt: z.coerce.date().optional(),
 }
 
-export const selectOperatingSystemReleaseSchema = createSelectSchema(
-  operatingSystemReleaseTable,
-  {
-    createdAt: z.coerce.date().optional(),
-    updatedAt: z.coerce.date().optional(),
-  },
-)
 export const selectOperatingSystemCategorySchema = createSelectSchema(
   operatingSystemCategoryTable,
   {
@@ -33,6 +26,15 @@ export const selectOperatingSystemCategorySchema = createSelectSchema(
     updatedAt: z.coerce.date().optional(),
   },
 )
+export const selectOperatingSystemReleaseSchema = createSelectSchema(
+  operatingSystemReleaseTable,
+  {
+    createdAt: z.coerce.date().optional(),
+    updatedAt: z.coerce.date().optional(),
+  },
+).extend({
+  category: selectOperatingSystemCategorySchema.optional(),
+})
 
 export const insertOperatingSystemSchema = createInsertSchema(
   operatingSystemTable,
@@ -42,6 +44,5 @@ export const selectOperatingSystemSchema = createSelectSchema(
   operatingSystemTable,
   operatingSystemSchemaConstraints,
 ).extend({
-  category: selectOperatingSystemCategorySchema.optional(),
   release: selectOperatingSystemReleaseSchema.optional(),
 })
