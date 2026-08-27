@@ -17,7 +17,6 @@ const instanceSchemaConstraints = {
     .int()
     .min(512)
     .max(1024 * 64),
-  operatingSystemId: z.uuid(),
   pveVmid: z
     .int()
     .min(env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[0])
