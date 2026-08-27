@@ -21,7 +21,7 @@ export default async function Page() {
   await queryClient
     .query(api.instance.list.queryOptions({ input: { organizationId } }))
     .catch(noop)
-  await queryClient.query(api.template.list.queryOptions()).catch(noop)
+  await queryClient.query(api.operatingSystem.list.queryOptions()).catch(noop)
   await queryClient.query(api.sshKey.list.queryOptions()).catch(noop)
 
   return (

@@ -17,12 +17,11 @@ const instanceSchemaConstraints = {
     .int()
     .min(512)
     .max(1024 * 64),
+  operatingSystemId: z.uuid(),
   pveVmid: z
     .int()
     .min(env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[0])
     .max(env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[1]),
-  // TODO: swap to .uuid()
-  templateId: z.string(),
   updatedAt: z.coerce.date().optional(),
 }
 
@@ -49,17 +48,17 @@ export const createInstanceSchema = insertInstanceSchema
     id: true,
     memory: true,
     networkId: true,
+    operatingSystemId: true,
     organizationId: true,
     pveNode: true,
     pveVmid: true,
     rootPassword: true,
     status: true,
-    templateId: true,
     updatedAt: true,
   })
   .extend({
+    // inject a custom operatingSystemId to allow both uuid and slug
+    operatingSystemId: z.union([z.uuid(), z.string()]),
     plan: RESOURCE_PLANS_ENUM,
     sshKeyId: z.string(),
-    // inject a custom templateId to allow both uuid and slug
-    templateId: z.union([z.uuid(), z.string()]),
   })

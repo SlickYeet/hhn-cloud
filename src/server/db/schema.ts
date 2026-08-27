@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm"
-import { index, pgEnum, pgTableCreator, uniqueIndex } from "drizzle-orm/pg-core"
+import {
+  foreignKey,
+  index,
+  pgEnum,
+  pgTableCreator,
+  unique,
+  uniqueIndex,
+} from "drizzle-orm/pg-core"
 
 export const createTable = pgTableCreator((name) => name)
 
@@ -27,38 +34,80 @@ export const sshKeyTable = createTable(
   ],
 )
 
-export const templateStatusEnum = pgEnum("template_status", [
+export const operatingSystemCategoryTable = createTable(
+  "operating_system_category",
+  (d) => ({
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    id: d.text("id").primaryKey(),
+    name: d.text("name").unique().notNull(),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  }),
+)
+
+export const operatingSystemReleaseTable = createTable(
+  "operating_system_release",
+  (d) => ({
+    categoryId: d.text("category_id").notNull(),
+    codename: d.text("codename"), // e.g., "Resolute Raccoon", "Bookworm"
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    family: d.text("family").notNull(), // e.g., "Ubuntu", "Debian"
+    id: d.text("id").primaryKey(),
+    isLts: d.boolean("is_lts").default(false).notNull(),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    version: d.text("version").notNull(), // e.g., "26.04", "12"
+  }),
+  (t) => [
+    index("os_release_category_idx").on(t.categoryId),
+    index("os_release_family_version_idx").on(t.family, t.version),
+    unique("os_release_family_version_uniq").on(t.family, t.version),
+    foreignKey({
+      columns: [t.categoryId],
+      foreignColumns: [operatingSystemCategoryTable.id],
+      name: "os_release_category_fk",
+    }),
+  ],
+)
+
+export const operatingSystemStatusEnum = pgEnum("operating_system_status", [
   "active",
   "inactive",
   "deleted",
 ])
 
-export const templateTable = createTable(
-  "template",
+export const operatingSystemTable = createTable(
+  "operating_system",
   (d) => ({
     cloudInitEnabled: d.boolean("cloud_init_enabled").default(false).notNull(),
-    cores: d.integer("cores").notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    description: d.text("description"),
-    disk: d.integer("disk").notNull(),
     id: d.text("id").primaryKey(),
-    memory: d.integer("memory").notNull(),
-    name: d.text("name").unique().notNull(),
-    os: d.text("os").notNull(),
+    name: d.text("name").notNull(), // e.g., "Ubuntu 26.04 LTS", "Debian 12"
     pveVmid: d.integer("pve_vmid").unique().notNull(),
+    releaseId: d.text("release_id").notNull(),
     slug: d.text("slug").unique().notNull(),
-    status: templateStatusEnum("status").notNull(),
+    status: operatingSystemStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
-    version: d.text("version").notNull(),
   }),
   (t) => [
-    index("template_name_idx").on(t.name),
-    index("template_pveVmid_idx").on(t.pveVmid),
-    index("template_description_idx").on(t.description),
+    index("operating_system_name_idx").on(t.name),
+    index("operating_system_release_idx").on(t.releaseId),
+    index("operating_system_pveVmid_idx").on(t.pveVmid),
+    foreignKey({
+      columns: [t.releaseId],
+      foreignColumns: [operatingSystemReleaseTable.id],
+      name: "os_template_release_fk",
+    }).onDelete("restrict"),
   ],
 )
 
@@ -88,6 +137,10 @@ export const instanceTable = createTable(
       .text("network_id")
       .notNull()
       .references(() => networkTable.id, { onDelete: "cascade" }),
+    operatingSystemId: d
+      .text("operating_system_id")
+      .notNull()
+      .references(() => operatingSystemTable.id, { onDelete: "restrict" }),
     organizationId: d
       .text("organization_id")
       .notNull()
@@ -96,10 +149,6 @@ export const instanceTable = createTable(
     pveVmid: d.integer("pve_vmid").unique().notNull(),
     rootPassword: d.text("root_password").notNull(),
     status: instanceStatusEnum("status").notNull(),
-    templateId: d
-      .text("template_id")
-      .notNull()
-      .references(() => templateTable.id, { onDelete: "restrict" }),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()
@@ -395,15 +444,15 @@ export const instanceRelations = relations(instanceTable, ({ one, many }) => ({
     fields: [instanceTable.networkId],
     references: [networkTable.id],
   }),
+  operatingSystem: one(operatingSystemTable, {
+    fields: [instanceTable.operatingSystemId],
+    references: [operatingSystemTable.id],
+  }),
   organization: one(organization, {
     fields: [instanceTable.organizationId],
     references: [organization.id],
   }),
   sshKeys: many(instanceSshKeyTable),
-  template: one(templateTable, {
-    fields: [instanceTable.templateId],
-    references: [templateTable.id],
-  }),
 }))
 
 export const instanceSshKeyRelations = relations(
@@ -420,9 +469,33 @@ export const instanceSshKeyRelations = relations(
   }),
 )
 
-export const templateRelations = relations(templateTable, ({ many }) => ({
-  instances: many(instanceTable),
-}))
+export const operatingSystemCategoryRelations = relations(
+  operatingSystemCategoryTable,
+  ({ many }) => ({
+    releases: many(operatingSystemReleaseTable),
+  }),
+)
+
+export const operatingSystemReleaseRelations = relations(
+  operatingSystemReleaseTable,
+  ({ one, many }) => ({
+    category: one(operatingSystemCategoryTable, {
+      fields: [operatingSystemReleaseTable.categoryId],
+      references: [operatingSystemCategoryTable.id],
+    }),
+    templates: many(operatingSystemTable),
+  }),
+)
+
+export const operatingSystemRelations = relations(
+  operatingSystemTable,
+  ({ one }) => ({
+    release: one(operatingSystemReleaseTable, {
+      fields: [operatingSystemTable.releaseId],
+      references: [operatingSystemReleaseTable.id],
+    }),
+  }),
+)
 
 export const ipAllocationRelations = relations(
   ipAllocationTable,

@@ -32,17 +32,17 @@ const provisionWorker = new Worker(
 
       if (!instance) throw new Error("Instance not found")
 
-      const template = await db.query.templateTable.findFirst({
-        where: (t, { eq }) => eq(t.id, instance.templateId),
+      const operatingSystem = await db.query.operatingSystemTable.findFirst({
+        where: (t, { eq }) => eq(t.id, instance.operatingSystemId),
       })
 
-      if (!template) throw new Error("Template not found")
+      if (!operatingSystem) throw new Error("Operating system not found")
 
       // TODO: log new progress
       await cloneInstance(proxmox, {
         hostname: instance.hostname,
         nextVmid: instance.pveVmid,
-        templateVmid: template.pveVmid,
+        osVmid: operatingSystem.pveVmid,
       })
 
       // log new progress

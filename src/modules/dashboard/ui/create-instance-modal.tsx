@@ -60,15 +60,19 @@ export function CreateInstanceModal({
   const form = useForm<z.infer<typeof createInstanceSchema>>({
     defaultValues: {
       hostname: "",
+      operatingSystemId: undefined,
       plan: undefined,
       sshKeyId: undefined,
-      templateId: undefined,
     },
     resolver: zodResolver(createInstanceSchema),
   })
 
-  const { data: templates } = useQuery(api.template.list.queryOptions())
+  const { data: operatingSystems } = useQuery(
+    api.operatingSystem.list.queryOptions(),
+  )
   const { data: sshKeys } = useQuery(api.sshKey.list.queryOptions())
+
+  console.log("operatingSystems", operatingSystems)
 
   const mutation = useMutation(
     api.instance.create.mutationOptions({
@@ -176,7 +180,7 @@ export function CreateInstanceModal({
             <FieldGroup>
               <Controller
                 control={form.control}
-                name="templateId"
+                name="operatingSystemId"
                 render={({ field, fieldState }) => (
                   <FieldSet disabled={isSubmitting}>
                     <FieldLegend>Operating System</FieldLegend>
@@ -190,33 +194,34 @@ export function CreateInstanceModal({
                       onValueChange={field.onChange}
                       value={field.value}
                     >
-                      {templates?.map((template) => {
-                        const Icon = getOperatingSystemIcon(template.os)
+                      {operatingSystems?.map((operatingSystem) => {
+                        const Icon = getOperatingSystemIcon(
+                          operatingSystem.release?.family,
+                        )
 
                         return (
                           <FieldLabel
-                            htmlFor={`template-${template.slug}`}
-                            key={template.id}
+                            htmlFor={`operatingSystem-${operatingSystem.slug}`}
+                            key={operatingSystem.id}
                           >
                             <Field
                               className="disabled:cursor-not-allowed disabled:opacity-50"
                               data-invalid={fieldState.invalid}
-                              disabled={template.status !== "active"}
+                              disabled={operatingSystem.status !== "active"}
                               orientation="horizontal"
                             >
                               <FieldContent className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <Icon className="size-5" />
-                                  <FieldTitle>{template.name}</FieldTitle>
+                                  <FieldTitle>
+                                    {operatingSystem.name}
+                                  </FieldTitle>
                                 </div>
-                                <FieldDescription>
-                                  {template.description}
-                                </FieldDescription>
                               </FieldContent>
                               <RadioGroupItem
                                 aria-invalid={fieldState.invalid}
-                                id={`template-${template.slug}`}
-                                value={template.id}
+                                id={`operatingSystem-${operatingSystem.slug}`}
+                                value={operatingSystem.id}
                               />
                             </Field>
                           </FieldLabel>

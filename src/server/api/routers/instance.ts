@@ -120,12 +120,12 @@ export const instanceRouter = {
             id: randomUUID(),
             memory: plan.memory,
             networkId: network.id,
+            operatingSystemId: input.operatingSystemId,
             organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             rootPassword: encryptPassword(rootPassword),
             status: "queued",
-            templateId: input.templateId,
           })
           .returning()
           .catch((error) => {
@@ -354,7 +354,12 @@ export const instanceRouter = {
         tags: ["Instances"],
       }),
     )
-    .input(z.object({ organizationId: z.string().optional() }))
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        organizationId: z.string().optional(),
+      }),
+    )
     .output(z.array(selectInstanceSchema).nullable())
     .errors({
       BAD_REQUEST: {

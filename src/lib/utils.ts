@@ -46,8 +46,8 @@ export function getResourcePlanIcon(planId: ResourcePlan["id"]) {
   }
 }
 
-export function getOperatingSystemIcon(os: string) {
-  switch (os.toLowerCase()) {
+export function getOperatingSystemIcon(os: string | undefined) {
+  switch (os?.toLowerCase()) {
     case "ubuntu":
       return IconBrandUbuntu
     case "debian":
