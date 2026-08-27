@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
 import { admin, genericOAuth, organization } from "better-auth/plugins"
+import { eq } from "drizzle-orm"
 
 import { APP_NAME } from "@/constants/app"
 import {
@@ -45,10 +46,42 @@ export const auth = betterAuth({
     },
     user: {
       create: {
-        async after() {
-          const users = await db.$count(userTable)
-          if (users === 1) {
-            await db.update(userTable).set({ role: "admin" })
+        async after(user) {
+          try {
+            const userCount = await db.$count(userTable)
+            const isFirstUser = userCount === 1
+
+            const safeSlug = user.name
+              ? `${user.name
+                  .toLowerCase()
+                  .trim()
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/(^-|-$)/g, "")}-org`
+              : `org-${user.id.slice(0, 8)}`
+
+            const org = await auth.api.createOrganization({
+              body: {
+                name: `${user.name}'s Organization`,
+                slug: safeSlug,
+                userId: user.id,
+              },
+            })
+
+            await db
+              .update(userTable)
+              .set({
+                defaultOrganizationId: org.id,
+                ...(isFirstUser && { role: "admin" }),
+              })
+              .where(eq(userTable.id, user.id))
+          } catch (error) {
+            console.error(
+              `Post-registration workspace setup failed for user ${user.id}:`,
+              error,
+            )
+            throw new Error(
+              "Failed to initialize user organization environment.",
+            )
           }
         },
       },
