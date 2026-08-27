@@ -1,7 +1,6 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
-import { RESOURCE_PLANS_ENUM } from "@/constants/resource-plans"
 import { env } from "@/env"
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
@@ -51,6 +50,7 @@ export const createInstanceSchema = insertInstanceSchema
     organizationId: true,
     pveNode: true,
     pveVmid: true,
+    resourcePlanId: true,
     rootPassword: true,
     status: true,
     updatedAt: true,
@@ -58,6 +58,7 @@ export const createInstanceSchema = insertInstanceSchema
   .extend({
     // inject a custom operatingSystemId to allow both uuid and slug
     operatingSystemId: z.union([z.uuid(), z.string()]),
-    plan: RESOURCE_PLANS_ENUM,
+    // inject a custom resourcePlanId to allow both uuid and slug
+    resourcePlanId: z.union([z.uuid(), z.string()]),
     sshKeyId: z.string(),
   })

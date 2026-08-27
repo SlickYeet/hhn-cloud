@@ -5,6 +5,7 @@ import {
   operatingSystemCategoryTable,
   operatingSystemReleaseTable,
   operatingSystemTable,
+  resourcePlanTable,
 } from "@/server/db/schema"
 
 async function main() {
@@ -127,6 +128,75 @@ async function main() {
     .onConflictDoUpdate({
       set: { updatedAt: new Date() },
       target: operatingSystemTable.pveVmid,
+    })
+
+  await db
+    .insert(resourcePlanTable)
+    .values([
+      {
+        cores: 1,
+        description: "1 vCPU, 512MB RAM, 10GB Disk",
+        disk: 10,
+        id: randomUUID(),
+        memory: 512,
+        name: "Micro",
+        slug: "micro",
+        status: "active",
+      },
+      {
+        cores: 2,
+        description: "2 vCPU, 1GB RAM, 20GB Disk",
+        disk: 20,
+        id: randomUUID(),
+        memory: 1024,
+        name: "Small",
+        slug: "small",
+        status: "active",
+      },
+      {
+        cores: 4,
+        description: "4 vCPU, 2GB RAM, 40GB Disk",
+        disk: 40,
+        id: randomUUID(),
+        memory: 2048,
+        name: "Medium",
+        slug: "medium",
+        status: "active",
+      },
+      {
+        cores: 8,
+        description: "8 vCPU, 4GB RAM, 80GB Disk",
+        disk: 80,
+        id: randomUUID(),
+        memory: 4096,
+        name: "Large",
+        slug: "large",
+        status: "active",
+      },
+      {
+        cores: 16,
+        description: "16 vCPU, 8GB RAM, 160GB Disk",
+        disk: 160,
+        id: randomUUID(),
+        memory: 8192,
+        name: "X-Large",
+        slug: "x-large",
+        status: "inactive",
+      },
+      {
+        cores: 32,
+        description: "32 vCPU, 16GB RAM, 320GB Disk",
+        disk: 320,
+        id: randomUUID(),
+        memory: 16384,
+        name: "2X-Large",
+        slug: "2x-large",
+        status: "inactive",
+      },
+    ])
+    .onConflictDoUpdate({
+      set: { updatedAt: new Date() },
+      target: resourcePlanTable.slug,
     })
 }
 

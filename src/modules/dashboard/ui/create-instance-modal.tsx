@@ -42,7 +42,6 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Spinner } from "@/components/ui/spinner"
-import { RESOURCE_PLANS } from "@/constants/resource-plans"
 import { api } from "@/lib/api/client"
 import { getOperatingSystemIcon, getResourcePlanIcon } from "@/lib/utils"
 import { createInstanceSchema } from "@/schemas/instance"
@@ -61,18 +60,17 @@ export function CreateInstanceModal({
     defaultValues: {
       hostname: "",
       operatingSystemId: undefined,
-      plan: undefined,
+      resourcePlanId: undefined,
       sshKeyId: undefined,
     },
     resolver: zodResolver(createInstanceSchema),
   })
 
+  const { data: sshKeys } = useQuery(api.sshKey.list.queryOptions())
   const { data: operatingSystems } = useQuery(
     api.operatingSystem.list.queryOptions(),
   )
-  const { data: sshKeys } = useQuery(api.sshKey.list.queryOptions())
-
-  console.log("operatingSystems", operatingSystems)
+  const { data: resourcePlans } = useQuery(api.resourcePlan.list.queryOptions())
 
   const mutation = useMutation(
     api.instance.create.mutationOptions({
@@ -236,7 +234,7 @@ export function CreateInstanceModal({
               />
               <Controller
                 control={form.control}
-                name="plan"
+                name="resourcePlanId"
                 render={({ field, fieldState }) => (
                   <FieldSet disabled={isSubmitting}>
                     <FieldLegend>Resource Plan</FieldLegend>
@@ -251,19 +249,19 @@ export function CreateInstanceModal({
                       onValueChange={field.onChange}
                       value={field.value}
                     >
-                      {Object.entries(RESOURCE_PLANS).map(([key, plan]) => {
+                      {resourcePlans?.map((plan) => {
                         const Icon = getResourcePlanIcon(plan.id)
 
                         return (
                           <FieldLabel
-                            aria-disabled={plan.disabled}
-                            htmlFor={`plan-${key}`}
-                            key={key}
+                            aria-disabled={plan.status !== "active"}
+                            htmlFor={`plan-${plan.id}`}
+                            key={plan.id}
                           >
                             <Field
                               className="disabled:cursor-not-allowed disabled:opacity-50"
                               data-invalid={fieldState.invalid}
-                              disabled={plan.disabled}
+                              disabled={plan.status !== "active"}
                               orientation="horizontal"
                             >
                               <FieldContent className="space-y-1">
@@ -277,7 +275,7 @@ export function CreateInstanceModal({
                               </FieldContent>
                               <RadioGroupItem
                                 aria-invalid={fieldState.invalid}
-                                id={`plan-${key}`}
+                                id={`plan-${plan.id}`}
                                 value={plan.id}
                               />
                             </Field>

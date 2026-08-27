@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
 
-import type { ResourcePlan } from "@/constants/resource-plans"
 import { env } from "@/env"
+import type { ResourcePlan } from "@/schemas/resource-plan"
 import { db } from "@/server/db"
 import { sshKeyTable } from "@/server/db/schema"
 

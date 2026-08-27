@@ -2,8 +2,8 @@ import type { Job } from "bullmq"
 import { createNodeRedisClient, Queue } from "bullmq"
 import * as z from "zod"
 
-import { RESOURCE_PLANS_ZOD_OBJECT } from "@/constants/resource-plans"
 import { getRedisClient } from "@/lib/redis"
+import { selectResourcePlanSchema } from "@/schemas/resource-plan"
 
 export const PROVISION_QUEUE_KEY = "cloud-provision-queue"
 
@@ -34,7 +34,7 @@ export const addProvisionJobSchema = z.object({
       return z.ipv4().safeParse(ip).success
     }),
   }),
-  plan: RESOURCE_PLANS_ZOD_OBJECT,
+  plan: selectResourcePlanSchema,
   rootPassword: z.string(),
   sshKeyId: z.string(),
 })

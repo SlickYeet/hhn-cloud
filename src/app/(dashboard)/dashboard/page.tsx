@@ -26,8 +26,9 @@ export default async function Page() {
       }),
     )
     .catch(noop)
-  await queryClient.query(api.operatingSystem.list.queryOptions()).catch(noop)
   await queryClient.query(api.sshKey.list.queryOptions()).catch(noop)
+  await queryClient.query(api.operatingSystem.list.queryOptions()).catch(noop)
+  await queryClient.query(api.resourcePlan.list.queryOptions()).catch(noop)
 
   return (
     <main className="relative z-1 size-full flex-1 before:absolute before:inset-x-0 before:top-0 before:-z-1 before:h-105 before:bg-primary">

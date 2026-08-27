@@ -3,7 +3,6 @@ import { openapi } from "@orpc/openapi"
 import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
-import { RESOURCE_PLANS } from "@/constants/resource-plans"
 import { env } from "@/env"
 import {
   encryptPassword,
@@ -80,10 +79,17 @@ export const instanceRouter = {
       const macAddress = generateMacAddress()
       const rootPassword = generateRootPassword()
 
-      const plan = RESOURCE_PLANS.find((p) => p.id === input.plan)
+      const plan = await context.db.query.resourcePlanTable.findFirst({
+        where: (plan, { or, eq }) =>
+          or(
+            eq(plan.id, input.resourcePlanId),
+            eq(plan.slug, input.resourcePlanId),
+          ),
+      })
+
       if (!plan) {
-        throw errors.BAD_REQUEST({
-          message: `Invalid plan: ${input.plan}`,
+        throw errors.NOT_FOUND({
+          message: `Resource plan ${input.resourcePlanId} not found`,
         })
       }
 
@@ -124,6 +130,7 @@ export const instanceRouter = {
             organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
+            resourcePlanId: plan.id,
             rootPassword: encryptPassword(rootPassword),
             status: "queued",
           })
