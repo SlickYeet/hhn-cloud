@@ -3,11 +3,14 @@
 import { useQuery } from "@tanstack/react-query"
 
 import { Card, CardContent } from "@/components/ui/card"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api } from "@/lib/api/client"
 
 export function InstanceList({ organizationId }: { organizationId: string }) {
   const { data: instances } = useQuery(
-    api.instance.list.queryOptions({ input: { organizationId } }),
+    api.instance.list.queryOptions({
+      input: { limit: DEFAULT_PAGE_SIZE, organizationId },
+    }),
   )
 
   if (!instances || instances.length === 0) {

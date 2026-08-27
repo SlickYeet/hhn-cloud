@@ -355,22 +355,27 @@ export const instanceRouter = {
       }),
     )
     .input(
-      z.object({
-        limit: z.number().optional(),
-        organizationId: z.string().optional(),
-      }),
+      z
+        .object({
+          limit: z.coerce.number().optional(),
+          organizationId: z.string().nullish(),
+        })
+        .optional(),
     )
     .output(z.array(selectInstanceSchema).nullable())
     .errors({
       BAD_REQUEST: {
         message: "Invalid request",
       },
+      NOT_FOUND: {
+        message: "No instances found",
+      },
     })
     .handler(async ({ context, errors, input }) => {
       const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
 
-      const organizationId = input.organizationId || apiKey?.referenceId
-      if (!organizationId) throw errors.BAD_REQUEST()
+      const organizationId = input?.organizationId || apiKey?.referenceId
+      if (!organizationId) return []
 
       const instances = await context.db.query.instanceTable.findMany({
         columns: {
@@ -384,6 +389,8 @@ export const instanceRouter = {
           sshKeys: true,
         },
       })
+
+      if (!instances || instances.length === 0) throw errors.NOT_FOUND()
 
       return instances
     }),

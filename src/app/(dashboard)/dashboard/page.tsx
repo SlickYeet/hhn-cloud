@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { HydrateClient } from "@/components/providers/hydrate-client"
 import { getQueryClient } from "@/components/providers/query-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api } from "@/lib/api/client"
 import { CreateInstanceModal } from "@/modules/dashboard/ui/create-instance-modal"
 import { InstanceList } from "@/modules/dashboard/ui/instance-list"
@@ -19,7 +20,11 @@ export default async function Page() {
 
   const queryClient = getQueryClient()
   await queryClient
-    .query(api.instance.list.queryOptions({ input: { organizationId } }))
+    .query(
+      api.instance.list.queryOptions({
+        input: { limit: DEFAULT_PAGE_SIZE, organizationId },
+      }),
+    )
     .catch(noop)
   await queryClient.query(api.operatingSystem.list.queryOptions()).catch(noop)
   await queryClient.query(api.sshKey.list.queryOptions()).catch(noop)
