@@ -15,6 +15,13 @@
       "when": 1787805122094,
       "tag": "0001_mixed_hemingway",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787807358598,
+      "tag": "0002_steady_lord_hawal",
+      "breakpoints": true
     }
   ]
 }

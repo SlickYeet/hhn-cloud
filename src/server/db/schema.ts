@@ -106,7 +106,7 @@ export const operatingSystemTable = createTable(
     foreignKey({
       columns: [t.releaseId],
       foreignColumns: [operatingSystemReleaseTable.id],
-      name: "os_template_release_fk",
+      name: "os_release_fk",
     }).onDelete("restrict"),
   ],
 )
@@ -483,7 +483,7 @@ export const operatingSystemReleaseRelations = relations(
       fields: [operatingSystemReleaseTable.categoryId],
       references: [operatingSystemCategoryTable.id],
     }),
-    templates: many(operatingSystemTable),
+    operatingSystems: many(operatingSystemTable),
   }),
 )
 
