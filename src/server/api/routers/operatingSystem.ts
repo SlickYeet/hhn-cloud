@@ -1,10 +1,33 @@
 import { openapi } from "@orpc/openapi"
 import * as z from "zod"
 
-import { selectOperatingSystemSchema } from "@/schemas/operatingSystem"
+import {
+  selectOperatingSystemCategorySchema,
+  selectOperatingSystemSchema,
+} from "@/schemas/operatingSystem"
 import { protectedProcedure } from "@/server/api/base"
 
 export const operatingSystemRouter = {
+  category: {
+    list: protectedProcedure
+      .meta(
+        openapi({
+          method: "GET",
+          path: "/operating-system/category/list",
+          summary: "List all operating system categories",
+          tags: ["Operating Systems"],
+        }),
+      )
+      .output(z.array(selectOperatingSystemCategorySchema))
+      .handler(async ({ context }) => {
+        const categories =
+          await context.db.query.operatingSystemCategoryTable.findMany()
+
+        if (!categories || categories.length === 0) return []
+
+        return categories
+      }),
+  },
   get: protectedProcedure
     .meta(
       openapi({
