@@ -10,7 +10,7 @@ export const operatingSystemRouter = {
     .meta(
       openapi({
         method: "GET",
-        path: "/operating-systems/{id}",
+        path: "/operating-system/{id}",
         summary: "Get an operating system by ID",
         tags: ["Operating Systems"],
       }),
@@ -48,7 +48,7 @@ export const operatingSystemRouter = {
     .meta(
       openapi({
         method: "GET",
-        path: "/operating-systems",
+        path: "/operating-system/list",
         summary: "List all operating systems",
         tags: ["Operating Systems"],
       }),
