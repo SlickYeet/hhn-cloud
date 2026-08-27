@@ -52,9 +52,9 @@ export const operatingSystemReleaseTable = createTable(
   "operating_system_release",
   (d) => ({
     categoryId: d.text("category_id").notNull(),
-    codename: d.text("codename"), // e.g., "Resolute Raccoon", "Bookworm"
+    codename: d.text("codename"),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    family: d.text("family").notNull(), // e.g., "Ubuntu", "Debian"
+    family: d.text("family").notNull(),
     id: d.text("id").primaryKey(),
     isLts: d.boolean("is_lts").default(false).notNull(),
     updatedAt: d
@@ -62,7 +62,7 @@ export const operatingSystemReleaseTable = createTable(
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
-    version: d.text("version").notNull(), // e.g., "26.04", "12"
+    version: d.text("version").notNull(),
   }),
   (t) => [
     index("os_release_category_idx").on(t.categoryId),
@@ -88,7 +88,7 @@ export const operatingSystemTable = createTable(
     cloudInitEnabled: d.boolean("cloud_init_enabled").default(false).notNull(),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
-    name: d.text("name").notNull(), // e.g., "Ubuntu 26.04 LTS", "Debian 12"
+    name: d.text("name").notNull(),
     pveVmid: d.integer("pve_vmid").unique().notNull(),
     releaseId: d.text("release_id").notNull(),
     slug: d.text("slug").unique().notNull(),
