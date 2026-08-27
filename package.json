@@ -60,6 +60,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:reset": "bun ./src/scripts/reset-db.ts",
+    "db:seed": "bun ./src/scripts/seed-db.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "bun --bun next dev",
     "format": "biome format --write .",
@@ -67,7 +68,7 @@
     "lint:unsafe": "biome check --write --unsafe .",
     "lint:write": "biome check --write .",
     "shadcn": "bunx --bun shadcn@latest",
-    "start": "bun run db:migrate && bun --bun next start"
+    "start": "bun run db:migrate && bun run db:seed && next start"
   },
   "type": "module",
   "version": "0.1.0"
