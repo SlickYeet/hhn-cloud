@@ -138,7 +138,8 @@ export default function Page() {
                 </p>
               </div>
               <Button disabled={isLoading} onClick={handleLogin}>
-                {isLoading ? <Spinner /> : "Sign in"}
+                {isLoading ? <Spinner /> : <IconLogin2 />}
+                Sign in
               </Button>
             </div>
           </div>
