@@ -15,7 +15,10 @@ async function main() {
         id: randomUUID(),
         name: "linux",
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        set: { updatedAt: new Date() },
+        target: operatingSystemCategoryTable.name,
+      })
       .returning(),
     db
       .insert(operatingSystemCategoryTable)
@@ -23,7 +26,10 @@ async function main() {
         id: randomUUID(),
         name: "windows",
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        set: { updatedAt: new Date() },
+        target: operatingSystemCategoryTable.name,
+      })
       .returning(),
   ])
 
@@ -32,6 +38,14 @@ async function main() {
   const releases = await db
     .insert(operatingSystemReleaseTable)
     .values([
+      {
+        categoryId: categories[0].id,
+        codename: "noble numbat",
+        family: "ubuntu",
+        id: randomUUID(),
+        isLts: true,
+        version: "24.04",
+      },
       {
         categoryId: categories[0].id,
         codename: "resolute raccoon",
@@ -57,38 +71,61 @@ async function main() {
         version: "2022",
       },
     ])
-    .onConflictDoNothing()
+    .onConflictDoUpdate({
+      set: { updatedAt: new Date() },
+      target: [
+        operatingSystemReleaseTable.family,
+        operatingSystemReleaseTable.version,
+      ],
+    })
     .returning()
 
-  await db.insert(operatingSystemTable).values([
-    {
-      cloudInitEnabled: true,
-      id: randomUUID(),
-      name: "Ubuntu 26.04 LTS",
-      pveVmid: 9000,
-      releaseId: releases[0].id,
-      slug: "ubuntu-26.04-lts",
-      status: "active",
-    },
-    {
-      cloudInitEnabled: true,
-      id: randomUUID(),
-      name: "Ubuntu 24.04 LTS",
-      pveVmid: 9001,
-      releaseId: releases[0].id,
-      slug: "ubuntu-24.04-lts",
-      status: "active",
-    },
-    {
-      cloudInitEnabled: true,
-      id: randomUUID(),
-      name: "Debian 12",
-      pveVmid: 9002,
-      releaseId: releases[1].id,
-      slug: "debian-12",
-      status: "inactive",
-    },
-  ])
+  function findReleaseId(family: string, version: string) {
+    const matched = releases.find(
+      (r) => r.family === family && r.version === version,
+    )
+    if (!matched)
+      throw new Error(
+        `Could not find seeded release id for ${family} ${version}`,
+      )
+    return matched.id
+  }
+
+  await db
+    .insert(operatingSystemTable)
+    .values([
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "Ubuntu 24.04 LTS",
+        pveVmid: 9001,
+        releaseId: findReleaseId("ubuntu", "24.04"),
+        slug: "ubuntu-24.04-lts",
+        status: "active",
+      },
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "Ubuntu 26.04 LTS",
+        pveVmid: 9000,
+        releaseId: findReleaseId("ubuntu", "26.04"),
+        slug: "ubuntu-26.04-lts",
+        status: "active",
+      },
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "Debian 12",
+        pveVmid: 9002,
+        releaseId: findReleaseId("debian", "12"),
+        slug: "debian-12",
+        status: "inactive",
+      },
+    ])
+    .onConflictDoUpdate({
+      set: { updatedAt: new Date() },
+      target: operatingSystemTable.pveVmid,
+    })
 }
 
 main()
