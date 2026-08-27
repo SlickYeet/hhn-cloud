@@ -8,6 +8,8 @@ import {
 } from "@/server/db/schema"
 
 async function main() {
+  console.info("Seeding database...")
+
   const [linuxCategory, windowsCategory] = await Promise.all([
     db
       .insert(operatingSystemCategoryTable)
