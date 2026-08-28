@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto"
 
+import { env } from "@/env"
 import { db } from "@/server/db"
 import {
+  networkTable,
   operatingSystemCategoryTable,
   operatingSystemReleaseTable,
   operatingSystemTable,
@@ -203,6 +205,23 @@ async function main() {
     .onConflictDoUpdate({
       set: { updatedAt: new Date() },
       target: resourcePlanTable.slug,
+    })
+
+  await db
+    .insert(networkTable)
+    .values({
+      cidr: 24,
+      dhcpEnabled: true,
+      dnsServers: ["192.168.80.254"],
+      gateway: "192.168.80.254",
+      id: randomUUID(),
+      name: "Cloud Network",
+      network: "192.168.80.0/24",
+      vlanId: Number(env.OPNSENSE_CLOUD_NETWORK_VLAN_ID),
+    })
+    .onConflictDoUpdate({
+      set: { updatedAt: new Date() },
+      target: networkTable.vlanId,
     })
 }
 
