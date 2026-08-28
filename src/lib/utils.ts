@@ -83,25 +83,25 @@ export function getOperatingSystemStatusColor(
 ) {
   switch (status) {
     case "active":
-      return "border-l-green-500/50"
+      return "border-l-green-500/50 text-green-500"
     case "inactive":
-      return "border-l-yellow-500/50"
+      return "border-l-yellow-500/50 text-yellow-500"
     case "deprecated":
-      return "border-l-red-500/50"
+      return "border-l-destructive/50 text-destructive"
     default:
-      return "border-gray-500"
+      return "border-gray-500 text-gray-500"
   }
 }
 
 export function getResourcePlanStatusColor(status: ResourcePlan["status"]) {
   switch (status) {
     case "active":
-      return "border-l-green-500/50"
+      return "border-l-green-500/50 text-green-500"
     case "inactive":
-      return "border-l-yellow-500/50"
+      return "border-l-yellow-500/50 text-yellow-500"
     case "deprecated":
-      return "border-l-red-500/50"
+      return "border-l-destructive/50 text-destructive"
     default:
-      return "border-gray-500"
+      return "border-gray-500 text-gray-500"
   }
 }
