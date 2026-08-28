@@ -92,7 +92,6 @@ export function CreateInstanceForm({
           position: "top-center",
         })
         form.reset()
-        // @ts-expect-error - cannot use typedRoutes here
         router.push(`/dashboard/instance/${data.instanceId}`)
       },
     }),
