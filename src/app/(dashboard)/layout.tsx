@@ -10,7 +10,9 @@ export default async function Layout({ children }: LayoutProps<"/">) {
   return (
     <>
       <DashboardHeader session={session} />
-      <main>{children}</main>
+      <div className="relative z-1 size-full flex-1 before:absolute before:inset-x-0 before:top-0 before:-z-1 before:h-105 before:bg-primary">
+        {children}
+      </div>
     </>
   )
 }
