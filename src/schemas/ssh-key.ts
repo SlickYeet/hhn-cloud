@@ -3,8 +3,6 @@ import * as z from "zod"
 
 import { sshKeyTable } from "@/server/db/schema"
 
-export type SshKey = typeof sshKeyTable.$inferInsert
-
 const sshKeyConstraints = {
   createdAt: z.coerce.date().optional(),
   updatedAt: z.coerce.date().optional(),
@@ -18,3 +16,10 @@ export const selectSshKeySchema = createSelectSchema(
   sshKeyTable,
   sshKeyConstraints,
 )
+
+export const createSshKeySchema = insertSshKeySchema.pick({
+  name: true,
+  organizationId: true,
+})
+
+export type SSHKey = z.infer<typeof selectSshKeySchema>
