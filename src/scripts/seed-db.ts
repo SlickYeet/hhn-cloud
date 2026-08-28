@@ -135,7 +135,8 @@ async function main() {
     .values([
       {
         cores: 1,
-        description: "1 vCPU, 512MB RAM, 10GB Disk",
+        description:
+          "Lightweight services, development environments, and simple utilities.",
         disk: 10,
         id: randomUUID(),
         memory: 512,
@@ -145,7 +146,8 @@ async function main() {
       },
       {
         cores: 2,
-        description: "2 vCPU, 1GB RAM, 20GB Disk",
+        description:
+          "Small applications, personal projects, and development workloads.",
         disk: 20,
         id: randomUUID(),
         memory: 1024,
@@ -155,7 +157,8 @@ async function main() {
       },
       {
         cores: 4,
-        description: "4 vCPU, 2GB RAM, 40GB Disk",
+        description:
+          "General-purpose applications, APIs, and small production services.",
         disk: 40,
         id: randomUUID(),
         memory: 2048,
@@ -165,7 +168,8 @@ async function main() {
       },
       {
         cores: 8,
-        description: "8 vCPU, 4GB RAM, 80GB Disk",
+        description:
+          "Production workloads, databases, and applications with higher resource demands.",
         disk: 80,
         id: randomUUID(),
         memory: 4096,
@@ -175,7 +179,8 @@ async function main() {
       },
       {
         cores: 16,
-        description: "16 vCPU, 8GB RAM, 160GB Disk",
+        description:
+          "High-performance applications, larger databases, and compute-intensive workloads.",
         disk: 160,
         id: randomUUID(),
         memory: 8192,
@@ -185,11 +190,12 @@ async function main() {
       },
       {
         cores: 32,
-        description: "32 vCPU, 16GB RAM, 320GB Disk",
+        description:
+          "Heavy production workloads, large databases, and demanding compute applications.",
         disk: 320,
         id: randomUUID(),
         memory: 16384,
-        name: "2X-Large",
+        name: "2X Large",
         slug: "2x-large",
         status: "inactive",
       },
