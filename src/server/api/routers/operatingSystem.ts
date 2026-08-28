@@ -21,7 +21,9 @@ export const operatingSystemRouter = {
       .output(z.array(selectOperatingSystemCategorySchema))
       .handler(async ({ context }) => {
         const categories =
-          await context.db.query.operatingSystemCategoryTable.findMany()
+          await context.db.query.operatingSystemCategoryTable.findMany({
+            orderBy: (category, { asc }) => asc(category.name),
+          })
 
         if (!categories || categories.length === 0) return []
 
