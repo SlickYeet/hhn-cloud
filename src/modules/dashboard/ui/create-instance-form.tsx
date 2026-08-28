@@ -1,8 +1,9 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { IconCirclePlus, IconRefreshAlert } from "@tabler/icons-react"
+import { IconCirclePlus, IconKey, IconRefreshAlert } from "@tabler/icons-react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type * as z from "zod"
@@ -31,6 +32,7 @@ import {
   FieldTitle,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { InputGroupAddon } from "@/components/ui/input-group"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -45,13 +47,14 @@ import {
 } from "@/lib/utils"
 import { CreateSshKeyModal } from "@/modules/dashboard/ui/create-ssh-key-modal"
 import { createInstanceSchema } from "@/schemas/instance"
-import type { SshKey } from "@/schemas/ssh-key"
+import type { SSHKey } from "@/schemas/ssh-key"
 
 export function CreateInstanceForm({
   organizationId,
 }: {
   organizationId: string
 }) {
+  const router = useRouter()
   const queryClient = useQueryClient()
 
   const form = useForm<z.infer<typeof createInstanceSchema>>({
@@ -81,7 +84,7 @@ export function CreateInstanceForm({
           position: "top-center",
         })
       },
-      onSuccess() {
+      onSuccess(data) {
         queryClient.invalidateQueries({
           queryKey: api.instance.list.key({ input: { organizationId } }),
         })
@@ -89,6 +92,8 @@ export function CreateInstanceForm({
           position: "top-center",
         })
         form.reset()
+        // @ts-expect-error - cannot use typedRoutes here
+        router.push(`/dashboard/instance/${data.instanceId}`)
       },
     }),
   )
@@ -96,6 +101,7 @@ export function CreateInstanceForm({
   const isSubmitting = form.formState.isSubmitting || mutation.isPending
 
   function onSubmit(data: z.infer<typeof createInstanceSchema>) {
+    if (isSubmitting) return
     mutation.mutate(data)
   }
 
@@ -110,6 +116,7 @@ export function CreateInstanceForm({
       <CardContent>
         <form
           className="flex-1 space-y-6 px-0 py-4 md:px-6"
+          id="create-instance-form"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <FieldGroup className="flex flex-col md:flex-row">
@@ -141,45 +148,66 @@ export function CreateInstanceForm({
             <Controller
               control={form.control}
               name="sshKeyId"
-              render={({ field, fieldState }) => (
-                <Field
-                  data-invalid={fieldState.invalid}
-                  disabled={isSubmitting}
-                >
-                  <FieldContent className="space-y-2">
-                    <FieldLabel htmlFor={field.name}>SSH Key</FieldLabel>
-                    <ButtonGroup className="w-full">
-                      <Combobox
-                        items={sshKeys}
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <ComboboxInput
-                          className="flex-1"
-                          placeholder="Select an SSH key"
+              render={({ field, fieldState }) => {
+                const selectedKey = sshKeys?.find(
+                  (key) => key.id === field.value,
+                )
+
+                return (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    disabled={isSubmitting}
+                  >
+                    <FieldContent className="space-y-2">
+                      <FieldLabel htmlFor={field.name}>SSH Key</FieldLabel>
+                      <ButtonGroup className="w-full">
+                        <Combobox
+                          items={sshKeys}
+                          itemToStringLabel={(key) => key.name}
+                          onValueChange={(key) => {
+                            field.onChange(key?.id ?? "")
+                          }}
+                          value={selectedKey}
+                        >
+                          <ComboboxInput
+                            aria-invalid={fieldState.invalid}
+                            className="flex-1"
+                            placeholder="Select an SSH key"
+                          >
+                            <InputGroupAddon>
+                              <IconKey />
+                            </InputGroupAddon>
+                          </ComboboxInput>
+                          <ComboboxContent
+                            alignOffset={-14}
+                            className="bg-input/30"
+                          >
+                            <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: SSHKey) => (
+                                <ComboboxItem key={item.id} value={item}>
+                                  {item.name}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxContent>
+                        </Combobox>
+                        <CreateSshKeyModal
+                          disabled={isSubmitting}
+                          organizationId={organizationId}
                         />
-                        <ComboboxContent className="bg-input/30">
-                          <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
-                          <ComboboxList>
-                            {(item: SshKey) => (
-                              <ComboboxItem key={item.id} value={item.id}>
-                                {item.name}
-                              </ComboboxItem>
-                            )}
-                          </ComboboxList>
-                        </ComboboxContent>
-                      </Combobox>
-                      <CreateSshKeyModal disabled={isSubmitting} />
-                    </ButtonGroup>
-                    <FieldDescription>
-                      Select an SSH key to use for connecting to your instance.
-                    </FieldDescription>
-                  </FieldContent>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
+                      </ButtonGroup>
+                      <FieldDescription>
+                        Select an SSH key to use for connecting to your
+                        instance.
+                      </FieldDescription>
+                    </FieldContent>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )
+              }}
             />
           </FieldGroup>
           <FieldGroup>
@@ -431,7 +459,11 @@ export function CreateInstanceForm({
             >
               <IconRefreshAlert /> Reset
             </Button>
-            <Button disabled={isSubmitting} type="submit">
+            <Button
+              disabled={isSubmitting}
+              form="create-instance-form"
+              type="submit"
+            >
               {isSubmitting ? <Spinner /> : <IconCirclePlus />}
               Create Instance
             </Button>
