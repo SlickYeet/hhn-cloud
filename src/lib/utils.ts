@@ -16,6 +16,7 @@ import { twMerge } from "tailwind-merge"
 
 import { Icons } from "@/components/icons"
 import { env } from "@/env"
+import type { OperatingSystem } from "@/schemas/operatingSystem"
 import type { ResourcePlan } from "@/schemas/resource-plan"
 
 export function cn(...inputs: ClassValue[]) {
@@ -74,5 +75,33 @@ export function getOperatingSystemIcon(os: string | undefined) {
       return IconBrandWindows
     default:
       return IconSquare
+  }
+}
+
+export function getOperatingSystemStatusColor(
+  status: OperatingSystem["status"],
+) {
+  switch (status) {
+    case "active":
+      return "border-l-green-500/50"
+    case "inactive":
+      return "border-l-yellow-500/50"
+    case "deprecated":
+      return "border-l-red-500/50"
+    default:
+      return "border-gray-500"
+  }
+}
+
+export function getResourcePlanStatusColor(status: ResourcePlan["status"]) {
+  switch (status) {
+    case "active":
+      return "border-l-green-500/50"
+    case "inactive":
+      return "border-l-yellow-500/50"
+    case "deprecated":
+      return "border-l-red-500/50"
+    default:
+      return "border-gray-500"
   }
 }
