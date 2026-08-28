@@ -10,6 +10,7 @@ import {
 } from "@tabler/icons-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import * as React from "react"
 
 import { Icons } from "@/components/icons"
 import {
@@ -99,7 +100,7 @@ export function DashboardHeader({ session }: { session: Session }) {
                 </BreadcrumbLink>
               </BreadcrumbItem>
             )}
-            {path[0] === "dashboard" && (
+            {path[0] === "dashboard" && !path[1] && (
               <>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
@@ -109,12 +110,26 @@ export function DashboardHeader({ session }: { session: Session }) {
                 </BreadcrumbItem>
               </>
             )}
-            {path[1] && (
+            {path.slice(1, -1).map((segment, index) => (
+              <React.Fragment key={index}>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink
+                    render={
+                      <a href={`/${path.slice(0, 2 + index).join("/")}`} />
+                    }
+                  >
+                    <span className="capitalize">{segment}</span>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </React.Fragment>
+            ))}
+            {path.length > 2 && (
               <>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage>
-                    <span className="capitalize">{path[1]}</span>
+                    <span className="capitalize">{path[path.length - 1]}</span>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </>
