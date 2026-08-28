@@ -67,8 +67,6 @@ export const instanceRouter = {
       },
     })
     .handler(async ({ context, errors, input }) => {
-      if (!input) throw errors.BAD_REQUEST()
-
       const network = await getCloudNetwork()
       if (!network) {
         throw errors.NOT_FOUND({
@@ -370,14 +368,7 @@ export const instanceRouter = {
         .optional(),
     )
     .output(z.array(selectInstanceSchema).nullable())
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
-      if (!input) throw errors.BAD_REQUEST()
-
+    .handler(async ({ context, input }) => {
       const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
 
       const organizationId = input?.organizationId || apiKey?.referenceId
