@@ -79,7 +79,7 @@ export const operatingSystemReleaseTable = createTable(
 export const operatingSystemStatusEnum = pgEnum("operating_system_status", [
   "active",
   "inactive",
-  "deleted",
+  "deprecated",
 ])
 
 export const operatingSystemTable = createTable(
@@ -114,7 +114,7 @@ export const operatingSystemTable = createTable(
 export const resourcePlanStatusEnum = pgEnum("resource_plan_status", [
   "active",
   "inactive",
-  "deleted",
+  "deprecated",
 ])
 
 export const resourcePlanTable = createTable(
