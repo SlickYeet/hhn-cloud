@@ -14,6 +14,7 @@
         "@orpc/server": "^2.0.0-beta.31",
         "@orpc/tanstack-query": "^2.0.0-beta.31",
         "@orpc/zod": "^2.0.0-beta.31",
+        "@stepperize/react": "^7.0.0",
         "@t3-oss/env-nextjs": "^0.13.11",
         "@tabler/icons-react": "^3.46.0",
         "@tanstack/react-query": "^5.102.3",
@@ -393,6 +394,10 @@
     "@standardserver/peer": ["@standardserver/peer@0.8.1", "", { "dependencies": { "@standardserver/core": "0.8.1", "@standardserver/shared": "0.8.1" } }, "sha512-JJNAThQDSh/LNG7SvYn1UwtcS6EDpZEZz3/MvbwHmRwBt8GuMStc+v0/PDkxO7zhQ7qAH0dZuc5JRs3Dwcgfug=="],
 
     "@standardserver/shared": ["@standardserver/shared@0.8.1", "", {}, "sha512-3wkmeoQL+qqew+Z4H3EP8+4AJNcVTlo8wsMDtZym5uMViY+e6NcbJ3ZCMsLgI1E4CERGwGGjSd5gJZqa33dB6Q=="],
+
+    "@stepperize/core": ["@stepperize/core@3.0.0", "", { "peerDependencies": { "typescript": ">=5.0.2" }, "optionalPeers": ["typescript"] }, "sha512-eWhs9qUsNOiuMAWRwajIIX94YnVp5rhd0FDfOQ+XpOevEYa7X0M1lzTQtJ5KWhOtNwCMSUzLV0AijntOdWG3yw=="],
+
+    "@stepperize/react": ["@stepperize/react@7.0.0", "", { "dependencies": { "@stepperize/core": "3.0.0" }, "peerDependencies": { "react": "^17.0.0 || ^18.0.0 || ^19.0.0" } }, "sha512-Pfudzw2z+qalkt1PuJQZdxY885r3XS4LOt1QSE2vm88R7q2M6UY9X0OjXgc7Onc2d7DerGkzjUxi+VK2cPRzxA=="],
 
     "@swc/helpers": ["@swc/helpers@0.5.23", "", { "dependencies": { "tslib": "^2.8.0" } }, "sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw=="],
 
