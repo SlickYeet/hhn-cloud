@@ -1,0 +1,1 @@
+ALTER TABLE "ssh_key" ADD COLUMN "description" text;

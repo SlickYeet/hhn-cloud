@@ -14,6 +14,7 @@ export const sshKeyTable = createTable(
   "ssh_key",
   (d) => ({
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    description: d.text("description"),
     fingerprint: d.text("fingerprint").notNull(),
     id: d.text("id").primaryKey(),
     name: d.text("name").notNull(),
