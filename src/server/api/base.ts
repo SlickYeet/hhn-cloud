@@ -35,20 +35,25 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
   return result
 })
 
-const authMiddleware = base
-  .meta(openapi({ spec: { security: [{ apiKey: [] }] } }))
-  .middleware(async ({ context, next }) => {
-    if (!context.session?.user) {
-      throw new ORPCError("UNAUTHORIZED")
-    }
+const authMiddleware = base.middleware(async ({ context, next }) => {
+  if (!context.session?.user) {
+    throw new ORPCError("UNAUTHORIZED")
+  }
 
-    return next({
-      context: {
-        session: { ...context.session, user: context.session.user },
-      },
-    })
+  return next({
+    context: {
+      session: { ...context.session, user: context.session.user },
+    },
   })
+})
 
 export const publicProcedure = base.use(timingMiddleware)
 
-export const protectedProcedure = base.use(timingMiddleware).use(authMiddleware)
+export const protectedProcedure = base
+  .use(timingMiddleware)
+  .use(authMiddleware)
+  .meta(
+    openapi({
+      spec: (current) => ({ ...current, security: [{ apiKey: [] }] }),
+    }),
+  )
