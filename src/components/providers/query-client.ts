@@ -1,4 +1,4 @@
-import { RPCJsonSerializer } from "@orpc/client"
+import { RPCJsonSerializer } from "@orpc/server"
 import { environmentManager, hashKey, QueryClient } from "@tanstack/react-query"
 import { cache } from "react"
 

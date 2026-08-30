@@ -1,8 +1,8 @@
-import { onError } from "@orpc/client"
 import { SmartCoercionHandlerPlugin } from "@orpc/json-schema"
 import { OpenAPIGenerator } from "@orpc/openapi"
 import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins"
+import { onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod"
 
 import { GLOBAL_API_KEY_HEADERS } from "@/constants/auth"
