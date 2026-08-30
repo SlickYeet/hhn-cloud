@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import {
   IconAlertCircleFilled,
   IconCheck,
-  IconCirclePlus,
   IconCopy,
   IconDownload,
   IconPlus,
@@ -43,15 +42,11 @@ import { api } from "@/lib/api/client"
 import type { SSHKey } from "@/schemas/ssh-key"
 import { createSshKeySchema } from "@/schemas/ssh-key"
 
-interface CreateSshKeyModalProps {
-  disabled?: boolean
-  organizationId: string
-}
-
 export function CreateSshKeyModal({
-  disabled = false,
   organizationId,
-}: CreateSshKeyModalProps) {
+}: {
+  organizationId: string
+}) {
   const queryClient = useQueryClient()
 
   const [copied, setCopied] = React.useState(false)
@@ -86,8 +81,7 @@ export function CreateSshKeyModal({
     }),
   )
 
-  const isDisabled =
-    disabled || form.formState.isSubmitting || createSshKey.isPending
+  const isDisabled = form.formState.isSubmitting || createSshKey.isPending
 
   function onSubmit(data: z.infer<typeof createSshKeySchema>) {
     if (isDisabled) return
@@ -131,16 +125,18 @@ export function CreateSshKeyModal({
       }}
     >
       <AlertDialogTrigger
+        className="bg-transparent!"
         render={
           <Button
-            className="shirnk-0"
+            className="hover:bg-transparent! hover:text-foreground! hover:no-underline"
             disabled={isDisabled}
+            size="sm"
             type="button"
-            variant="outline"
+            variant="link"
           />
         }
       >
-        <IconPlus />
+        <IconPlus /> Add SSH Key
       </AlertDialogTrigger>
       <AlertDialogContent>
         {sshKey ? (
@@ -260,7 +256,7 @@ export function CreateSshKeyModal({
                 form="create-ssh-key-form"
                 type="submit"
               >
-                {createSshKey.isPending ? <Spinner /> : <IconCirclePlus />}
+                {createSshKey.isPending ? <Spinner /> : <IconPlus />}
                 Create
               </AlertDialogAction>
             </AlertDialogFooter>
