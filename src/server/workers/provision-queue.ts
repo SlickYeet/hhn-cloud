@@ -7,21 +7,28 @@ import { selectResourcePlanSchema } from "@/schemas/resource-plan"
 
 export const PROVISION_QUEUE_KEY = "cloud-provision-queue"
 
-const redis = getRedisClient()
-const connection = createNodeRedisClient(redis)
+let provisionQueue: Queue | null = null
 
-const provisionQueue = new Queue(PROVISION_QUEUE_KEY, {
-  connection,
-  defaultJobOptions: {
-    attempts: 1,
-    backoff: {
-      delay: 2000,
-      type: "exponential",
-    },
-    removeOnComplete: { age: 3600, count: 1000 },
-    removeOnFail: { age: 24 * 3600 },
-  },
-})
+function getProvisionQueue(): Queue {
+  if (!provisionQueue) {
+    const redis = getRedisClient()
+    const connection = createNodeRedisClient(redis)
+
+    provisionQueue = new Queue(PROVISION_QUEUE_KEY, {
+      connection,
+      defaultJobOptions: {
+        attempts: 1,
+        backoff: {
+          delay: 2000,
+          type: "exponential",
+        },
+        removeOnComplete: { age: 3600, count: 1000 },
+        removeOnFail: { age: 24 * 3600 },
+      },
+    })
+  }
+  return provisionQueue
+}
 
 export const addProvisionJobSchema = z.object({
   instanceId: z.string(),
@@ -44,10 +51,14 @@ export async function addProvisionJob(
 ): Promise<{ jobId: Job["id"] }> {
   const jobId = `${data.instanceId}-${data.macAddress.replace(/:/g, "-")}`
 
-  const provisionJob = await provisionQueue.add(PROVISION_QUEUE_KEY, data, {
-    deduplication: { id: jobId },
-    jobId,
-  })
+  const provisionJob = await getProvisionQueue().add(
+    PROVISION_QUEUE_KEY,
+    data,
+    {
+      deduplication: { id: jobId },
+      jobId,
+    },
+  )
 
   return { jobId: provisionJob.id }
 }
