@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { isNull } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
@@ -29,17 +29,19 @@ export async function getNextVmid(
       }
     }
 
+    const activeRows = await tx
+      .select({ vmid: instanceTable.pveVmid })
+      .from(instanceTable)
+      .where(isNull(instanceTable.deletedAt))
+
+    for (const row of activeRows) usedVMIDs.add(row.vmid)
+
     for (
       let vmid = NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[0];
       vmid <= NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE[1];
       vmid++
     ) {
-      const [instance] = await tx
-        .select()
-        .from(instanceTable)
-        .where(eq(instanceTable.pveVmid, vmid))
-
-      if (!usedVMIDs.has(vmid) && !instance) return vmid
+      if (!usedVMIDs.has(vmid)) return vmid
     }
 
     throw new Error("No available VMIDs in the specified range.")
