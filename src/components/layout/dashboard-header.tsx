@@ -37,7 +37,7 @@ export function DashboardHeader({ session }: { session: Session }) {
 
   const NAV_ITEMS = [
     { href: "/dashboard", icon: IconChartBar, label: "Dashboard" },
-    { href: "/dashboard/instances", icon: IconServer2, label: "Instances" },
+    { href: "/dashboard/instance/list", icon: IconServer2, label: "Instances" },
   ]
 
   const path = pathname.split("/").filter(Boolean)
