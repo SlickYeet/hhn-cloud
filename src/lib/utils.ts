@@ -29,7 +29,9 @@ export function getBaseUrl() {
   return env.NEXT_PUBLIC_URL
 }
 
-export function getResourcePlanIcon(planSlug: ResourcePlan["slug"]) {
+export function getResourcePlanIcon(
+  planSlug: ResourcePlan["slug"] | undefined,
+) {
   switch (planSlug) {
     case "micro":
       return IconStack
