@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm"
+import { isNull, relations } from "drizzle-orm"
 import {
   foreignKey,
   index,
@@ -188,6 +188,9 @@ export const instanceTable = createTable(
       .notNull(),
   }),
   (t) => [
+    uniqueIndex("instance_pveVmid_active_idx")
+      .on(t.pveVmid)
+      .where(isNull(t.deletedAt)),
     index("instance_hostname_idx").on(t.hostname),
     index("instance_organizationId_idx").on(t.organizationId),
     index("instance_pveNode_idx").on(t.pveNode),
