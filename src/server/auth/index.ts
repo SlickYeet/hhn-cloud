@@ -18,8 +18,6 @@ import { db } from "@/server/db"
 import { user as userTable } from "@/server/db/schema"
 import { getInitialOrganizationId } from "@/server/queries/organization"
 
-const redis = getRedisClient()
-
 const incrementScript = `
 local value = redis.call("INCR", KEYS[1])
 if value == 1 then
@@ -127,24 +125,24 @@ export const auth = betterAuth({
   rateLimit: { storage: "secondary-storage" },
   secondaryStorage: {
     delete: async (key) => {
-      await redis.del(key)
+      await getRedisClient().del(key)
     },
     get: async (key) => {
-      return await redis.get(key)
+      return await getRedisClient().get(key)
     },
     getAndDelete: async (key) => {
-      return await redis.getDel(key)
+      return await getRedisClient().getDel(key)
     },
     increment: async (key, ttl) => {
-      const value = await redis.eval(incrementScript, {
+      const value = await getRedisClient().eval(incrementScript, {
         arguments: [String(ttl)],
         keys: [key],
       })
       return Number(value)
     },
     set: async (key, value, ttl) => {
-      if (ttl) await redis.set(key, value, { EX: ttl })
-      else await redis.set(key, value)
+      if (ttl) await getRedisClient().set(key, value, { EX: ttl })
+      else await getRedisClient().set(key, value)
     },
   },
   secret: env.BETTER_AUTH_SECRET,
