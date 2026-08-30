@@ -29,8 +29,8 @@ export function getBaseUrl() {
   return env.NEXT_PUBLIC_URL
 }
 
-export function getResourcePlanIcon(planId: ResourcePlan["id"]) {
-  switch (planId) {
+export function getResourcePlanIcon(planSlug: ResourcePlan["slug"]) {
+  switch (planSlug) {
     case "micro":
       return IconStack
     case "small":
@@ -41,7 +41,7 @@ export function getResourcePlanIcon(planId: ResourcePlan["id"]) {
       return IconStack2Filled
     case "xlarge":
       return IconStack3
-    case "2xlarge":
+    case "2x-large":
       return IconStack3Filled
     default:
       return IconStack
