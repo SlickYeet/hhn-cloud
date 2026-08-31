@@ -60,7 +60,7 @@ export function toProxmoxRule(
     rule.sourceType === "cidr"
       ? (rule.sourceCidr ?? undefined)
       : rule.sourceType === "self"
-        ? `+org_${context.organizationId}`
+        ? `+org_${context.organizationId.toLowerCase()}`
         : undefined
 
   return {
@@ -88,7 +88,6 @@ export async function replaceProxmoxRules(
   const byDescendingPos = [...existingRules].sort((a, b) => b.pos - a.pos)
 
   for (const rule of byDescendingPos) {
-    await proxmox.nodes
     await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
       .qemu.$(data.vmid)
