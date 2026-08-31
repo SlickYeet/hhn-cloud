@@ -56,6 +56,7 @@ export async function getCloudNetwork(): Promise<{
   gateway: string
   id: string
   ip: string
+  cidr: number
 }> {
   try {
     const [network] = await db
@@ -76,6 +77,7 @@ export async function getCloudNetwork(): Promise<{
     }
 
     return {
+      cidr: network.cidr,
       gateway: network.gateway,
       id: network.id,
       ip: `${nextIPAddress}/${network.cidr}`,
