@@ -139,6 +139,54 @@ export const resourcePlanTable = createTable(
   (t) => [index("resource_plan_slug_idx").on(t.slug)],
 )
 
+export const firewallRuleActionEnum = pgEnum("firewall_rule_action", [
+  "ACCEPT",
+  "DROP",
+])
+export const firewallRuleProtocolEnum = pgEnum("firewall_rule_protocol", [
+  "tcp",
+  "udp",
+  "icmp",
+  "any",
+])
+export const firewallRuleSourceTypeEnum = pgEnum("firewall_rule_source_type", [
+  "cidr",
+  "self", // refers to owner's IPSet, e.g. +org_123
+  "any", // refers to any other source within the same organization
+])
+
+export const instanceFirewallRuleTable = createTable(
+  "instance_firewall_rule",
+  (d) => ({
+    action: firewallRuleActionEnum("action").notNull(),
+    comment: d.text("comment"),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    enabled: d.boolean("enabled").default(true).notNull(),
+    id: d.text("id").primaryKey(),
+    instanceId: d
+      .text("instance_id")
+      .notNull()
+      .references(() => instanceTable.id, { onDelete: "cascade" }),
+    portRange: d.text("port_range"),
+    priority: d.integer("priority").notNull(),
+    protocol: firewallRuleProtocolEnum("protocol").notNull(),
+    sourceCidr: d.text("source_cidr"),
+    sourceType: firewallRuleSourceTypeEnum("source_type").notNull(),
+    updatedAt: d
+      .timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  }),
+  (t) => [
+    index("instance_firewall_rule_instanceId_idx").on(t.instanceId),
+    uniqueIndex("firewall_rule_instanceId_priority_idx").on(
+      t.instanceId,
+      t.priority,
+    ),
+  ],
+)
+
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
   "provisioning",
