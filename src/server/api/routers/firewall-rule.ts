@@ -1,0 +1,72 @@
+import { randomUUID } from "node:crypto"
+import { openapi } from "@orpc/openapi"
+
+import {
+  createInstanceFirewallRuleSchema,
+  selectInstanceFirewallRuleSchema,
+} from "@/schemas/firewall-rule"
+import { protectedProcedure } from "@/server/api/base"
+import { instanceFirewallRuleTable } from "@/server/db/schema"
+import { addFirewallSyncJob } from "@/server/queues/firewall-sync-queue"
+
+export const firewallRuleRouter = {
+  create: protectedProcedure
+    .meta(
+      openapi({
+        method: "POST",
+        path: "/firewall-rule",
+        summary: "Create a new firewall rule",
+        tags: ["Firewall Rules"],
+      }),
+    )
+    .input(createInstanceFirewallRuleSchema)
+    .output(selectInstanceFirewallRuleSchema)
+    .errors({
+      FORBIDDEN: {
+        message:
+          "You do not have permission to create a firewall rule for this instance",
+      },
+      NOT_FOUND: {
+        message: "Instance not found",
+      },
+    })
+    .handler(async ({ context, errors, input }) => {
+      const instance = await context.db.query.instanceTable.findFirst({
+        where: (t, { eq }) => eq(t.id, input.instanceId),
+      })
+
+      if (!instance) throw errors.NOT_FOUND()
+      if (
+        instance.organizationId !== context.session.session.activeOrganizationId
+      ) {
+        throw errors.FORBIDDEN()
+      }
+
+      const [rule] = await context.db
+        .insert(instanceFirewallRuleTable)
+        .values({
+          id: randomUUID(),
+          ...input,
+        })
+        .returning()
+
+      await addFirewallSyncJob({ instanceId: input.instanceId })
+
+      return rule
+    }),
+
+  //   delete: protectedProcedure
+  //     .meta(
+  //       openapi({
+  //         method: "DELETE",
+  //         path: "/firewall-rule/{id}",
+  //         summary: "Delete a firewall rule by ID",
+  //         tags: ["Firewall", "Rules"],
+  //       }),
+  //     )
+  //     // .input()
+  //     // .output()
+  //     .handler(async () => {
+  //       // DELETE /api2/json/cluster/firewall/ipset/user_ID/192.168.80.50
+  //     }),
+}
