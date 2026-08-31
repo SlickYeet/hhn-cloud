@@ -72,7 +72,7 @@ export const sshKeyRouter = {
       ])
 
       const base64 = blob.toString("base64")
-      const publicKeyString = `ssh-ed25519 ${base64} ${context.session.user.email || input.name.toLowerCase().replace(/\s/g, "_")}`
+      const publicKeyString = `ssh-ed25519 ${base64} ${input.name.toLowerCase().replace(/\s/g, "_")}`
 
       const sha256 = createHash("sha256").update(blob).digest("base64")
       const fingerprint = `SHA256:${sha256.replace(/=+$/, "")}`
