@@ -100,7 +100,7 @@ export async function configureInstanceFirewall(
     vmid: number
   },
 ) {
-  const ipsetName = `org_${data.organizationId}`
+  const ipsetName = `org_${data.organizationId.toLowerCase()}`
 
   await proxmox.cluster.firewall.ipset
     .$post({

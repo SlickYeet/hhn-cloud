@@ -26,7 +26,7 @@ export function buildPlatformRules({
   organizationId,
   subnetCidr,
 }: PlatformRulesInput): ProxmoxFirewallRuleInput[] {
-  const ipsetName = `org_${organizationId}`
+  const ipsetName = `org_${organizationId.toLowerCase()}`
 
   return [
     {
