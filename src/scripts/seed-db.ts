@@ -215,7 +215,7 @@ async function main() {
       dnsServers: ["192.168.80.254"],
       gateway: "192.168.80.254",
       id: randomUUID(),
-      name: "Cloud Network",
+      name: "HHN Cloud Private",
       network: "192.168.80.0/24",
       vlanId: Number(env.OPNSENSE_CLOUD_NETWORK_VLAN_ID),
     })
