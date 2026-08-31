@@ -39,7 +39,7 @@ export function buildPlatformRules({
     },
     {
       action: "ACCEPT",
-      comment: `Allow access from organization ${organizationId}`,
+      comment: `Allow access from organization ${organizationId.toLowerCase()}`,
       source: `+${ipsetName}`,
       type: "in",
     },
