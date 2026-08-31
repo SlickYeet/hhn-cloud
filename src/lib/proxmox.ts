@@ -19,3 +19,13 @@ export function getProxmoxClient() {
 
   return proxmoxClient
 }
+
+export function isProxmoxAlreadyExistsError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /no such|not found|does not exist/i.test(message)
+}
+
+export function isProxmoxNotFoundError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /no such|not found|does not exist/i.test(message)
+}
