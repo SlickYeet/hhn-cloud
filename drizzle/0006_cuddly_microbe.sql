@@ -1,0 +1,2 @@
+CREATE UNIQUE INDEX "instance_pveVmid_active_idx" ON "instance" USING btree ("pve_vmid") WHERE "instance"."deleted_at" is null;--> statement-breakpoint
+ALTER TABLE "instance" DROP COLUMN "root_password";

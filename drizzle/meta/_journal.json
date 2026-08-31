@@ -43,6 +43,13 @@
       "when": 1787993793473,
       "tag": "0005_elite_morph",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788158092971,
+      "tag": "0006_cuddly_microbe",
+      "breakpoints": true
     }
   ]
 }

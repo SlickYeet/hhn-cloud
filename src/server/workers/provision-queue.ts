@@ -42,7 +42,6 @@ export const addProvisionJobSchema = z.object({
     }),
   }),
   plan: selectResourcePlanSchema,
-  rootPassword: z.string(),
   sshKeyId: z.string(),
 })
 

@@ -30,12 +30,10 @@ export const insertInstanceSchema = createInsertSchema(
 export const selectInstanceSchema = createSelectSchema(
   instanceTable,
   instanceSchemaConstraints,
-)
-  .omit({ rootPassword: true })
-  .extend({
-    ipAllocations: z.array(selectIpAllocationSchema),
-    sshKeys: z.array(selectInstanceSshKeySchema),
-  })
+).extend({
+  ipAllocations: z.array(selectIpAllocationSchema),
+  sshKeys: z.array(selectInstanceSshKeySchema),
+})
 
 export const createInstanceSchema = insertInstanceSchema
   .omit({
@@ -51,7 +49,6 @@ export const createInstanceSchema = insertInstanceSchema
     pveNode: true,
     pveVmid: true,
     resourcePlanId: true,
-    rootPassword: true,
     status: true,
     updatedAt: true,
   })

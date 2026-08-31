@@ -42,7 +42,6 @@ export async function configureInstance(
       ip: string
     }
     plan: ResourcePlan
-    rootPassword: string
     sshKeyId: string
     macAddress: string
   },
@@ -60,7 +59,6 @@ export async function configureInstance(
     agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
     autostart: true,
     bios: "seabios", // TODO: if Windows use "bios=ovmf"
-    cipassword: data.rootPassword,
     ciupgrade: true,
     ciuser: "root",
     cores: data.plan.cores,

@@ -179,7 +179,6 @@ export const instanceTable = createTable(
       .text("resource_plan_id")
       .notNull()
       .references(() => resourcePlanTable.id, { onDelete: "restrict" }),
-    rootPassword: d.text("root_password").notNull(),
     status: instanceStatusEnum("status").notNull(),
     updatedAt: d
       .timestamp("updated_at")

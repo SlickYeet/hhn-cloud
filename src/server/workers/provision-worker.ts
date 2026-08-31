@@ -51,7 +51,6 @@ const provisionWorker = new Worker(
         network: data.network,
         nextVmid: instance.pveVmid,
         plan: data.plan,
-        rootPassword: data.rootPassword,
         sshKeyId: data.sshKeyId,
       })
 

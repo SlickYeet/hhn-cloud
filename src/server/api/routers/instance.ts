@@ -4,11 +4,7 @@ import { and, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
-import {
-  encryptPassword,
-  generateMacAddress,
-  generateRootPassword,
-} from "@/lib/crypto"
+import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
 import {
   createInstanceSchema,
@@ -75,7 +71,6 @@ export const instanceRouter = {
       }
 
       const macAddress = generateMacAddress()
-      const rootPassword = generateRootPassword()
 
       const plan = await context.db.query.resourcePlanTable.findFirst({
         where: (plan, { or, eq }) =>
@@ -129,7 +124,6 @@ export const instanceRouter = {
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             resourcePlanId: plan.id,
-            rootPassword: encryptPassword(rootPassword),
             status: "queued",
           })
           .returning()
@@ -204,7 +198,6 @@ export const instanceRouter = {
         macAddress,
         network,
         plan,
-        rootPassword,
         sshKeyId: input.sshKeyId,
       })
 
@@ -333,9 +326,6 @@ export const instanceRouter = {
       if (!input.id) throw errors.BAD_REQUEST()
 
       const instance = await context.db.query.instanceTable.findFirst({
-        columns: {
-          rootPassword: false,
-        },
         where: (instance, { eq }) => eq(instance.id, input.id),
         with: {
           ipAllocations: true,
@@ -375,9 +365,6 @@ export const instanceRouter = {
       if (!organizationId) return []
 
       const instances = await context.db.query.instanceTable.findMany({
-        columns: {
-          rootPassword: false,
-        },
         orderBy: (instances, { desc }) => desc(instances.createdAt),
         where: (i, { and, eq }) =>
           and(eq(i.organizationId, organizationId), isNull(i.deletedAt)),
