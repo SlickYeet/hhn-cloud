@@ -22,9 +22,9 @@ import { isUniqueConstraintError } from "@/server/db/utils"
 import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
+import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
+import { addProvisionJob } from "@/server/queues/provision-queue"
 import { createDhcpReservation } from "@/server/services/network"
-import { addDeleteInstanceJob } from "@/server/workers/delete-instance-queue"
-import { addProvisionJob } from "@/server/workers/provision-queue"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const proxmox = getProxmoxClient()

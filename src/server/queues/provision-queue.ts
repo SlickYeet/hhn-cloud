@@ -34,6 +34,7 @@ export const addProvisionJobSchema = z.object({
   instanceId: z.string(),
   macAddress: z.mac(),
   network: z.object({
+    cidr: z.int().min(1).max(32),
     gateway: z.ipv4(),
     id: z.string(),
     ip: z.string().refine((val) => {
