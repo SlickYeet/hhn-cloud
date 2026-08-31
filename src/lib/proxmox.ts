@@ -22,7 +22,7 @@ export function getProxmoxClient() {
 
 export function isProxmoxAlreadyExistsError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
-  return /no such|not found|does not exist/i.test(message)
+  return /already exists/i.test(message)
 }
 
 export function isProxmoxNotFoundError(error: unknown): boolean {
