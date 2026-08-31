@@ -68,8 +68,8 @@ export async function configureInstance(
     ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
     memory: String(data.plan.memory),
     nameserver: data.network.gateway,
-    net0: `virtio,bridge=vmbr0,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
-    searchdomain: "local", // TODO: make configurable
+    net0: `model=virtio,bridge=vmbr0,firewall=1,macaddr=${data.macAddress},tag=${OPNSENSE_CLOUD_NETWORK_VLAN_ID}`,
+    searchdomain: "local",
     sshkeys: encodeURIComponent(`${sshKey.publicKey}`),
   } as Proxmox.nodesQemuConfigVmConfig
 
