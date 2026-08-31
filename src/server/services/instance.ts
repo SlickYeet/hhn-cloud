@@ -60,7 +60,7 @@ export async function configureInstance(
     autostart: true,
     bios: "seabios", // TODO: if Windows use "bios=ovmf"
     ciupgrade: true,
-    ciuser: "root",
+    ciuser: "admin",
     cores: data.plan.cores,
     description: `Cloud instance created from template ${data.plan.name}`,
     ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
