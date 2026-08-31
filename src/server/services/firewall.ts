@@ -29,6 +29,10 @@ export function buildPlatformRules({
 }: PlatformRulesInput): ProxmoxFirewallRuleInput[] {
   const ipsetName = `org_${organizationId.toLowerCase()}`
 
+  /**
+   * ! IMPORTANT: Rules will be applied in the reverse order of the array.
+   * ? The first rule in the array will be the last rule in the firewall ruleset.
+   */
   return [
     {
       action: "DROP",
