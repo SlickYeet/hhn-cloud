@@ -59,6 +59,7 @@ const provisionWorker = new Worker(
         sshKeyId: data.sshKeyId,
       })
 
+      // log new progress
       await configureInstanceFirewall(proxmox, {
         adminCidr: env.PLATFORM_ADMIN_CIDR,
         hostname: instance.hostname,
