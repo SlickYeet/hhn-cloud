@@ -9,6 +9,7 @@ const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 export interface ProxmoxFirewallRuleInput {
   action: "ACCEPT" | "DROP"
   comment?: string
+  enable: 1
   dport?: string
   proto?: "tcp" | "udp" | "icmp"
   source?: string
@@ -30,23 +31,26 @@ export function buildPlatformRules({
 
   return [
     {
-      action: "ACCEPT",
-      comment: "Platform operator SSH access",
-      dport: "22",
-      proto: "tcp",
-      source: adminCidr,
+      action: "DROP",
+      comment: "Deny other tenants on shared subnet",
+      enable: 1,
+      source: subnetCidr,
       type: "in",
     },
     {
       action: "ACCEPT",
       comment: `Allow access from organization ${organizationId.toLowerCase()}`,
+      enable: 1,
       source: `+${ipsetName}`,
       type: "in",
     },
     {
-      action: "DROP",
-      comment: "Deny other tenants on shared subnet",
-      source: subnetCidr,
+      action: "ACCEPT",
+      comment: "Platform operator SSH access",
+      dport: "22",
+      enable: 1,
+      proto: "tcp",
+      source: adminCidr,
       type: "in",
     },
   ]
@@ -67,6 +71,7 @@ export function toProxmoxRule(
     action: rule.action,
     comment: rule.comment ?? undefined,
     dport: rule.protocol === "icmp" ? undefined : (rule.portRange ?? undefined),
+    enable: 1,
     proto: rule.protocol === "any" ? undefined : rule.protocol,
     source,
     type: "in",
