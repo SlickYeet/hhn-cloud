@@ -2,6 +2,7 @@ import type { Job } from "bullmq"
 import { createNodeRedisClient, Worker } from "bullmq"
 import { eq } from "drizzle-orm"
 
+import { env } from "@/env"
 import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
@@ -9,10 +10,14 @@ import { instanceTable } from "@/server/db/schema"
 import {
   cloneInstance,
   configureInstance,
+  configureInstanceFirewall,
   startInstance,
 } from "@/server/services/instance"
 
-import { addProvisionJobSchema, PROVISION_QUEUE_KEY } from "./provision-queue"
+import {
+  addProvisionJobSchema,
+  PROVISION_QUEUE_KEY,
+} from "../queues/provision-queue"
 
 const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
@@ -52,6 +57,14 @@ const provisionWorker = new Worker(
         nextVmid: instance.pveVmid,
         plan: data.plan,
         sshKeyId: data.sshKeyId,
+      })
+
+      await configureInstanceFirewall(proxmox, {
+        adminCidr: env.PLATFORM_ADMIN_CIDR,
+        hostname: instance.hostname,
+        network: data.network,
+        organizationId: instance.organizationId,
+        vmid: instance.pveVmid,
       })
 
       // log new progress
