@@ -2,9 +2,11 @@ import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
+import { isProxmoxAlreadyExistsError } from "@/lib/proxmox"
 import type { ResourcePlan } from "@/schemas/resource-plan"
 import { db } from "@/server/db"
 import { sshKeyTable } from "@/server/db/schema"
+import { syncPlatformFirewallRules } from "@/server/services/firewall"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const PROXMOX_DEFAULT_POOL = env.PROXMOX_POOL
@@ -84,6 +86,70 @@ export async function configureInstance(
   if (!upid) {
     throw new Error(`Failed to configure instance with vmid ${data.nextVmid}`)
   }
+}
+
+export async function configureInstanceFirewall(
+  proxmox: Proxmox.Api,
+  data: {
+    adminCidr: string
+    hostname: string
+    network: {
+      cidr: number
+      ip: string
+    }
+    organizationId: string
+    vmid: number
+  },
+) {
+  const ipsetName = `org_${data.organizationId}`
+
+  await proxmox.cluster.firewall.ipset
+    .$post({
+      comment: data.organizationId,
+      name: ipsetName,
+    })
+    .catch((e) => {
+      if (!isProxmoxAlreadyExistsError(e)) throw e
+    })
+
+  await proxmox.cluster.firewall.ipset.$(ipsetName).$post({
+    cidr: `${data.network.ip}/${data.network.cidr}`,
+    comment: data.hostname,
+  })
+
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.vmid)
+    .firewall.options.$put({
+      enable: true,
+      ipfilter: true,
+      policy_in: "DROP",
+      policy_out: "ACCEPT",
+    })
+
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.vmid)
+    .firewall.ipset.$post({
+      comment: "IP filter for net0",
+      name: "ipfilter-net0",
+    })
+
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(data.vmid)
+    .firewall.ipset.$("ipfilter-net0")
+    .$post({
+      cidr: `${data.network.ip}/${data.network.cidr}`,
+      comment: data.hostname,
+    })
+
+  await syncPlatformFirewallRules(proxmox, {
+    adminCidr: data.network.ip,
+    organizationId: data.organizationId,
+    subnetCidr: env.CLOUD_NETWORK_CIDR,
+    vmid: data.vmid,
+  })
 }
 
 export async function startInstance(
