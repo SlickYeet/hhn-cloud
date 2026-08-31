@@ -46,8 +46,6 @@ const deleteInstanceWorker = new Worker(
         .where(eq(ipAllocationTable.id, ipAllocation.id))
     }
 
-    // TODO: Delete SSH key associations
-
     await db
       .update(instanceTable)
       .set({ deletedAt: new Date(), status: "deleted" })
