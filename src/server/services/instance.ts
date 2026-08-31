@@ -144,7 +144,7 @@ export async function configureInstanceFirewall(
     })
 
   await syncPlatformFirewallRules(proxmox, {
-    adminCidr: data.network.ip,
+    adminCidr: env.PLATFORM_ADMIN_CIDR,
     organizationId: data.organizationId,
     subnetCidr: env.CLOUD_NETWORK_CIDR,
     vmid: data.vmid,
