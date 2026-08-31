@@ -6,12 +6,12 @@ import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable, ipAllocationTable } from "@/server/db/schema"
+import { DELETE_INSTANCE_QUEUE_KEY } from "@/server/queues/delete-instance-queue"
 import {
   destroyInstance,
   stopInstanceIfRunning,
 } from "@/server/services/instance"
 import { releaseIpAddress } from "@/server/services/network"
-import { DELETE_INSTANCE_QUEUE_KEY } from "@/server/workers/delete-instance-queue"
 
 const redis = getRedisClient()
 const connection = createNodeRedisClient(redis)
