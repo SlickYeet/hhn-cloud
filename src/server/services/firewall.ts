@@ -14,7 +14,6 @@ export interface ProxmoxFirewallRuleInput {
   proto?: "tcp" | "udp" | "icmp"
   source?: string
   type: "in"
-  pos?: number
 }
 
 interface PlatformRulesInput {
@@ -36,10 +35,16 @@ export function buildPlatformRules({
    */
   return [
     {
+      action: "DROP",
+      comment: "Deny other tenants on shared subnet",
+      enable: 1,
+      source: subnetCidr,
+      type: "in",
+    },
+    {
       action: "ACCEPT",
       comment: `Allow access from organization ${organizationId.toLowerCase()}`,
       enable: 1,
-      pos: 0, // always first rule
       source: `+${ipsetName}`,
       type: "in",
     },
@@ -48,17 +53,8 @@ export function buildPlatformRules({
       comment: "Platform operator SSH access",
       dport: "22",
       enable: 1,
-      pos: 1, // always second rule
       proto: "tcp",
       source: adminCidr,
-      type: "in",
-    },
-    {
-      action: "DROP",
-      comment: "Deny other tenants on shared subnet",
-      enable: 1,
-      pos: 9999, // always last rule
-      source: subnetCidr,
       type: "in",
     },
   ]
@@ -80,7 +76,6 @@ export function toProxmoxRule(
     comment: rule.comment ?? undefined,
     dport: rule.protocol === "icmp" ? undefined : (rule.portRange ?? undefined),
     enable: 1,
-    pos: rule.priority,
     proto: rule.protocol === "any" ? undefined : rule.protocol,
     source,
     type: "in",
