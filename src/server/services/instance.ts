@@ -94,7 +94,6 @@ export async function configureInstanceFirewall(
     adminCidr: string
     hostname: string
     network: {
-      cidr: number
       ip: string
     }
     organizationId: string
@@ -113,7 +112,7 @@ export async function configureInstanceFirewall(
     })
 
   await proxmox.cluster.firewall.ipset.$(ipsetName).$post({
-    cidr: `${data.network.ip}/${data.network.cidr}`,
+    cidr: String(data.network.ip),
     comment: data.hostname,
   })
 
@@ -140,7 +139,7 @@ export async function configureInstanceFirewall(
     .qemu.$(data.vmid)
     .firewall.ipset.$("ipfilter-net0")
     .$post({
-      cidr: `${data.network.ip}/${data.network.cidr}`,
+      cidr: String(data.network.ip),
       comment: data.hostname,
     })
 
