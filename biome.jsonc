@@ -126,7 +126,8 @@
         "useShorthandAssign": "error"
       },
       "suspicious": {
-        "noArrayIndexKey": "off"
+        "noArrayIndexKey": "off",
+        "noShadowRestrictedNames": "info"
       }
     }
   },

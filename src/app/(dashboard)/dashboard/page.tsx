@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { MapComponent } from "@/components/ui/map"
 import { getSession } from "@/server/auth/utils"
 
 export default async function Page() {
@@ -40,6 +41,9 @@ export default async function Page() {
       </div>
 
       {/* Content */}
+      <div className="h-105 w-full">
+        <MapComponent center={[-74.006, 40.7128]} zoom={12} />
+      </div>
     </main>
   )
 }
