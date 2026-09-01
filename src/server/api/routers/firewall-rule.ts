@@ -18,8 +18,7 @@ export const firewallRuleRouter = {
       openapi({
         method: "GET",
         path: "/firewall-rule/count",
-        summary:
-          "Count all firewall rules for the active organization of the user",
+        summary: "Get the count of all firewall rules in an organization",
         tags: ["Firewall Rules"],
       }),
     )
