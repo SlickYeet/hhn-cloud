@@ -1,16 +1,24 @@
-import { IconCirclePlus, IconServer2 } from "@tabler/icons-react"
+import { IconCirclePlus, IconKey, IconServer2 } from "@tabler/icons-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { CloudMap } from "@/components/cloud-map"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { DASHBOARD_INFO_CARDS } from "@/constants/app"
+import { cn } from "@/lib/utils"
+import { Activities } from "@/modules/dashboard/ui/activities"
+import { CreateSshKeyModal } from "@/modules/dashboard/ui/create-ssh-key-modal"
+import { InviteMember } from "@/modules/dashboard/ui/invite-member"
 import { OrgResources } from "@/modules/dashboard/ui/org-resources"
 import { getSession } from "@/server/auth/utils"
 
 export default async function Page() {
   const session = await getSession()
   if (!session?.user) return redirect("/auth/sign-in")
+
+  const organizationId =
+    session.session.activeOrganizationId || session.user.defaultOrganizationId
 
   return (
     <main className="mx-auto size-full max-w-384 px-4 pb-6 sm:px-6">
@@ -41,14 +49,52 @@ export default async function Page() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="inline-flex flex-1 flex-col overflow-auto rounded-t-md lg:flex-row lg:rounded-r-none lg:rounded-l-md">
-          <div className="h-96 w-full overflow-auto rounded-t-md lg:h-120 lg:flex-1 lg:rounded-r-none lg:rounded-l-md">
+      <div
+        className={cn(
+          "flex flex-col gap-4 lg:flex-row",
+          "[--activities-header-height:--spacing(16)] [--dashboard-card-height:calc(100dvh-55dvh)]",
+        )}
+      >
+        <div className="inline-flex h-(--dashboard-card-height) flex-1 flex-col overflow-auto rounded-t-md lg:flex-row lg:rounded-r-none lg:rounded-l-md">
+          <div className="w-full overflow-auto rounded-t-md lg:flex-1 lg:rounded-r-none lg:rounded-l-md">
             <CloudMap />
           </div>
           <OrgResources />
         </div>
-        {/* Recent activity */}
+        <Activities />
+      </div>
+
+      <div className="mt-6 grid h-16 grid-cols-1 gap-4 md:grid-cols-4">
+        <InviteMember />
+        <CreateSshKeyModal
+          organizationId={organizationId}
+          render={
+            <Button
+              className="h-full w-full justify-start gap-4 rounded-md bg-gray-50 pl-6 hover:bg-[color-mix(in_oklch,var(--color-gray-50),var(--foreground)_5%)] dark:bg-card dark:hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_5%)]"
+              variant="secondary"
+            />
+          }
+        >
+          <IconKey className="size-6 stroke-primary" />
+          <span className="text-lg">Add SSH Key</span>
+        </CreateSshKeyModal>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+        {DASHBOARD_INFO_CARDS.map((card) => (
+          <a
+            className="flex h-full flex-col items-start rounded-md bg-gray-50 p-6 hover:bg-[color-mix(in_oklch,var(--color-gray-50),var(--foreground)_5%)] dark:bg-card dark:hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_5%)]"
+            href={card.link}
+            key={card.title}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-lg uppercase">{card.title}</p>
+            </div>
+            <p className="mt-4 text-sm">{card.description}</p>
+          </a>
+        ))}
       </div>
     </main>
   )
