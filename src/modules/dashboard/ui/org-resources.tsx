@@ -97,7 +97,7 @@ export function OrgResources() {
   return (
     <div className="flex flex-col rounded-md bg-card lg:rounded-l-none">
       <div className="flex items-center justify-between rounded-b-none border-b bg-muted px-4 py-2 lg:rounded-tl-none lg:rounded-tr-md">
-        <p className="text-muted-foreground uppercase">All locations</p>
+        <p className="text-muted-foreground uppercase">Org Resources</p>
         <IconMap className="size-4" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 max-lg:[&>*:last-child]:rounded-br-md max-lg:[&>*:nth-last-child(2)]:rounded-bl-md">
