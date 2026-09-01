@@ -6,6 +6,7 @@ import { onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod"
 
 import { GLOBAL_API_KEY_HEADERS } from "@/constants/auth"
+import { env } from "@/env"
 import { getBaseUrl } from "@/lib/utils"
 import { createRPCContext } from "@/server/api/base"
 import { router } from "@/server/api/routers"
@@ -41,7 +42,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
             },
             info: {
               title: "HHN Cloud API",
-              version: "1.0.0",
+              version: env.NEXT_PUBLIC_API_VERSION,
             },
             servers: [{ url: `${getBaseUrl()}/api/v1` }],
           },
