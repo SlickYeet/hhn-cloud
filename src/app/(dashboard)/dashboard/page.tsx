@@ -2,9 +2,10 @@ import { IconCirclePlus, IconServer2 } from "@tabler/icons-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import { CloudMap } from "@/components/cloud-map"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { MapComponent } from "@/components/ui/map"
+import { OrgResources } from "@/modules/dashboard/ui/org-resources"
 import { getSession } from "@/server/auth/utils"
 
 export default async function Page() {
@@ -40,9 +41,14 @@ export default async function Page() {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="h-105 w-full">
-        <MapComponent center={[-74.006, 40.7128]} zoom={12} />
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="inline-flex flex-1 flex-col overflow-auto rounded-t-md lg:flex-row lg:rounded-r-none lg:rounded-l-md">
+          <div className="h-96 w-full overflow-auto rounded-t-md lg:h-120 lg:flex-1 lg:rounded-r-none lg:rounded-l-md">
+            <CloudMap />
+          </div>
+          <OrgResources />
+        </div>
+        {/* Recent activity */}
       </div>
     </main>
   )
