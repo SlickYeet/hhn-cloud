@@ -22,6 +22,7 @@ const createVmidRangeSchema = (key: string) =>
 
 export const env = createEnv({
   client: {
+    NEXT_PUBLIC_API_VERSION: z.string(),
     NEXT_PUBLIC_OAUTH_PROVIDER_ID: z.string(),
     NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE: createVmidRangeSchema(
       "NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE",
@@ -37,6 +38,7 @@ export const env = createEnv({
     CLOUD_NETWORK_CIDR: process.env.CLOUD_NETWORK_CIDR,
     DATABASE_URL: process.env.DATABASE_URL,
     ENCRYPTION_KEY_V1: process.env.ENCRYPTION_KEY_V1,
+    NEXT_PUBLIC_API_VERSION: process.env.NEXT_PUBLIC_API_VERSION,
     NEXT_PUBLIC_OAUTH_PROVIDER_ID: process.env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
     NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE:
       process.env.NEXT_PUBLIC_PROXMOX_CLOUD_VM_VMID_RANGE,
