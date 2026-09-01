@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
-import { and, eq, isNull } from "drizzle-orm"
+import { and, count, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
@@ -30,6 +30,45 @@ const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const proxmox = getProxmoxClient()
 
 export const instanceRouter = {
+  count: protectedProcedure
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/instance/count",
+        summary: "Count all instances for the active organization of the user",
+        tags: ["Instances"],
+      }),
+    )
+    .input(
+      z
+        .object({
+          organizationId: z.string().optional(),
+        })
+        .optional(),
+    )
+    .output(z.number())
+    .handler(async ({ context, input }) => {
+      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+      const organizationId =
+        input?.organizationId ||
+        context.session.session.activeOrganizationId ||
+        apiKey?.referenceId
+      if (!organizationId) return 0
+
+      const [instanceCount] = await context.db
+        .select({ count: count() })
+        .from(instanceTable)
+        .where(
+          and(
+            eq(instanceTable.organizationId, organizationId),
+            isNull(instanceTable.deletedAt),
+          ),
+        )
+
+      return instanceCount.count
+    }),
+
   create: protectedProcedure
     .meta(
       openapi({
@@ -245,6 +284,8 @@ export const instanceRouter = {
     .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
+      // TODO: check if the instance belongs to the organization
+
       const existingInstance = await context.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
       })
@@ -325,6 +366,8 @@ export const instanceRouter = {
     .handler(async ({ context, errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
+      // TODO: check if the instance belongs to the organization
+
       const instance = await context.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
         with: {
@@ -361,7 +404,10 @@ export const instanceRouter = {
     .handler(async ({ context, input }) => {
       const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
 
-      const organizationId = input?.organizationId || apiKey?.referenceId
+      const organizationId =
+        input?.organizationId ||
+        context.session.session.activeOrganizationId ||
+        apiKey?.referenceId
       if (!organizationId) return []
 
       const instances = await context.db.query.instanceTable.findMany({
@@ -407,6 +453,8 @@ export const instanceRouter = {
     .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
+      // TODO: check if the instance belongs to the organization
+
       const vmid = Number(input.id)
 
       await proxmox.nodes
@@ -441,6 +489,8 @@ export const instanceRouter = {
     })
     .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
+
+      // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
 
@@ -480,6 +530,8 @@ export const instanceRouter = {
     .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
 
+      // TODO: check if the instance belongs to the organization
+
       const vmid = Number(input.id)
 
       await proxmox.nodes
@@ -514,6 +566,8 @@ export const instanceRouter = {
     })
     .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
+
+      // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
 
@@ -554,6 +608,8 @@ export const instanceRouter = {
     })
     .handler(async ({ errors, input }) => {
       if (!input.id) throw errors.BAD_REQUEST()
+
+      // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
 

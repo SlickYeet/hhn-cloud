@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
+import { count, inArray } from "drizzle-orm"
+import * as z from "zod"
 
 import {
   createInstanceFirewallRuleSchema,
@@ -7,9 +9,57 @@ import {
 } from "@/schemas/firewall-rule"
 import { protectedProcedure } from "@/server/api/base"
 import { instanceFirewallRuleTable } from "@/server/db/schema"
+import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { addFirewallSyncJob } from "@/server/queues/firewall-sync-queue"
 
 export const firewallRuleRouter = {
+  count: protectedProcedure
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/firewall-rule/count",
+        summary:
+          "Count all firewall rules for the active organization of the user",
+        tags: ["Firewall Rules"],
+      }),
+    )
+    .input(
+      z
+        .object({
+          organizationId: z.string().optional(),
+        })
+        .optional(),
+    )
+    .output(z.number())
+    .handler(async ({ context, input }) => {
+      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+      const organizationId =
+        input?.organizationId ||
+        context.session.session.activeOrganizationId ||
+        apiKey?.referenceId
+      if (!organizationId) return 0
+
+      const orgInstanceIds = await context.db.query.instanceTable.findMany({
+        columns: { id: true },
+        where: (t, { eq }) => eq(t.organizationId, organizationId),
+      })
+
+      if (orgInstanceIds.length === 0) return 0
+
+      const [firewallRuleCount] = await context.db
+        .select({ count: count() })
+        .from(instanceFirewallRuleTable)
+        .where(
+          inArray(
+            instanceFirewallRuleTable.instanceId,
+            orgInstanceIds.map((instance) => instance.id),
+          ),
+        )
+
+      return firewallRuleCount.count
+    }),
+
   create: protectedProcedure
     .meta(
       openapi({

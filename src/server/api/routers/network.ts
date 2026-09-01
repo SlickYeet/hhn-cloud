@@ -1,55 +1,41 @@
 import { openapi } from "@orpc/openapi"
+import { count } from "drizzle-orm"
 import * as z from "zod"
 
 import { selectNetworkSchema } from "@/schemas/network"
-import { publicProcedure } from "@/server/api/base"
-
-const mockNetworks: z.infer<typeof selectNetworkSchema>[] = [
-  {
-    cidr: 24,
-    createdAt: new Date(),
-    dhcpEnabled: true,
-    dnsServers: ["8.8.8.8", "8.8.4.4"],
-    gateway: "192.168.80.254",
-    id: "network1",
-    name: "Network 1",
-    network: "192.168.80.0/24",
-    updatedAt: new Date(),
-    vlanId: 10,
-  },
-  {
-    cidr: 24,
-    createdAt: new Date(),
-    dhcpEnabled: false,
-    dnsServers: ["8.8.8.8", "8.8.4.4"],
-    gateway: "192.168.81.254",
-    id: "network2",
-    name: "Network 2",
-    network: "192.168.81.0/24",
-    updatedAt: new Date(),
-    vlanId: 20,
-  },
-]
+import { protectedProcedure } from "@/server/api/base"
+import { networkTable } from "@/server/db/schema"
 
 export const networkRouter = {
-  list: publicProcedure
+  count: protectedProcedure
     .meta(
       openapi({
         method: "GET",
-        path: "/networks",
+        path: "/network/count",
+        summary: "Count all networks",
+        tags: ["Networks"],
+      }),
+    )
+    .output(z.number())
+    .handler(async ({ context }) => {
+      const [networkCount] = await context.db
+        .select({ count: count() })
+        .from(networkTable)
+
+      return networkCount.count
+    }),
+
+  list: protectedProcedure
+    .meta(
+      openapi({
+        method: "GET",
+        path: "/network/list",
         summary: "List all networks",
         tags: ["Networks"],
       }),
     )
     .output(z.array(selectNetworkSchema))
-    .errors({
-      NOT_FOUND: {
-        message: "Networks not found",
-      },
-    })
-    .handler(({ errors }) => {
-      const networks = mockNetworks
-      if (!networks) throw errors.NOT_FOUND()
-      return networks
+    .handler(async ({ context }) => {
+      return await context.db.query.networkTable.findMany()
     }),
 }
