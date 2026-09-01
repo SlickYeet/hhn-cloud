@@ -29,6 +29,10 @@ export function getBaseUrl() {
   return env.NEXT_PUBLIC_URL
 }
 
+export function getApiVersion() {
+  return env.NEXT_PUBLIC_API_VERSION.at(0)
+}
+
 export function getResourcePlanIcon(
   planSlug: ResourcePlan["slug"] | undefined,
 ) {
