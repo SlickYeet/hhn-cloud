@@ -28,7 +28,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import {
   InputGroup,
@@ -39,13 +44,20 @@ import {
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { api } from "@/lib/api/client"
+import { cn } from "@/lib/utils"
 import type { SSHKey } from "@/schemas/ssh-key"
 import { createSshKeySchema } from "@/schemas/ssh-key"
 
 export function CreateSshKeyModal({
   organizationId,
+  render,
+  children,
+  className,
 }: {
   organizationId: string
+  render?: React.ReactElement
+  children?: React.ReactNode
+  className?: string
 }) {
   const queryClient = useQueryClient()
 
@@ -125,18 +137,26 @@ export function CreateSshKeyModal({
       }}
     >
       <AlertDialogTrigger
-        className="bg-transparent!"
+        className={cn(className)}
         render={
-          <Button
-            className="hover:bg-transparent! hover:text-foreground! hover:no-underline"
-            disabled={isDisabled}
-            size="sm"
-            type="button"
-            variant="link"
-          />
+          render || (
+            <Button
+              className="hover:bg-transparent! hover:text-foreground! hover:no-underline"
+              disabled={isDisabled}
+              size="sm"
+              type="button"
+              variant="link"
+            />
+          )
         }
       >
-        <IconPlus /> Add SSH Key
+        {children ? (
+          children
+        ) : (
+          <>
+            <IconPlus /> Add SSH Key
+          </>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         {sshKey ? (
@@ -230,7 +250,7 @@ export function CreateSshKeyModal({
                 name="name"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Email</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Name</FieldLabel>
                     <Input
                       {...field}
                       aria-invalid={fieldState.invalid}
@@ -239,6 +259,10 @@ export function CreateSshKeyModal({
                       placeholder="My SSH Key"
                       type="text"
                     />
+                    <FieldDescription>
+                      A descriptive name for your SSH key pair. This will help
+                      you identify it later.
+                    </FieldDescription>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}

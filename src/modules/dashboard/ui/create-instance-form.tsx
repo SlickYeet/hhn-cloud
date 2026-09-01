@@ -227,7 +227,10 @@ function BasicInfoForm({
                         </ComboboxList>
                         <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
                         <div className="flex items-center justify-start border-t p-2">
-                          <CreateSshKeyModal organizationId={organizationId} />
+                          <CreateSshKeyModal
+                            className="bg-transparent dark:bg-transparent"
+                            organizationId={organizationId}
+                          />
                         </div>
                       </ComboboxContent>
                     </Combobox>
