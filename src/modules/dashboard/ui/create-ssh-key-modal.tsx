@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 import type { SSHKey } from "@/schemas/ssh-key"
@@ -60,8 +61,8 @@ export function CreateSshKeyModal({
   className?: string
 }) {
   const queryClient = useQueryClient()
+  const { copied, copyToClipboard } = useCopyToClipboard()
 
-  const [copied, setCopied] = React.useState(false)
   const [downloaded, setDownloaded] = React.useState(false)
   const [sshKey, setSshKey] = React.useState<
     (SSHKey & { privateKey: string }) | null
@@ -101,9 +102,7 @@ export function CreateSshKeyModal({
   }
 
   function handleCopyPrivateKey() {
-    navigator.clipboard.writeText(sshKey?.privateKey || "")
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    copyToClipboard(sshKey?.privateKey || "")
   }
 
   function handleDownloadKey(

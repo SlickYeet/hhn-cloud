@@ -3,9 +3,12 @@
 import type { ApiKey } from "@better-auth/api-key"
 import * as React from "react"
 
+import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { authClient } from "@/lib/auth/client"
 
 export function APIKey() {
+  const { copied, copyToClipboard } = useCopyToClipboard()
+
   const [apiKeys, setApiKeys] = React.useState<ApiKey[] | null>(null)
   const [error, setError] = React.useState<string | undefined>(undefined)
 
@@ -34,16 +37,6 @@ export function APIKey() {
     fetchApiKey()
   }, [])
 
-  function copyToClipboard(id: string) {
-    if (apiKeys && apiKeys.length > 0) {
-      const apiKey = apiKeys.find((key) => key.id === id)
-      if (apiKey) {
-        navigator.clipboard.writeText(apiKey.key)
-        alert("Copied to clipboard!")
-      }
-    }
-  }
-
   return (
     <div className="mt-4 flex flex-col items-start gap-2">
       <button
@@ -66,10 +59,10 @@ export function APIKey() {
                 <span>{key.name}</span>
                 <button
                   className="rounded bg-green-600 px-2 py-1 text-white hover:bg-green-700"
-                  onClick={() => copyToClipboard(key.id)}
+                  onClick={() => copyToClipboard(key.key)}
                   type="button"
                 >
-                  Copy
+                  {copied ? "Copied" : "Copy"}
                 </button>
               </li>
             ))}
