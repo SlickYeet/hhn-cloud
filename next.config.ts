@@ -5,7 +5,9 @@ import "./src/env"
 const nextConfig: NextConfig = {
   compiler: {
     removeConsole:
-      process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn", "info"] }
+        : false,
   },
   typedRoutes: true,
 }
