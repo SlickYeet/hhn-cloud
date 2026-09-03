@@ -123,13 +123,14 @@ export const instanceRouter = {
 
       const instance = await context.db.transaction(async (tx) => {
         const nextVmid = await getNextVmid(proxmox, tx)
+        const instanceHostname = input.hostname.toLowerCase()
 
         const instanceRow = await tx
           .insert(instanceTable)
           .values({
             cores: plan.cores,
             disk: plan.disk,
-            hostname: input.hostname,
+            hostname: instanceHostname,
             id: randomUUID(),
             memory: plan.memory,
             networkId: network.id,
@@ -199,7 +200,7 @@ export const instanceRouter = {
         await createDhcpReservation(
           network.ip.split("/")[0],
           macAddress,
-          input.hostname,
+          instanceHostname,
         )
 
         return {
@@ -583,9 +584,10 @@ export const instanceRouter = {
       // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
+      const instanceHostname = input.hostname.toLowerCase()
 
       await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).config.$put({
-        name: input.hostname,
+        name: instanceHostname,
       })
 
       return { id: input.id }
