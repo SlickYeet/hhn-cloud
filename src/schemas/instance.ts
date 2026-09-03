@@ -4,9 +4,11 @@ import * as z from "zod"
 import { env } from "@/env"
 import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
+import type { instanceStatusEnum } from "@/server/db/schema"
 import { instanceTable } from "@/server/db/schema"
 
 export type Instance = typeof instanceTable.$inferInsert
+export type InstanceStatus = (typeof instanceStatusEnum.enumValues)[number]
 
 const instanceSchemaConstraints = {
   cores: z.int().min(1).max(64),
