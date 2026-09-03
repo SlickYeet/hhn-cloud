@@ -11,13 +11,9 @@ import { api } from "@/lib/api/client"
 export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard()
 
-  console.log(instanceId)
-
   const { data: instance } = useQuery(
     api.instance.get.queryOptions({ input: { id: instanceId } }),
   )
-
-  console.log("Client", { instance })
 
   if (!instance) return notFound()
 

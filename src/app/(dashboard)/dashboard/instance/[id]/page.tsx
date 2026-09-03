@@ -16,11 +16,9 @@ export default async function Page({
   if (!instanceId) return notFound()
 
   const queryClient = getQueryClient()
-  const instance = await queryClient
+  await queryClient
     .query(api.instance.get.queryOptions({ input: { id: instanceId } }))
     .catch(noop)
-
-  console.log("Server", { instance })
 
   return (
     <main className="bg-background">
