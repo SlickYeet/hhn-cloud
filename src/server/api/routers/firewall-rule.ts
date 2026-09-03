@@ -9,7 +9,6 @@ import {
 } from "@/schemas/firewall-rule"
 import { protectedProcedure } from "@/server/api/base"
 import { instanceFirewallRuleTable } from "@/server/db/schema"
-import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { addFirewallSyncJob } from "@/server/queues/firewall-sync-queue"
 
 export const firewallRuleRouter = {
@@ -22,26 +21,11 @@ export const firewallRuleRouter = {
         tags: ["Firewall Rules"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
     .output(z.number())
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return 0
-
+    .handler(async ({ context }) => {
       const orgInstanceIds = await context.db.query.instanceTable.findMany({
         columns: { id: true },
-        where: (t, { eq }) => eq(t.organizationId, organizationId),
+        where: (t, { eq }) => eq(t.organizationId, context.organizationId),
       })
 
       if (orgInstanceIds.length === 0) return 0

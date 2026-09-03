@@ -4,6 +4,7 @@ import { ORPCError, os } from "@orpc/server"
 import { env } from "@/env"
 import { auth } from "@/server/auth"
 import { db } from "@/server/db"
+import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 
 export async function createRPCContext(opts: { headers: Headers }) {
   const session = await auth.api.getSession({
@@ -36,12 +37,18 @@ const timingMiddleware = base.middleware(async ({ next, path }) => {
 })
 
 const authMiddleware = base.middleware(async ({ context, next }) => {
-  if (!context.session?.user) {
-    throw new ORPCError("UNAUTHORIZED")
-  }
+  if (!context.session?.user) throw new ORPCError("UNAUTHORIZED")
+
+  const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
+
+  const organizationId =
+    apiKey?.referenceId ??
+    context.session.session.activeOrganizationId ??
+    context.session.user.defaultOrganizationId
 
   return next({
     context: {
+      organizationId,
       session: { ...context.session, user: context.session.user },
     },
   })

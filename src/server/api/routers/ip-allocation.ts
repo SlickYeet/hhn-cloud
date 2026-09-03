@@ -5,7 +5,6 @@ import * as z from "zod"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import { protectedProcedure } from "@/server/api/base"
 import { instanceTable, ipAllocationTable } from "@/server/db/schema"
-import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 
 export const ipAllocationRouter = {
   count: protectedProcedure
@@ -17,29 +16,12 @@ export const ipAllocationRouter = {
         tags: ["IP Allocations"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
     .output(z.number())
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return 0
-
-      // TODO: check if the instance belongs to the organization
-
+    .handler(async ({ context }) => {
       const orgInstanceIds = await context.db.query.instanceTable.findMany({
         columns: { id: true },
         where: and(
-          eq(instanceTable.organizationId, organizationId),
+          eq(instanceTable.organizationId, context.organizationId),
           isNull(instanceTable.deletedAt),
         ),
       })
@@ -68,29 +50,12 @@ export const ipAllocationRouter = {
         tags: ["IP Allocations"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
     .output(z.array(selectIpAllocationSchema))
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return []
-
-      // TODO: check if the instance belongs to the organization
-
+    .handler(async ({ context }) => {
       const orgInstanceIds = await context.db.query.instanceTable.findMany({
         columns: { id: true },
         where: and(
-          eq(instanceTable.organizationId, organizationId),
+          eq(instanceTable.organizationId, context.organizationId),
           isNull(instanceTable.deletedAt),
         ),
       })

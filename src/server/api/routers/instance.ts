@@ -19,7 +19,6 @@ import {
   sshKeyTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
-import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
@@ -39,29 +38,15 @@ export const instanceRouter = {
         tags: ["Instances"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
+
     .output(z.number())
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return 0
-
+    .handler(async ({ context }) => {
       const [instanceCount] = await context.db
         .select({ count: count() })
         .from(instanceTable)
         .where(
           and(
-            eq(instanceTable.organizationId, organizationId),
+            eq(instanceTable.organizationId, context.organizationId),
             isNull(instanceTable.deletedAt),
           ),
         )
@@ -136,16 +121,6 @@ export const instanceRouter = {
         })
       }
 
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        context.session.session.activeOrganizationId || apiKey?.referenceId
-      if (!organizationId) {
-        throw errors.BAD_REQUEST({
-          message: "No active organization found for the user",
-        })
-      }
-
       const instance = await context.db.transaction(async (tx) => {
         const nextVmid = await getNextVmid(proxmox, tx)
 
@@ -159,7 +134,7 @@ export const instanceRouter = {
             memory: plan.memory,
             networkId: network.id,
             operatingSystemId: input.operatingSystemId,
-            organizationId,
+            organizationId: context.organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             resourcePlanId: plan.id,
@@ -362,12 +337,11 @@ export const instanceRouter = {
       NOT_FOUND: {
         message: "Instance not found",
       },
+      UNAUTHORIZED: {
+        message: "You are not authorized to access this instance",
+      },
     })
     .handler(async ({ context, errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
-      // TODO: check if the instance belongs to the organization
-
       const instance = await context.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
         with: {
@@ -377,6 +351,9 @@ export const instanceRouter = {
       })
 
       if (!instance) throw errors.NOT_FOUND()
+      if (instance.organizationId !== context.organizationId) {
+        throw errors.UNAUTHORIZED()
+      }
 
       return instance
     }),
@@ -396,24 +373,18 @@ export const instanceRouter = {
       z
         .object({
           limit: z.coerce.number().optional(),
-          organizationId: z.string().nullish(),
         })
         .optional(),
     )
     .output(z.array(selectInstanceSchema).nullable())
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return []
-
+    .handler(async ({ context }) => {
       const instances = await context.db.query.instanceTable.findMany({
         orderBy: (instances, { desc }) => desc(instances.createdAt),
         where: (i, { and, eq }) =>
-          and(eq(i.organizationId, organizationId), isNull(i.deletedAt)),
+          and(
+            eq(i.organizationId, context.organizationId),
+            isNull(i.deletedAt),
+          ),
         with: {
           ipAllocations: true,
           sshKeys: true,

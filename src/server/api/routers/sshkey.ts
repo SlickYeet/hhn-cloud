@@ -8,7 +8,6 @@ import { createSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
 import { protectedProcedure } from "@/server/api/base"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
-import { getApiKeyFromHeaders } from "@/server/queries/api-key"
 
 function bufferToLengthEncoded(buf: Buffer): Buffer {
   const len = Buffer.alloc(4)
@@ -26,27 +25,12 @@ export const sshKeyRouter = {
         tags: ["SSH Keys"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
     .output(z.number())
-    .handler(async ({ context, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) return 0
-
+    .handler(async ({ context }) => {
       const [sshKeyCount] = await context.db
         .select({ count: count() })
         .from(sshKeyTable)
-        .where(eq(sshKeyTable.organizationId, organizationId))
+        .where(eq(sshKeyTable.organizationId, context.organizationId))
 
       return sshKeyCount.count
     }),
@@ -79,18 +63,6 @@ export const sshKeyRouter = {
       },
     })
     .handler(async ({ context, errors, input }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) {
-        throw errors.BAD_REQUEST({
-          message: "No active organization found for the user",
-        })
-      }
-
       const { privateKey, publicKey } = await new Promise<{
         publicKey: KeyObject
         privateKey: KeyObject
@@ -126,7 +98,7 @@ export const sshKeyRouter = {
             fingerprint,
             id: randomUUID(),
             name: input.name,
-            organizationId,
+            organizationId: context.organizationId,
             publicKey: publicKeyString,
           })
           .returning()
@@ -152,34 +124,11 @@ export const sshKeyRouter = {
         tags: ["SSH Keys"],
       }),
     )
-    .input(
-      z
-        .object({
-          organizationId: z.string().optional(),
-        })
-        .optional(),
-    )
     .output(z.array(selectSshKeySchema))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-    })
-    .handler(async ({ context, input, errors }) => {
-      const { apiKey } = await getApiKeyFromHeaders(context.headers, false)
-
-      const organizationId =
-        input?.organizationId ||
-        context.session.session.activeOrganizationId ||
-        apiKey?.referenceId
-      if (!organizationId) {
-        throw errors.BAD_REQUEST({
-          message: "No active organization found for the user",
-        })
-      }
-
+    .handler(async ({ context }) => {
       const sshKeys = await context.db.query.sshKeyTable.findMany({
-        where: (sshKey, { eq }) => eq(sshKey.organizationId, organizationId),
+        where: (sshKey, { eq }) =>
+          eq(sshKey.organizationId, context.organizationId),
       })
 
       if (!sshKeys || sshKeys.length === 0) return []
