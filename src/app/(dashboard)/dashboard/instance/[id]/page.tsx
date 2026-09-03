@@ -5,7 +5,11 @@ import { HydrateClient } from "@/components/providers/hydrate-client"
 import { getQueryClient } from "@/components/providers/query-client"
 import { Tabs } from "@/components/ui/tabs"
 import { api } from "@/lib/api/client"
+import { InstanceActivity } from "@/modules/dashboard/ui/instance-details/activity"
 import { InstanceDetailsInfo } from "@/modules/dashboard/ui/instance-details/info"
+import { InstanceLocation } from "@/modules/dashboard/ui/instance-details/location"
+import { InstanceOptions } from "@/modules/dashboard/ui/instance-details/options"
+import { InstanceResources } from "@/modules/dashboard/ui/instance-details/resources"
 import { InstanceDetailsTabs } from "@/modules/dashboard/ui/instance-details/tabs"
 
 export default async function Page({
@@ -21,7 +25,7 @@ export default async function Page({
     .catch(noop)
 
   return (
-    <main className="bg-background">
+    <main className="flex flex-col gap-4 bg-background">
       <HydrateClient>
         <Tabs className="w-full" defaultValue="overview">
           <div className="bg-secondary">
@@ -31,8 +35,15 @@ export default async function Page({
             </div>
           </div>
 
-          <div className="mx-auto size-full max-w-384 px-4 py-4 sm:px-6">
-            <p>Instance details for instance with ID: {instanceId}</p>
+          <div className="mx-auto mt-4 flex size-full max-w-384 flex-col gap-4 px-4 sm:px-6">
+            <InstanceResources instanceId={instanceId} />
+            <div className="md: grid grid-cols-1 gap-4 md:grid-cols-2">
+              <InstanceActivity instanceId={instanceId} />
+              <div className="flex flex-col gap-4">
+                <InstanceOptions instanceId={instanceId} />
+                <InstanceLocation instanceId={instanceId} />
+              </div>
+            </div>
           </div>
         </Tabs>
       </HydrateClient>
