@@ -37,3 +37,19 @@ export const DASHBOARD_INFO_CARDS = [
     title: "API Docs",
   },
 ]
+
+export const INSTANCE_DETAILS_TABS = [
+  { label: "Overview", value: "overview" },
+  { label: "Graphs", value: "graphs" },
+  { label: "Backups", value: "backups" },
+  { label: "Snapshots", value: "snapshots" },
+  { label: "Networking", value: "networking" },
+  { label: "Firewall", value: "firewall" },
+  { label: "Volumes", value: "volumes" },
+  { label: "Power", value: "power" },
+  { label: "Rescue", value: "rescue" },
+  { label: "ISO Images", value: "images" },
+  { label: "Rescale", value: "rescale" },
+  { label: "Rebuild", value: "rebuild" },
+  { label: "Delete", value: "delete" },
+]
