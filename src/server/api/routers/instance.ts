@@ -258,8 +258,6 @@ export const instanceRouter = {
       },
     })
     .handler(async ({ context, errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
       // TODO: check if the instance belongs to the organization
 
       const existingInstance = await context.db.query.instanceTable.findFirst({
@@ -408,23 +406,7 @@ export const instanceRouter = {
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      CONFLICT: {
-        message: "Instance is already restarting",
-      },
-      FORBIDDEN: {
-        message: "Instance is not running",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
+    .handler(async ({ input }) => {
       // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
@@ -448,20 +430,7 @@ export const instanceRouter = {
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      FORBIDDEN: {
-        message: "Instance is not running",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
+    .handler(async ({ input }) => {
       // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
@@ -485,23 +454,7 @@ export const instanceRouter = {
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      CONFLICT: {
-        message: "Instance is already running",
-      },
-      FORBIDDEN: {
-        message: "Instance is already running",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
+    .handler(async ({ input }) => {
       // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
@@ -525,20 +478,7 @@ export const instanceRouter = {
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      FORBIDDEN: {
-        message: "Instance is not running",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
+    .handler(async ({ input }) => {
       // TODO: check if the instance belongs to the organization
 
       const vmid = Number(input.id)
@@ -565,24 +505,12 @@ export const instanceRouter = {
         insertInstanceSchema.pick({
           hostname: true,
           id: true,
-          organizationId: true,
         }).shape,
       ),
     )
     .output(z.object({ id: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
+    .handler(async ({ input }) => {
       // TODO: check if the instance belongs to the organization
-
       const vmid = Number(input.id)
       const instanceHostname = input.hostname.toLowerCase()
 

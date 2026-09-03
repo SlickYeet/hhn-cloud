@@ -14,15 +14,10 @@ export default async function Page() {
   const session = await getSession()
   if (!session?.user) return redirect("/auth/sign-in")
 
-  const organizationId =
-    session.session.activeOrganizationId || session.user.defaultOrganizationId
-
   const queryClient = getQueryClient()
   await queryClient
     .query(
-      api.instance.list.queryOptions({
-        input: { limit: DEFAULT_PAGE_SIZE, organizationId },
-      }),
+      api.instance.list.queryOptions({ input: { limit: DEFAULT_PAGE_SIZE } }),
     )
     .catch(noop)
 
@@ -46,7 +41,7 @@ export default async function Page() {
       </div>
 
       <HydrateClient>
-        <InstanceList organizationId={organizationId} />
+        <InstanceList />
       </HydrateClient>
     </main>
   )

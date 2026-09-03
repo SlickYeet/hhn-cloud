@@ -19,7 +19,6 @@ export const selectSshKeySchema = createSelectSchema(
 
 export const createSshKeySchema = insertSshKeySchema.pick({
   name: true,
-  organizationId: true,
 })
 
 export type SSHKey = z.infer<typeof selectSshKeySchema>

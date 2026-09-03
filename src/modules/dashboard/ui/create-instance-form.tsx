@@ -121,11 +121,9 @@ type FormData = {
 function BasicInfoForm({
   defaultValues,
   onNext,
-  organizationId,
 }: {
   defaultValues?: BasicInfo
   onNext: (d: BasicInfo) => void
-  organizationId: string
 }) {
   const form = useForm<BasicInfo>({
     defaultValues: defaultValues || {
@@ -227,10 +225,7 @@ function BasicInfoForm({
                         </ComboboxList>
                         <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
                         <div className="flex items-center justify-start border-t p-2">
-                          <CreateSshKeyModal
-                            className="bg-transparent dark:bg-transparent"
-                            organizationId={organizationId}
-                          />
+                          <CreateSshKeyModal className="bg-transparent dark:bg-transparent" />
                         </div>
                       </ComboboxContent>
                     </Combobox>
@@ -575,13 +570,11 @@ function ReviewAndCreateForm({
   onEditStep,
   onPrev,
   onReset,
-  organizationId,
 }: {
   defaultValues?: FormData
   onEditStep: (stepId: string) => void
   onPrev: () => void
   onReset: () => void
-  organizationId: string
 }) {
   const router = useRouter()
   const queryClient = useQueryClient()
@@ -623,9 +616,7 @@ function ReviewAndCreateForm({
         })
       },
       onSuccess(data) {
-        queryClient.invalidateQueries({
-          queryKey: api.instance.list.key({ input: { organizationId } }),
-        })
+        queryClient.invalidateQueries({ queryKey: api.instance.list.key() })
         toast.success("Instance created successfully!", {
           position: "top-center",
         })
@@ -835,11 +826,7 @@ const STEPS = [
   },
 ]
 
-export function CreateInstanceForm({
-  organizationId,
-}: {
-  organizationId: string
-}) {
+export function CreateInstanceForm() {
   const [current, setCurrent] = React.useState(STEPS[0].id)
   const [formData, setFormData] = React.useState<FormData>({})
 
@@ -902,7 +889,6 @@ export function CreateInstanceForm({
                           setFormData((prev) => ({ ...prev, basics: data }))
                           goNext()
                         }}
-                        organizationId={organizationId}
                       />
                     )}
 
@@ -940,7 +926,6 @@ export function CreateInstanceForm({
                         onEditStep={(stepId) => setCurrent(stepId)}
                         onPrev={() => goBack()}
                         onReset={resetAll}
-                        organizationId={organizationId}
                       />
                     )}
                   </div>

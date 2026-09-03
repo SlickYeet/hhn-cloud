@@ -50,18 +50,16 @@ import type { SSHKey } from "@/schemas/ssh-key"
 import { createSshKeySchema } from "@/schemas/ssh-key"
 
 export function CreateSshKeyModal({
-  organizationId,
   render,
   children,
   className,
 }: {
-  organizationId: string
   render?: React.ReactElement
   children?: React.ReactNode
   className?: string
 }) {
   const queryClient = useQueryClient()
-  const { copied, copyToClipboard } = useCopyToClipboard()
+  const { isCopied, copyToClipboard } = useCopyToClipboard()
 
   const [downloaded, setDownloaded] = React.useState(false)
   const [sshKey, setSshKey] = React.useState<
@@ -71,7 +69,6 @@ export function CreateSshKeyModal({
   const form = useForm<z.infer<typeof createSshKeySchema>>({
     defaultValues: {
       name: "",
-      organizationId,
     },
     resolver: zodResolver(createSshKeySchema),
   })
@@ -193,7 +190,7 @@ export function CreateSshKeyModal({
                       size="icon-xs"
                       type="button"
                     >
-                      {copied ? (
+                      {isCopied ? (
                         <IconCheck className="text-green-500" />
                       ) : (
                         <IconCopy />
@@ -239,11 +236,6 @@ export function CreateSshKeyModal({
                 form.handleSubmit(onSubmit)(e)
               }}
             >
-              <Controller
-                control={form.control}
-                name="organizationId"
-                render={({ field }) => <input {...field} type="hidden" />}
-              />
               <Controller
                 control={form.control}
                 name="name"

@@ -44,12 +44,7 @@ export const sshKeyRouter = {
         tags: ["SSH Keys"],
       }),
     )
-    .input(
-      z.object({
-        ...createSshKeySchema.shape,
-        oranizationId: z.string().optional(),
-      }),
-    )
+    .input(z.object(createSshKeySchema.shape))
     .output(z.object({ ...selectSshKeySchema.shape, privateKey: z.string() }))
     .errors({
       BAD_REQUEST: {
