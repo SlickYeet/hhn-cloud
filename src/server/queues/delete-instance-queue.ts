@@ -39,10 +39,7 @@ export async function addDeleteInstanceJob(data: {
   const deleteInstanceJob = await getDeleteInstanceQueue().add(
     DELETE_INSTANCE_QUEUE_KEY,
     data,
-    {
-      deduplication: { id: jobId },
-      jobId,
-    },
+    { deduplication: { id: jobId }, jobId },
   )
 
   return { jobId: deleteInstanceJob.id }
