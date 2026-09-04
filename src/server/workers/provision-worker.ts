@@ -38,7 +38,7 @@ const provisionWorker = new Worker(
       if (!instance) throw new Error("Instance not found")
 
       const operatingSystem = await db.query.operatingSystemTable.findFirst({
-        where: (t, { eq }) => eq(t.id, instance.operatingSystemId),
+        where: (i, { eq }) => eq(i.id, instance.operatingSystemId),
       })
 
       if (!operatingSystem) throw new Error("Operating system not found")

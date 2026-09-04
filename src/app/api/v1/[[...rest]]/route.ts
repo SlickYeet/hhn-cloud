@@ -8,14 +8,14 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod"
 import { GLOBAL_API_KEY_HEADERS } from "@/constants/auth"
 import { env } from "@/env"
 import { getBaseUrl } from "@/lib/utils"
-import { createRPCContext } from "@/server/api/base"
-import { router } from "@/server/api/routers"
+import { createTRPCContext } from "@/server/api/init"
+import { orpcRouter } from "@/server/api/root"
 
 const generator = new OpenAPIGenerator({
   converters: [new ZodToJsonSchemaConverter()],
 })
 
-const openAPIHandler = new OpenAPIHandler(router, {
+const openAPIHandler = new OpenAPIHandler(orpcRouter, {
   interceptors: [
     onError((error) => {
       console.error(error)
@@ -28,7 +28,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
     new OpenAPIReferenceHandlerPlugin({
       provider: "scalar",
       spec: () =>
-        generator.generate(router, {
+        generator.generate(orpcRouter, {
           base: {
             components: {
               securitySchemes: {
@@ -53,7 +53,7 @@ const openAPIHandler = new OpenAPIHandler(router, {
 
 async function handleOpenAPIRequest(request: Request) {
   const { matched, response } = await openAPIHandler.handle(request, {
-    context: await createRPCContext(request),
+    context: await createTRPCContext(request),
     prefix: "/api/v1",
   })
 

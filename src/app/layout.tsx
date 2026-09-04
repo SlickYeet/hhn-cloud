@@ -1,13 +1,11 @@
-import "@/lib/api/server"
-
 import type { Metadata } from "next"
 import { Roboto_Mono, Source_Code_Pro, Space_Grotesk } from "next/font/google"
 
-import { ORPCProvider } from "@/components/providers/orpc"
 import { ThemeProvider } from "@/components/providers/theme"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
+import { TRPCReactProvider } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
 import "@/styles/globals.css"
@@ -70,12 +68,12 @@ export default function RootLayout({
         <meta content={APP_NAME} name="apple-mobile-web-app-title" />
       </head>
       <body>
-        <ORPCProvider>
+        <TRPCReactProvider>
           <ThemeProvider>
             <TooltipProvider>{children}</TooltipProvider>
             <Toaster richColors />
           </ThemeProvider>
-        </ORPCProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   )

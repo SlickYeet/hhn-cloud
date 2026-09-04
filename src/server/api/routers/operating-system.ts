@@ -1,28 +1,32 @@
 import { openapi } from "@orpc/openapi"
+import { toTRPCMeta } from "@orpc/trpc"
+import { TRPCError } from "@trpc/server"
 import * as z from "zod"
 
 import {
   selectOperatingSystemCategorySchema,
   selectOperatingSystemSchema,
 } from "@/schemas/operatingSystem"
-import { protectedProcedure } from "@/server/api/base"
+import { createTRPCRouter, publicProcedure } from "@/server/api/init"
 
-export const operatingSystemRouter = {
+export const operatingSystemRouter = createTRPCRouter({
   category: {
-    list: protectedProcedure
+    list: publicProcedure
       .meta(
-        openapi({
-          method: "GET",
-          path: "/operating-system/category/list",
-          summary: "List all operating system categories",
-          tags: ["Operating Systems"],
-        }),
+        toTRPCMeta(
+          openapi({
+            method: "GET",
+            path: "/operating-system/category/list",
+            summary: "List all operating system categories",
+            tags: ["Operating Systems"],
+          }),
+        ),
       )
       .output(z.array(selectOperatingSystemCategorySchema))
-      .handler(async ({ context }) => {
+      .query(async ({ ctx }) => {
         const categories =
-          await context.db.query.operatingSystemCategoryTable.findMany({
-            orderBy: (category, { asc }) => asc(category.name),
+          await ctx.db.query.operatingSystemCategoryTable.findMany({
+            orderBy: (c, { asc }) => asc(c.name),
           })
 
         if (!categories || categories.length === 0) return []
@@ -30,30 +34,22 @@ export const operatingSystemRouter = {
         return categories
       }),
   },
-  get: protectedProcedure
+  get: publicProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/operating-system/{id}",
-        summary: "Get an operating system by ID",
-        tags: ["Operating Systems"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/operating-system/{id}",
+          summary: "Get an operating system by ID",
+          tags: ["Operating Systems"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(selectOperatingSystemSchema)
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      NOT_FOUND: {
-        message: "Operating system not found",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
-      if (!input.id) throw errors.BAD_REQUEST()
-
-      const operatingSystem =
-        await context.db.query.operatingSystemTable.findFirst({
+    .query(async ({ ctx, input }) => {
+      const operatingSystem = await ctx.db.query.operatingSystemTable.findFirst(
+        {
           where: (os, { eq }) => eq(os.id, input.id),
           with: {
             release: {
@@ -62,26 +58,34 @@ export const operatingSystemRouter = {
               },
             },
           },
-        })
+        },
+      )
 
-      if (!operatingSystem) throw errors.NOT_FOUND()
+      if (!operatingSystem) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Operating system with ID ${input.id} not found`,
+        })
+      }
 
       return operatingSystem
     }),
 
-  list: protectedProcedure
+  list: publicProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/operating-system/list",
-        summary: "List all operating systems",
-        tags: ["Operating Systems"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/operating-system/list",
+          summary: "List all operating systems",
+          tags: ["Operating Systems"],
+        }),
+      ),
     )
     .output(z.array(selectOperatingSystemSchema))
-    .handler(async ({ context }) => {
-      const operatingSystems =
-        await context.db.query.operatingSystemTable.findMany({
+    .query(async ({ ctx }) => {
+      const operatingSystems = await ctx.db.query.operatingSystemTable.findMany(
+        {
           with: {
             release: {
               with: {
@@ -89,10 +93,11 @@ export const operatingSystemRouter = {
               },
             },
           },
-        })
+        },
+      )
 
       if (!operatingSystems || operatingSystems.length === 0) return []
 
       return operatingSystems
     }),
-}
+})

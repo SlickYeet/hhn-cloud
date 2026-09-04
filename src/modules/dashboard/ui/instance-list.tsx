@@ -1,7 +1,6 @@
 "use client"
 
 import { IconArrowRight } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -10,9 +9,9 @@ import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api } from "@/lib/api/client"
 
 export function InstanceList() {
-  const { data: instances } = useQuery(
-    api.instance.list.queryOptions({ input: { limit: DEFAULT_PAGE_SIZE } }),
-  )
+  const { data: instances } = api.instance.list.useQuery({
+    limit: DEFAULT_PAGE_SIZE,
+  })
 
   if (!instances || instances.length === 0) {
     return (

@@ -1,7 +1,6 @@
 "use client"
 
 import { IconCheck, IconCopy } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
 
 import { Hint } from "@/components/hint"
@@ -14,9 +13,7 @@ import type { InstanceStatus } from "@/schemas/instance"
 export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard()
 
-  const { data: instance } = useQuery(
-    api.instance.get.queryOptions({ input: { id: instanceId } }),
-  )
+  const { data: instance } = api.instance.get.useQuery({ id: instanceId })
 
   if (!instance) return notFound()
 

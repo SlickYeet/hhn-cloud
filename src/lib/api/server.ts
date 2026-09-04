@@ -1,14 +1,25 @@
 import "server-only"
 
-import { createRouterClient } from "@orpc/server"
+import { createHydrationHelpers } from "@trpc/react-query/rsc"
 import { headers } from "next/headers"
+import * as React from "react"
 
-import { createRPCContext } from "@/server/api/base"
-import { router } from "@/server/api/routers"
+import { createTRPCContext } from "@/server/api/init"
+import type { AppRouter } from "@/server/api/root"
+import { createCaller } from "@/server/api/root"
 
-globalThis.$client = createRouterClient(router, {
-  context: async () =>
-    await createRPCContext({
-      headers: await headers(),
-    }),
+import { createQueryClient } from "./query-client"
+
+const createContext = React.cache(async () => {
+  const heads = new Headers(await headers())
+  heads.set("x-trpc-source", "rsc")
+  return createTRPCContext({ headers: heads })
 })
+
+const caller = createCaller(createContext)
+const getQueryClient = React.cache(createQueryClient)
+
+export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
+  caller,
+  getQueryClient,
+)

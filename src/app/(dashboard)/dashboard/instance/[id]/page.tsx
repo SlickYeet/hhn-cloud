@@ -1,10 +1,7 @@
-import { noop } from "@tanstack/react-query"
 import { notFound } from "next/navigation"
 
-import { HydrateClient } from "@/components/providers/hydrate-client"
-import { getQueryClient } from "@/components/providers/query-client"
 import { Tabs } from "@/components/ui/tabs"
-import { api } from "@/lib/api/client"
+import { api, HydrateClient } from "@/lib/api/server"
 import { InstanceActivity } from "@/modules/dashboard/ui/instance-details/activity"
 import { InstanceDetailsInfo } from "@/modules/dashboard/ui/instance-details/info"
 import { InstanceLocation } from "@/modules/dashboard/ui/instance-details/location"
@@ -19,10 +16,7 @@ export default async function Page({
 
   if (!instanceId) return notFound()
 
-  const queryClient = getQueryClient()
-  await queryClient
-    .query(api.instance.get.queryOptions({ input: { id: instanceId } }))
-    .catch(noop)
+  await api.instance.get.prefetch({ id: instanceId })
 
   return (
     <main className="flex flex-col gap-4 bg-background">

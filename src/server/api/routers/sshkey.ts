@@ -1,11 +1,13 @@
 import type { KeyObject } from "node:crypto"
 import { createHash, generateKeyPair, randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
+import { toTRPCMeta } from "@orpc/trpc"
+import { TRPCError } from "@trpc/server"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
 import { createSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
-import { protectedProcedure } from "@/server/api/base"
+import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
 
@@ -15,49 +17,42 @@ function bufferToLengthEncoded(buf: Buffer): Buffer {
   return Buffer.concat([len, buf])
 }
 
-export const sshKeyRouter = {
+export const sshKeyRouter = createTRPCRouter({
   count: protectedProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/sshkey/count",
-        summary: "Count all SSH keys for the active organization of the user",
-        tags: ["SSH Keys"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/sshkey/count",
+          summary: "Count all SSH keys for the active organization of the user",
+          tags: ["SSH Keys"],
+        }),
+      ),
     )
     .output(z.number())
-    .handler(async ({ context }) => {
-      const [sshKeyCount] = await context.db
+    .query(async ({ ctx }) => {
+      const [sshKeyCount] = await ctx.db
         .select({ count: count() })
         .from(sshKeyTable)
-        .where(eq(sshKeyTable.organizationId, context.organizationId))
+        .where(eq(sshKeyTable.organizationId, ctx.organizationId))
 
       return sshKeyCount.count
     }),
 
   create: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/sshkey/create",
-        summary: "Create a new SSH key",
-        tags: ["SSH Keys"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/sshkey/create",
+          summary: "Create a new SSH key",
+          tags: ["SSH Keys"],
+        }),
+      ),
     )
     .input(z.object(createSshKeySchema.shape))
     .output(z.object({ ...selectSshKeySchema.shape, privateKey: z.string() }))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      CONFLICT: {
-        message: "SSH key with the same name already exists",
-      },
-      INTERNAL_SERVER_ERROR: {
-        message: "Internal server error",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const { privateKey, publicKey } = await new Promise<{
         publicKey: KeyObject
         privateKey: KeyObject
@@ -87,13 +82,13 @@ export const sshKeyRouter = {
       const fingerprint = `SHA256:${sha256.replace(/=+$/, "")}`
 
       try {
-        const [sshKey] = await context.db
+        const [sshKey] = await ctx.db
           .insert(sshKeyTable)
           .values({
             fingerprint,
             id: randomUUID(),
             name: input.name,
-            organizationId: context.organizationId,
+            organizationId: ctx.organizationId,
             publicKey: publicKeyString,
           })
           .returning()
@@ -104,9 +99,16 @@ export const sshKeyRouter = {
         }
       } catch (error) {
         if (isUniqueConstraintError(error, "ssh_key_name_idx")) {
-          throw errors.CONFLICT()
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "SSH key name already exists",
+          })
         }
-        throw errors.INTERNAL_SERVER_ERROR()
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal server error",
+        })
       }
     }),
 
@@ -120,14 +122,14 @@ export const sshKeyRouter = {
       }),
     )
     .output(z.array(selectSshKeySchema))
-    .handler(async ({ context }) => {
-      const sshKeys = await context.db.query.sshKeyTable.findMany({
+    .query(async ({ ctx }) => {
+      const sshKeys = await ctx.db.query.sshKeyTable.findMany({
         where: (sshKey, { eq }) =>
-          eq(sshKey.organizationId, context.organizationId),
+          eq(sshKey.organizationId, ctx.organizationId),
       })
 
       if (!sshKeys || sshKeys.length === 0) return []
 
       return sshKeys
     }),
-}
+})

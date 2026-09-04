@@ -12,7 +12,6 @@ import {
   IconServer,
   IconShieldCheck,
 } from "@tabler/icons-react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import * as React from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -133,7 +132,7 @@ function BasicInfoForm({
     resolver: zodResolver(basicInfoSchema),
   })
 
-  const { data: sshKeys } = useQuery(api.sshKey.list.queryOptions())
+  const { data: sshKeys } = api.sshKey.list.useQuery()
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only re-sync when defaultValues changes
   React.useEffect(() => {
@@ -249,7 +248,7 @@ function BasicInfoForm({
 
       <Alert className="py-4" variant="info">
         <IconShieldCheck />
-        <AlertTitle className="font-semibold text-primary-foreground!">
+        <AlertTitle className="font-semibold dark:text-primary-foreground">
           Secure by default
         </AlertTitle>
         <AlertDescription className="mt-1 text-foreground/70!">
@@ -290,12 +289,9 @@ function OperatingSystemForm({
     resolver: zodResolver(operatingSystemSchema),
   })
 
-  const { data: operatingSystemCategories } = useQuery(
-    api.operatingSystem.category.list.queryOptions(),
-  )
-  const { data: operatingSystems } = useQuery(
-    api.operatingSystem.list.queryOptions(),
-  )
+  const { data: operatingSystemCategories } =
+    api.operatingSystem.category.list.useQuery()
+  const { data: operatingSystems } = api.operatingSystem.list.useQuery()
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only re-sync when defaultValues changes
   React.useEffect(() => {
@@ -471,7 +467,7 @@ function ResourcePlanForm({
     resolver: zodResolver(resourcePlanSchema),
   })
 
-  const { data: resourcePlans } = useQuery(api.resourcePlan.list.queryOptions())
+  const { data: resourcePlans } = api.resourcePlan.list.useQuery()
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: only re-sync when defaultValues changes
   React.useEffect(() => {
@@ -577,7 +573,7 @@ function ReviewAndCreateForm({
   onReset: () => void
 }) {
   const router = useRouter()
-  const queryClient = useQueryClient()
+  const utils = api.useUtils()
 
   const form = useForm<ReviewAndCreateInfo>({
     defaultValues: {
@@ -588,11 +584,9 @@ function ReviewAndCreateForm({
     resolver: zodResolver(refinedCreateInstanceSchema),
   })
 
-  const { data: sshKeys } = useQuery(api.sshKey.list.queryOptions())
-  const { data: operatingSystems } = useQuery(
-    api.operatingSystem.list.queryOptions(),
-  )
-  const { data: resourcePlans } = useQuery(api.resourcePlan.list.queryOptions())
+  const { data: sshKeys } = api.sshKey.list.useQuery()
+  const { data: operatingSystems } = api.operatingSystem.list.useQuery()
+  const { data: resourcePlans } = api.resourcePlan.list.useQuery()
 
   const selectedSshKey = sshKeys?.find(
     (key) => key.id === defaultValues?.basics?.sshKeyId,
@@ -607,24 +601,22 @@ function ReviewAndCreateForm({
   const OsIcon = getOperatingSystemIcon(selectedOs?.release?.family)
   const PlanIcon = getResourcePlanIcon(selectedPlan?.slug)
 
-  const mutation = useMutation(
-    api.instance.create.mutationOptions({
-      onError(error) {
-        toast.error("Failed to create instance:", {
-          description: error.message,
-          position: "top-center",
-        })
-      },
-      onSuccess(data) {
-        queryClient.invalidateQueries({ queryKey: api.instance.list.key() })
-        toast.success("Instance created successfully!", {
-          position: "top-center",
-        })
-        onReset()
-        router.push(`/dashboard/instance/${data.instanceId}`)
-      },
-    }),
-  )
+  const mutation = api.instance.create.useMutation({
+    onError(error) {
+      toast.error("Failed to create instance:", {
+        description: error.message,
+        position: "top-center",
+      })
+    },
+    async onSuccess(data) {
+      await utils.instance.list.invalidate()
+      toast.success("Instance created successfully!", {
+        position: "top-center",
+      })
+      onReset()
+      router.push(`/dashboard/instance/${data.instanceId}`)
+    },
+  })
 
   const isPending = mutation.isPending || form.formState.isSubmitting
 

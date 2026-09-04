@@ -1,6 +1,5 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon } from "lucide-react"
 import { notFound } from "next/navigation"
 
@@ -16,9 +15,7 @@ import {
 import { api } from "@/lib/api/client"
 
 export function InstanceResources({ instanceId }: { instanceId: string }) {
-  const { data: instance } = useQuery(
-    api.instance.get.queryOptions({ input: { id: instanceId } }),
-  )
+  const { data: instance } = api.instance.get.useQuery({ id: instanceId })
 
   if (!instance) return notFound()
 

@@ -1,12 +1,9 @@
 import { IconServer2 } from "@tabler/icons-react"
-import { noop } from "@tanstack/react-query"
 import { redirect } from "next/navigation"
 
-import { HydrateClient } from "@/components/providers/hydrate-client"
-import { getQueryClient } from "@/components/providers/query-client"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
-import { api } from "@/lib/api/client"
+import { api, HydrateClient } from "@/lib/api/server"
 import { InstanceList } from "@/modules/dashboard/ui/instance-list"
 import { getSession } from "@/server/auth/utils"
 
@@ -14,12 +11,7 @@ export default async function Page() {
   const session = await getSession()
   if (!session?.user) return redirect("/auth/sign-in")
 
-  const queryClient = getQueryClient()
-  await queryClient
-    .query(
-      api.instance.list.queryOptions({ input: { limit: DEFAULT_PAGE_SIZE } }),
-    )
-    .catch(noop)
+  await api.instance.list.prefetch({ limit: DEFAULT_PAGE_SIZE })
 
   return (
     <main className="mx-auto size-full max-w-384 px-4 pb-6 sm:px-6">

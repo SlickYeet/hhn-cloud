@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
+import { toTRPCMeta } from "@orpc/trpc"
+import { TRPCError } from "@trpc/server"
 import { and, count, eq, isNull } from "drizzle-orm"
 import * as z from "zod"
 
@@ -11,7 +13,7 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
-import { protectedProcedure } from "@/server/api/base"
+import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import {
   instanceSshKeyTable,
   instanceTable,
@@ -28,25 +30,27 @@ import { createDhcpReservation } from "@/server/services/network"
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 const proxmox = getProxmoxClient()
 
-export const instanceRouter = {
+export const instanceRouter = createTRPCRouter({
   count: protectedProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/instance/count",
-        summary: "Count all instances for the active organization of the user",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/instance/count",
+          summary:
+            "Count all instances for the active organization of the user",
+          tags: ["Instances"],
+        }),
+      ),
     )
-
     .output(z.number())
-    .handler(async ({ context }) => {
-      const [instanceCount] = await context.db
+    .query(async ({ ctx }) => {
+      const [instanceCount] = await ctx.db
         .select({ count: count() })
         .from(instanceTable)
         .where(
           and(
-            eq(instanceTable.organizationId, context.organizationId),
+            eq(instanceTable.organizationId, ctx.organizationId),
             isNull(instanceTable.deletedAt),
           ),
         )
@@ -56,13 +60,15 @@ export const instanceRouter = {
 
   create: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/instance/create",
-        successStatus: 202,
-        summary: "Create a new instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/instance/create",
+          successStatus: 202,
+          summary: "Create a new instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object(createInstanceSchema.shape))
     .output(
@@ -72,31 +78,18 @@ export const instanceRouter = {
         message: z.string(),
       }),
     )
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      CONFLICT: {
-        message: "An instance with that vmid already exists",
-      },
-      INTERNAL_SERVER_ERROR: {
-        message: "An unexpected error occurred while processing the request",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const network = await getCloudNetwork()
       if (!network) {
-        throw errors.NOT_FOUND({
+        throw new TRPCError({
+          code: "NOT_FOUND",
           message: "Network not found",
         })
       }
 
       const macAddress = generateMacAddress()
 
-      const plan = await context.db.query.resourcePlanTable.findFirst({
+      const plan = await ctx.db.query.resourcePlanTable.findFirst({
         where: (plan, { or, eq }) =>
           or(
             eq(plan.id, input.resourcePlanId),
@@ -105,23 +98,25 @@ export const instanceRouter = {
       })
 
       if (!plan) {
-        throw errors.NOT_FOUND({
+        throw new TRPCError({
+          code: "NOT_FOUND",
           message: `Resource plan ${input.resourcePlanId} not found`,
         })
       }
 
-      const [sshKey] = await context.db
+      const [sshKey] = await ctx.db
         .select()
         .from(sshKeyTable)
         .where(eq(sshKeyTable.id, input.sshKeyId))
 
       if (!sshKey) {
-        throw errors.NOT_FOUND({
+        throw new TRPCError({
+          code: "NOT_FOUND",
           message: `SSH key ${input.sshKeyId} not found`,
         })
       }
 
-      const instance = await context.db.transaction(async (tx) => {
+      const instance = await ctx.db.transaction(async (tx) => {
         const nextVmid = await getNextVmid(proxmox, tx)
         const instanceHostname = input.hostname.toLowerCase()
 
@@ -135,7 +130,7 @@ export const instanceRouter = {
             memory: plan.memory,
             networkId: network.id,
             operatingSystemId: input.operatingSystemId,
-            organizationId: context.organizationId,
+            organizationId: ctx.organizationId,
             pveNode: PROXMOX_DEFAULT_NODE,
             pveVmid: nextVmid,
             resourcePlanId: plan.id,
@@ -149,13 +144,19 @@ export const instanceRouter = {
           })
 
         if (!instanceRow) {
-          throw errors.CONFLICT({
+          throw new TRPCError({
+            code: "CONFLICT",
             message: `VMID ${nextVmid} already exists`,
           })
         }
 
         const [newInstance] = instanceRow
-        if (!newInstance) throw errors.INTERNAL_SERVER_ERROR()
+        if (!newInstance) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create instance",
+          })
+        }
 
         const ipAllocations = await tx
           .insert(ipAllocationTable)
@@ -177,7 +178,8 @@ export const instanceRouter = {
           })
 
         if (!ipAllocations) {
-          throw errors.CONFLICT({
+          throw new TRPCError({
+            code: "CONFLICT",
             message: `IP ${network.ip.split("/")[0]} already allocated`,
           })
         }
@@ -192,7 +194,8 @@ export const instanceRouter = {
           .returning()
 
         if (!instanceSshKey) {
-          throw errors.INTERNAL_SERVER_ERROR({
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
             message: "Failed to associate SSH key with instance",
           })
         }
@@ -217,7 +220,8 @@ export const instanceRouter = {
       })
 
       if (!jobId) {
-        throw errors.INTERNAL_SERVER_ERROR({
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
           message: "Provision job could not be created",
         })
       }
@@ -231,12 +235,14 @@ export const instanceRouter = {
 
   delete: protectedProcedure
     .meta(
-      openapi({
-        method: "DELETE",
-        path: "/instance/{id}/delete",
-        summary: "Delete an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "DELETE",
+          path: "/instance/{id}/delete",
+          summary: "Delete an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(
@@ -246,37 +252,35 @@ export const instanceRouter = {
         message: z.string(),
       }),
     )
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      INTERNAL_SERVER_ERROR: {
-        message: "An unexpected error occurred while processing the request",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
+    .mutation(async ({ ctx, input }) => {
       // TODO: check if the instance belongs to the organization
 
-      const existingInstance = await context.db.query.instanceTable.findFirst({
+      const existingInstance = await ctx.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
       })
 
       if (!existingInstance) {
-        throw errors.NOT_FOUND({
+        throw new TRPCError({
+          code: "NOT_FOUND",
           message: `Instance ${input.id} not found`,
         })
       }
 
+      if (existingInstance.organizationId !== ctx.organizationId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have permission to delete this instance",
+        })
+      }
+
       if (existingInstance.deletedAt) {
-        throw errors.BAD_REQUEST({
+        throw new TRPCError({
+          code: "BAD_REQUEST",
           message: `Instance ${input.id} is already deleted`,
         })
       }
 
-      const instance = await context.db.transaction(async (tx) => {
+      const instance = await ctx.db.transaction(async (tx) => {
         const instanceRow = await tx
           .update(instanceTable)
           .set({
@@ -293,7 +297,8 @@ export const instanceRouter = {
 
         const [deletedInstance] = instanceRow
         if (!deletedInstance) {
-          throw errors.NOT_FOUND({
+          throw new TRPCError({
+            code: "NOT_FOUND",
             message: `Instance ${input.id} not found or already deleted`,
           })
         }
@@ -306,7 +311,8 @@ export const instanceRouter = {
       })
 
       if (!jobId) {
-        throw errors.INTERNAL_SERVER_ERROR({
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
           message: "Delete instance job could not be created",
         })
       }
@@ -320,28 +326,19 @@ export const instanceRouter = {
 
   get: protectedProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/instance/{id}/get",
-        summary: "Get an instance by ID",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/instance/{id}/get",
+          summary: "Get an instance by ID",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(z.object(selectInstanceSchema.shape))
-    .errors({
-      BAD_REQUEST: {
-        message: "Invalid request",
-      },
-      NOT_FOUND: {
-        message: "Instance not found",
-      },
-      UNAUTHORIZED: {
-        message: "You are not authorized to access this instance",
-      },
-    })
-    .handler(async ({ context, errors, input }) => {
-      const instance = await context.db.query.instanceTable.findFirst({
+    .query(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
         with: {
           ipAllocations: true,
@@ -349,9 +346,18 @@ export const instanceRouter = {
         },
       })
 
-      if (!instance) throw errors.NOT_FOUND()
-      if (instance.organizationId !== context.organizationId) {
-        throw errors.UNAUTHORIZED()
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
+
+      if (instance.organizationId !== ctx.organizationId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to access this instance",
+        })
       }
 
       return instance
@@ -359,14 +365,16 @@ export const instanceRouter = {
 
   list: protectedProcedure
     .meta(
-      openapi({
-        description:
-          "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
-        method: "GET",
-        path: "/instance/list",
-        summary: "List an organization's instances",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          description:
+            "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
+          method: "GET",
+          path: "/instance/list",
+          summary: "List an organization's instances",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(
       z
@@ -376,14 +384,11 @@ export const instanceRouter = {
         .optional(),
     )
     .output(z.array(selectInstanceSchema).nullable())
-    .handler(async ({ context }) => {
-      const instances = await context.db.query.instanceTable.findMany({
+    .query(async ({ ctx }) => {
+      const instances = await ctx.db.query.instanceTable.findMany({
         orderBy: (instances, { desc }) => desc(instances.createdAt),
         where: (i, { and, eq }) =>
-          and(
-            eq(i.organizationId, context.organizationId),
-            isNull(i.deletedAt),
-          ),
+          and(eq(i.organizationId, ctx.organizationId), isNull(i.deletedAt)),
         with: {
           ipAllocations: true,
           sshKeys: true,
@@ -397,111 +402,158 @@ export const instanceRouter = {
 
   restart: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/instance/{id}/restart",
-        summary: "Restart an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/instance/{id}/restart",
+          summary: "Restart an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      // TODO: check if the instance belongs to the organization
+    .mutation(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+      })
 
-      const vmid = Number(input.id)
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
 
+      // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(vmid)
+        .qemu.$(Number(instance.pveVmid))
         .status.reboot.$post()
 
-      return { id: input.id }
+      return { id: instance.id }
     }),
 
   shutdown: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/instance/{id}/shutdown",
-        summary: "Shutdown an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/instance/{id}/shutdown",
+          summary: "Shutdown an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      // TODO: check if the instance belongs to the organization
+    .mutation(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+      })
 
-      const vmid = Number(input.id)
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
 
+      // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(vmid)
+        .qemu.$(Number(instance.pveVmid))
         .status.shutdown.$post()
 
-      return { id: input.id }
+      return { id: instance.id }
     }),
 
   start: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/instance/{id}/start",
-        summary: "Start an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/instance/{id}/start",
+          summary: "Start an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      // TODO: check if the instance belongs to the organization
+    .mutation(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+      })
 
-      const vmid = Number(input.id)
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
 
+      // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(vmid)
+        .qemu.$(Number(instance.pveVmid))
         .status.start.$post()
 
-      return { id: input.id }
+      return { id: instance.id }
     }),
 
   stop: protectedProcedure
     .meta(
-      openapi({
-        method: "POST",
-        path: "/instance/{id}/stop",
-        summary: "Stop an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/instance/{id}/stop",
+          summary: "Stop an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      // TODO: check if the instance belongs to the organization
+    .mutation(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+      })
 
-      const vmid = Number(input.id)
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
 
+      // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(vmid)
+        .qemu.$(Number(instance.pveVmid))
         .status.stop.$post()
 
-      return { id: input.id }
+      return { id: instance.id }
     }),
 
   update: protectedProcedure
     .meta(
-      openapi({
-        method: "PUT",
-        path: "/instance/{id}",
-        summary: "Update an instance",
-        tags: ["Instances"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "PUT",
+          path: "/instance/{id}",
+          summary: "Update an instance",
+          tags: ["Instances"],
+        }),
+      ),
     )
     .input(
       z.object(
+        // TODO: expand allowed fields for update
         insertInstanceSchema.pick({
           hostname: true,
           id: true,
@@ -509,15 +561,29 @@ export const instanceRouter = {
       ),
     )
     .output(z.object({ id: z.string() }))
-    .handler(async ({ input }) => {
-      // TODO: check if the instance belongs to the organization
-      const vmid = Number(input.id)
+    .mutation(async ({ ctx, input }) => {
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+      })
+
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
+
       const instanceHostname = input.hostname.toLowerCase()
 
-      await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).config.$put({
-        name: instanceHostname,
-      })
+      // TODO: send to update instance queue
+      await proxmox.nodes
+        .$(PROXMOX_DEFAULT_NODE)
+        .qemu.$(Number(instance.pveVmid))
+        .config.$put({
+          name: instanceHostname,
+        })
 
       return { id: input.id }
     }),
-}
+})

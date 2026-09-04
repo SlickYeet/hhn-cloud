@@ -8,7 +8,6 @@ import {
   IconDownload,
   IconPlus,
 } from "@tabler/icons-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import JSZip from "jszip"
 import * as React from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -58,7 +57,7 @@ export function CreateSshKeyModal({
   children?: React.ReactNode
   className?: string
 }) {
-  const queryClient = useQueryClient()
+  const utils = api.useUtils()
   const { isCopied, copyToClipboard } = useCopyToClipboard()
 
   const [downloaded, setDownloaded] = React.useState(false)
@@ -73,23 +72,19 @@ export function CreateSshKeyModal({
     resolver: zodResolver(createSshKeySchema),
   })
 
-  const createSshKey = useMutation(
-    api.sshKey.create.mutationOptions({
-      onError(error) {
-        toast.error("Failed to create SSH key:", {
-          description: error.message,
-          position: "top-center",
-        })
-      },
-      onSuccess(data) {
-        setSshKey(data)
-        form.reset()
-        queryClient.invalidateQueries({
-          queryKey: api.sshKey.list.queryKey(),
-        })
-      },
-    }),
-  )
+  const createSshKey = api.sshKey.create.useMutation({
+    onError(error) {
+      toast.error("Failed to create SSH key:", {
+        description: error.message,
+        position: "top-center",
+      })
+    },
+    async onSuccess(data) {
+      setSshKey(data)
+      form.reset()
+      await utils.sshKey.list.invalidate()
+    },
+  })
 
   const isDisabled = form.formState.isSubmitting || createSshKey.isPending
 

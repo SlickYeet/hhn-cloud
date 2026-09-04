@@ -11,35 +11,25 @@ import {
   IconUsers,
   IconWall,
 } from "@tabler/icons-react"
-import { useQuery } from "@tanstack/react-query"
 
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
 export function OrgResources() {
-  const { data: instanceCount, isLoading: isInstanceCountPending } = useQuery(
-    api.instance.count.queryOptions(),
-  )
-  const { data: sshKeyCount, isPending: isSshKeyCountPending } = useQuery(
-    api.sshKey.count.queryOptions(),
-  )
-  const { data: primaryIpCount, isPending: isPrimaryIpCountPending } = useQuery(
-    api.ipAllocation.count.queryOptions(),
-  )
-  const { data: networkCount, isPending: isNetworkCountPending } = useQuery(
-    api.network.count.queryOptions(),
-  )
+  const { data: instanceCount, isLoading: isInstanceCountPending } =
+    api.instance.count.useQuery()
+  const { data: sshKeyCount, isPending: isSshKeyCountPending } =
+    api.sshKey.count.useQuery()
+  const { data: primaryIpCount, isPending: isPrimaryIpCountPending } =
+    api.ipAllocation.count.useQuery()
+  const { data: networkCount, isPending: isNetworkCountPending } =
+    api.network.count.useQuery()
   const { data: firewallRuleCount, isPending: isFirewallRuleCountPending } =
-    useQuery(api.firewallRule.count.queryOptions())
-  // const { data: snapshotCount, isPending: isSnapshotCountPending } = useQuery(
-  //   api.snapshot.count.queryOptions(),
-  // )
-  // const { data: apiKeyCount, isPending: isApiKeyCountPending } = useQuery(
-  //   api.apiKey.count.queryOptions(),
-  // )
-  const { data: memberCount, isPending: isMemberCountPending } = useQuery(
-    api.organization.member.count.queryOptions(),
-  )
+    api.firewallRule.count.useQuery()
+  // const { data: snapshotCount, isPending: isSnapshotCountPending } = api.snapshot.count.useQuery()
+  // const { data: apiKeyCount, isPending: isApiKeyCountPending } = api.apiKey.count.useQuery()
+  const { data: memberCount, isPending: isMemberCountPending } =
+    api.organization.member.count.useQuery()
 
   const ORG_RESOURCES = [
     {

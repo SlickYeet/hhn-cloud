@@ -25,15 +25,15 @@ const firewallSyncWorker = new Worker(
     const { instanceId } = firewallSyncJobSchema.parse(job.data)
 
     const instance = await db.query.instanceTable.findFirst({
-      where: (t, { eq }) => eq(t.id, instanceId),
+      where: (i, { eq }) => eq(i.id, instanceId),
     })
 
     if (!instance) return
 
     const queriedRules = await db.query.instanceFirewallRuleTable.findMany({
-      orderBy: (t, { asc }) => asc(t.priority),
-      where: (t, { and, eq }) =>
-        and(eq(t.instanceId, instanceId), eq(t.enabled, true)),
+      orderBy: (i, { asc }) => asc(i.priority),
+      where: (i, { and, eq }) =>
+        and(eq(i.instanceId, instanceId), eq(i.enabled, true)),
     })
 
     const platformRules = buildPlatformRules({
