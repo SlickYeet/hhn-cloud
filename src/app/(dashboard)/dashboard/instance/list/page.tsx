@@ -1,7 +1,9 @@
-import { IconServer2 } from "@tabler/icons-react"
+import { IconCirclePlus, IconServer2 } from "@tabler/icons-react"
+import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
 import { InstanceList } from "@/modules/dashboard/ui/instance-list"
@@ -29,6 +31,16 @@ export default async function Page() {
             <p className="font-medium"></p>
             <p className="text-xs">Your virtual infrastructure</p>
           </div>
+        </div>
+        <div>
+          <Button
+            nativeButton={false}
+            render={<Link href="/dashboard/instance/create" />}
+            size="lg"
+            variant="secondary"
+          >
+            <IconCirclePlus /> New Instance
+          </Button>
         </div>
       </div>
 
