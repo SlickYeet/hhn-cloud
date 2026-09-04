@@ -12,6 +12,7 @@ import {
   IconWall,
 } from "@tabler/icons-react"
 
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 
@@ -85,40 +86,44 @@ export function OrgResources() {
   ]
 
   return (
-    <div className="flex flex-col rounded-md bg-gray-50 lg:rounded-l-none dark:bg-card">
+    <div className="flex max-w-full flex-col rounded-md bg-gray-50 lg:max-w-96 lg:rounded-l-none dark:bg-card">
       <div className="flex items-center justify-between rounded-b-none border-b bg-muted px-4 py-2 lg:rounded-tl-none lg:rounded-tr-md">
         <p className="text-muted-foreground uppercase">Org Resources</p>
         <IconMap className="size-4" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 max-lg:[&>*:last-child]:rounded-br-md max-lg:[&>*:nth-last-child(2)]:rounded-bl-md">
-        {ORG_RESOURCES.map((resource) => {
-          const Icon = resource.icon
+      <ScrollArea className="h-[calc(var(--dashboard-card-height)-var(--dashboard-0rg-resources-header-height))]">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-lg:[&>*:last-child]:rounded-br-md max-lg:[&>*:nth-last-child(2)]:rounded-bl-md">
+          {ORG_RESOURCES.map((resource) => {
+            const Icon = resource.icon
 
-          return (
-            <button
-              className={cn(
-                "flex items-center gap-3 border px-6 py-4 text-left hover:bg-[color-mix(in_oklch,var(--color-gray-50),var(--foreground)_5%)] dark:hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_5%)]",
-                resource.link ? "cursor-pointer" : "",
-              )}
-              key={resource.name}
-              onClick={() =>
-                resource.link && window.location.assign(resource.link)
-              }
-              type="button"
-            >
-              <Icon className="size-7 stroke-[1.5] stroke-primary" />
-              <div className="flex flex-col">
-                {resource.isPending ? (
-                  <div className="h-7 w-10 animate-pulse rounded-md bg-muted" />
-                ) : (
-                  <p className="font-medium text-xl">{resource.value}</p>
+            return (
+              <button
+                className={cn(
+                  "flex items-center gap-3 border px-6 py-4 text-left hover:bg-[color-mix(in_oklch,var(--color-gray-50),var(--foreground)_5%)] dark:hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_5%)]",
+                  resource.link ? "cursor-pointer" : "",
                 )}
-                <p className="text-muted-foreground">{resource.name}</p>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+                key={resource.name}
+                onClick={() =>
+                  resource.link && window.location.assign(resource.link)
+                }
+                type="button"
+              >
+                <Icon className="size-7 stroke-[1.5] stroke-primary" />
+                <div className="flex flex-col">
+                  {resource.isPending ? (
+                    <div className="h-7 w-10 animate-pulse rounded-md bg-muted" />
+                  ) : (
+                    <p className="font-medium text-xl">{resource.value}</p>
+                  )}
+                  <p className="text-wrap text-[15px] text-muted-foreground">
+                    {resource.name}
+                  </p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </ScrollArea>
     </div>
   )
 }
