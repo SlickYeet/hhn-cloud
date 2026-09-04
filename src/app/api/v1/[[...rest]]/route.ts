@@ -4,12 +4,17 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins"
 import { onError } from "@orpc/server"
 import { ZodToJsonSchemaConverter } from "@orpc/zod"
+import type { NextRequest } from "next/server"
 
 import { GLOBAL_API_KEY_HEADERS } from "@/constants/auth"
 import { env } from "@/env"
 import { getBaseUrl } from "@/lib/utils"
 import { createTRPCContext } from "@/server/api/init"
 import { orpcRouter } from "@/server/api/root"
+
+async function createContext(req: NextRequest) {
+  return createTRPCContext({ headers: req.headers })
+}
 
 const generator = new OpenAPIGenerator({
   converters: [new ZodToJsonSchemaConverter()],
@@ -51,9 +56,9 @@ const openAPIHandler = new OpenAPIHandler(orpcRouter, {
   ],
 })
 
-async function handleOpenAPIRequest(request: Request) {
+async function handleOpenAPIRequest(request: NextRequest) {
   const { matched, response } = await openAPIHandler.handle(request, {
-    context: await createTRPCContext(request),
+    context: await createContext(request),
     prefix: "/api/v1",
   })
 
