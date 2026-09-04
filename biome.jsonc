@@ -56,7 +56,7 @@
       "!pnpm-lock.yaml",
       "!bun.lock",
       "!yarn.lock",
-      "!drizzle",
+      "!drizzle"
     ]
   },
   "formatter": {
