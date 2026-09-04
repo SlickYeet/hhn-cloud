@@ -18,10 +18,6 @@ function getProvisionQueue(): Queue {
       connection,
       defaultJobOptions: {
         attempts: 1,
-        backoff: {
-          delay: 2000,
-          type: "exponential",
-        },
         removeOnComplete: { age: 3600, count: 1000 },
         removeOnFail: { age: 24 * 3600 },
       },
