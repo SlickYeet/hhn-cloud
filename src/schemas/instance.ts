@@ -7,9 +7,6 @@ import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import type { instanceStatusEnum } from "@/server/db/schema"
 import { instanceTable } from "@/server/db/schema"
 
-export type Instance = typeof instanceTable.$inferInsert
-export type InstanceStatus = (typeof instanceStatusEnum.enumValues)[number]
-
 const instanceSchemaConstraints = {
   cores: z.int().min(1).max(64),
   createdAt: z.coerce.date().optional(),
@@ -61,3 +58,6 @@ export const createInstanceSchema = insertInstanceSchema
     resourcePlanId: z.union([z.uuid(), z.string()]),
     sshKeyId: z.string(),
   })
+
+export type Instance = z.infer<typeof selectInstanceSchema>
+export type InstanceStatus = (typeof instanceStatusEnum.enumValues)[number]
