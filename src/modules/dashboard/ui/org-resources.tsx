@@ -62,7 +62,7 @@ export function OrgResources() {
     {
       icon: IconWall,
       isPending: isFirewallRuleCountPending,
-      name: "Firewall Rules",
+      name: "Firewall",
       value: firewallRuleCount || 0,
     },
     {
