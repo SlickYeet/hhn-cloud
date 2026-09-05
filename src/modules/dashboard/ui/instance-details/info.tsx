@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
@@ -292,7 +293,7 @@ export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
   if (!instance) return notFound()
 
   return (
-    <div className="mb-4 flex h-16 items-center justify-between">
+    <div className="mb-4 flex h-auto flex-col gap-4 md:h-16 md:flex-row md:items-center md:justify-between md:gap-0">
       <div className="flex flex-col items-start gap-1">
         <div className="ml-0.5 flex items-center gap-4">
           <Hint label={`Instance: ${instance.status}`} side="bottom">
@@ -323,20 +324,23 @@ export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
             <span className="sr-only">Copy to clipboard</span>
           </Button>
         </div>
-        <div className="flex items-center gap-5">
-          {instance.ipAllocations.map((allocation) => (
-            <IPAddress ipAddress={allocation.ipAddress} key={allocation.id} />
-          ))}
-          <Button
-            className="gap-1.5 px-0"
-            // TODO
-            onClick={() => alert("Coming soon!")}
-            size="sm"
-            variant="link"
-          >
-            <IconNetwork /> Add Floating IP
-          </Button>
-        </div>
+        <ScrollArea className="w-full">
+          <div className="flex items-center gap-5">
+            {instance.ipAllocations.map((allocation) => (
+              <IPAddress ipAddress={allocation.ipAddress} key={allocation.id} />
+            ))}
+            <Button
+              className="gap-1.5 px-0"
+              // TODO
+              onClick={() => alert("Coming soon!")}
+              size="sm"
+              variant="link"
+            >
+              <IconNetwork /> Add Floating IP
+            </Button>
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
       <InstanceActions instance={instance} />
     </div>
