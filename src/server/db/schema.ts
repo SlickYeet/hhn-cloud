@@ -190,7 +190,9 @@ export const instanceFirewallRuleTable = createTable(
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
   "provisioning",
+  "starting",
   "running",
+  "stopping",
   "stopped",
   "restarting",
   "pending_deletion",
