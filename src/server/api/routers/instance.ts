@@ -426,11 +426,23 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db
+        .update(instanceTable)
+        .set({ status: "restarting" })
+        .where(and(eq(instanceTable.id, instance.id)))
+
       // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
         .qemu.$(Number(instance.pveVmid))
         .status.reboot.$post()
+
+      setTimeout(async () => {
+        await ctx.db
+          .update(instanceTable)
+          .set({ status: "running" })
+          .where(and(eq(instanceTable.id, instance.id)))
+      }, 5000)
 
       return { id: instance.id }
     }),
@@ -461,11 +473,23 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db
+        .update(instanceTable)
+        .set({ status: "stopping" })
+        .where(and(eq(instanceTable.id, instance.id)))
+
       // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
         .qemu.$(Number(instance.pveVmid))
         .status.shutdown.$post()
+
+      setTimeout(async () => {
+        await ctx.db
+          .update(instanceTable)
+          .set({ status: "stopped" })
+          .where(and(eq(instanceTable.id, instance.id)))
+      }, 5000)
 
       return { id: instance.id }
     }),
@@ -496,11 +520,23 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db
+        .update(instanceTable)
+        .set({ status: "starting" })
+        .where(and(eq(instanceTable.id, instance.id)))
+
       // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
         .qemu.$(Number(instance.pveVmid))
         .status.start.$post()
+
+      setTimeout(async () => {
+        await ctx.db
+          .update(instanceTable)
+          .set({ status: "running" })
+          .where(and(eq(instanceTable.id, instance.id)))
+      }, 5000)
 
       return { id: instance.id }
     }),
@@ -531,11 +567,23 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
+      await ctx.db
+        .update(instanceTable)
+        .set({ status: "stopping" })
+        .where(and(eq(instanceTable.id, instance.id)))
+
       // TODO: send to power action queue
       await proxmox.nodes
         .$(PROXMOX_DEFAULT_NODE)
         .qemu.$(Number(instance.pveVmid))
         .status.stop.$post()
+
+      setTimeout(async () => {
+        await ctx.db
+          .update(instanceTable)
+          .set({ status: "stopped" })
+          .where(and(eq(instanceTable.id, instance.id)))
+      }, 5000)
 
       return { id: instance.id }
     }),
