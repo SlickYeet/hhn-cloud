@@ -400,13 +400,13 @@ export const instanceRouter = createTRPCRouter({
       return instances
     }),
 
-  restart: protectedProcedure
+  reboot: protectedProcedure
     .meta(
       toTRPCMeta(
         openapi({
           method: "POST",
-          path: "/instance/{id}/restart",
-          summary: "Restart an instance",
+          path: "/instance/{id}/reboot",
+          summary: "Reboot an instance",
           tags: ["Instances"],
         }),
       ),

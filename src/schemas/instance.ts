@@ -61,3 +61,12 @@ export const createInstanceSchema = insertInstanceSchema
 
 export type Instance = z.infer<typeof selectInstanceSchema>
 export type InstanceStatus = (typeof instanceStatusEnum.enumValues)[number]
+
+export const instancePowerActionEnum = z.enum([
+  "start",
+  "reboot",
+  "shutdown",
+  "stop",
+])
+
+export type InstancePowerActionEnum = z.infer<typeof instancePowerActionEnum>

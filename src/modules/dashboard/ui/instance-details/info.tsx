@@ -31,7 +31,11 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
-import type { Instance, InstanceStatus } from "@/schemas/instance"
+import type {
+  Instance,
+  InstancePowerActionEnum,
+  InstanceStatus,
+} from "@/schemas/instance"
 
 const TRANSITIONAL_STATUSES: InstanceStatus[] = [
   "queued",
@@ -148,10 +152,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
       await utils.instance.get.invalidate({ id: data.id })
     },
   })
-  const restartMutation = api.instance.restart.useMutation({
+  const rebootMutation = api.instance.reboot.useMutation({
     onError(error) {
-      console.error("Error restarting instance:", error)
-      toast.error("Failed to restart instance.", {
+      console.error("Error rebooting instance:", error)
+      toast.error("Failed to reboot instance.", {
         description: error.message,
       })
     },
@@ -203,11 +207,11 @@ function InstanceActions({ instance }: { instance: Instance }) {
     )
   }
 
-  function isDisabled(action: "start" | "restart" | "shutdown" | "stop") {
+  function isDisabled(action: InstancePowerActionEnum) {
     switch (action) {
       case "start":
         return instance.status !== "stopped"
-      case "restart":
+      case "reboot":
         return instance.status !== "running"
       case "shutdown":
         return instance.status !== "running"
@@ -238,8 +242,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
             <IconPlayerPlayFilled /> Start
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={isDisabled("restart")}
-            onClick={() => restartMutation.mutate({ id: instance.id })}
+            disabled={isDisabled("reboot")}
+            onClick={() => rebootMutation.mutate({ id: instance.id })}
           >
             <IconRefresh /> Restart
           </DropdownMenuItem>
