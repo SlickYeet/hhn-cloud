@@ -35,12 +35,17 @@ export const sshKeyTable = createTable(
   ],
 )
 
+export const operatingSystemCategoryEnum = pgEnum(
+  "operating_system_category_name",
+  ["linux", "windows"],
+)
+
 export const operatingSystemCategoryTable = createTable(
   "operating_system_category",
   (d) => ({
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
-    name: d.text("name").unique().notNull(),
+    name: operatingSystemCategoryEnum("name").unique().notNull(),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()
@@ -49,13 +54,21 @@ export const operatingSystemCategoryTable = createTable(
   }),
 )
 
+export const operatingSystemFamilyEnum = pgEnum("operating_system_family", [
+  "centos",
+  "debian",
+  "fedora",
+  "ubuntu",
+  "windows",
+])
+
 export const operatingSystemReleaseTable = createTable(
   "operating_system_release",
   (d) => ({
     categoryId: d.text("category_id").notNull(),
     codename: d.text("codename"),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    family: d.text("family").notNull(),
+    family: operatingSystemFamilyEnum("family").notNull(),
     id: d.text("id").primaryKey(),
     isLts: d.boolean("is_lts").default(false).notNull(),
     updatedAt: d

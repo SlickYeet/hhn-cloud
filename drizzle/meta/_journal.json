@@ -64,6 +64,20 @@
       "when": 1788606201345,
       "tag": "0008_even_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788732571296,
+      "tag": "0009_curly_cannonball",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788733675647,
+      "tag": "0010_omniscient_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }
