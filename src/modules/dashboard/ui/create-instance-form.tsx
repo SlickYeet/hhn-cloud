@@ -66,7 +66,7 @@ import { api } from "@/lib/api/client"
 import {
   cn,
   getOperatingSystemCategoryIcon,
-  getOperatingSystemIcon,
+  getOperatingSystemFamilyIcon,
   getOperatingSystemStatusColor,
   getResourcePlanIcon,
   getResourcePlanStatusColor,
@@ -313,9 +313,7 @@ function OperatingSystemForm({
             <Tabs defaultValue={operatingSystemCategories?.[0]?.id}>
               <TabsList className="h-12! w-full" variant="line">
                 {operatingSystemCategories?.map((category) => {
-                  const Icon = getOperatingSystemCategoryIcon(
-                    category.name.toLowerCase(),
-                  )
+                  const Icon = getOperatingSystemCategoryIcon(category.name)
 
                   return (
                     <TabsTrigger
@@ -378,7 +376,7 @@ function OperatingSystemForm({
                       value={field.value}
                     >
                       {filteredOperatingSystems?.map((operatingSystem) => {
-                        const Icon = getOperatingSystemIcon(
+                        const Icon = getOperatingSystemFamilyIcon(
                           operatingSystem.release?.family,
                         )
 
@@ -598,7 +596,7 @@ function ReviewAndCreateForm({
     (plan) => plan.id === defaultValues?.resources?.resourcePlanId,
   )
 
-  const OsIcon = getOperatingSystemIcon(selectedOs?.release?.family)
+  const OsIcon = getOperatingSystemFamilyIcon(selectedOs?.release?.family)
   const PlanIcon = getResourcePlanIcon(selectedPlan?.slug)
 
   const mutation = api.instance.create.useMutation({

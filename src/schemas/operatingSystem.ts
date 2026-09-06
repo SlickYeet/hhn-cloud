@@ -2,6 +2,10 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
 import { env } from "@/env"
+import type {
+  operatingSystemCategoryEnum,
+  operatingSystemFamilyEnum,
+} from "@/server/db/schema"
 import {
   operatingSystemCategoryTable,
   operatingSystemReleaseTable,
@@ -9,6 +13,10 @@ import {
 } from "@/server/db/schema"
 
 export type OperatingSystem = typeof operatingSystemTable.$inferInsert
+export type OperatingSystemCategoryEnum =
+  (typeof operatingSystemCategoryEnum.enumValues)[number]
+export type OperatingSystemFamilyEnum =
+  (typeof operatingSystemFamilyEnum.enumValues)[number]
 
 const operatingSystemSchemaConstraints = {
   createdAt: z.coerce.date().optional(),

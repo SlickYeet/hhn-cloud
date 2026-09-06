@@ -16,7 +16,11 @@ import { twMerge } from "tailwind-merge"
 
 import { Icons } from "@/components/icons"
 import { env } from "@/env"
-import type { OperatingSystem } from "@/schemas/operatingSystem"
+import type {
+  OperatingSystem,
+  OperatingSystemCategoryEnum,
+  OperatingSystemFamilyEnum,
+} from "@/schemas/operatingSystem"
 import type { ResourcePlan } from "@/schemas/resource-plan"
 
 export function cn(...inputs: ClassValue[]) {
@@ -54,8 +58,10 @@ export function getResourcePlanIcon(
   }
 }
 
-export function getOperatingSystemCategoryIcon(category: string | undefined) {
-  switch (category?.toLowerCase()) {
+export function getOperatingSystemCategoryIcon(
+  category: OperatingSystemCategoryEnum | undefined,
+) {
+  switch (category) {
     case "linux":
       return Icons.linux
     case "windows":
@@ -65,8 +71,10 @@ export function getOperatingSystemCategoryIcon(category: string | undefined) {
   }
 }
 
-export function getOperatingSystemIcon(os: string | undefined) {
-  switch (os?.toLowerCase()) {
+export function getOperatingSystemFamilyIcon(
+  os: OperatingSystemFamilyEnum | undefined,
+) {
+  switch (os) {
     case "ubuntu":
       return IconBrandUbuntu
     case "debian":
