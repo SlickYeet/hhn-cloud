@@ -73,7 +73,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object(createInstanceSchema.shape))
     .output(
       z.object({
-        instanceId: z.string(),
+        instanceId: z.uuid(),
         jobId: z.string(),
         message: z.string(),
       }),
@@ -247,7 +247,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(
       z.object({
-        instanceId: z.string(),
+        instanceId: z.uuid(),
         jobId: z.string(),
         message: z.string(),
       }),

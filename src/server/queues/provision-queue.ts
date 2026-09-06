@@ -27,7 +27,7 @@ function getProvisionQueue(): Queue {
 }
 
 export const addProvisionJobSchema = z.object({
-  instanceId: z.string(),
+  instanceId: z.uuid(),
   macAddress: z.mac(),
   network: z.object({
     gateway: z.ipv4(),

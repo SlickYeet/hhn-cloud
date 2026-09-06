@@ -25,7 +25,7 @@ function getFirewallSyncQueue(): Queue {
 }
 
 export const firewallSyncJobSchema = z.object({
-  instanceId: z.string(),
+  instanceId: z.uuid(),
 })
 
 export async function addFirewallSyncJob(
