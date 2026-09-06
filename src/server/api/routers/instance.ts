@@ -9,7 +9,10 @@ import * as z from "zod"
 import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
-import type { InstancePowerAction, InstanceStatus } from "@/schemas/instance"
+import type {
+  InstancePowerAction,
+  InstanceStatusEnum,
+} from "@/schemas/instance"
 import {
   createInstanceSchema,
   insertInstanceSchema,
@@ -31,13 +34,13 @@ import { addProvisionJob } from "@/server/queues/provision-queue"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
-const VALID_SOURCE_STATUS: Record<InstancePowerAction, InstanceStatus[]> = {
+const VALID_SOURCE_STATUS: Record<InstancePowerAction, InstanceStatusEnum[]> = {
   reboot: ["running"],
   shutdown: ["running"],
   start: ["stopped"],
   stop: ["running"],
 }
-const TRANSIENT_STATUS: Record<InstancePowerAction, InstanceStatus> = {
+const TRANSIENT_STATUS: Record<InstancePowerAction, InstanceStatusEnum> = {
   reboot: "restarting",
   shutdown: "stopping",
   start: "starting",

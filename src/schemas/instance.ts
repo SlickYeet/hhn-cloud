@@ -60,7 +60,7 @@ export const createInstanceSchema = insertInstanceSchema
   })
 
 export type Instance = z.infer<typeof selectInstanceSchema>
-export type InstanceStatus = (typeof instanceStatusEnum.enumValues)[number]
+export type InstanceStatusEnum = (typeof instanceStatusEnum.enumValues)[number]
 
 export const instancePowerAction = z.enum([
   "start",

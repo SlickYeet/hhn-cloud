@@ -34,10 +34,10 @@ import { cn } from "@/lib/utils"
 import type {
   Instance,
   InstancePowerAction,
-  InstanceStatus,
+  InstanceStatusEnum,
 } from "@/schemas/instance"
 
-const TRANSITIONAL_STATUSES: InstanceStatus[] = [
+const TRANSITIONAL_STATUSES: InstanceStatusEnum[] = [
   "queued",
   "provisioning",
   "starting",
@@ -47,7 +47,7 @@ const TRANSITIONAL_STATUSES: InstanceStatus[] = [
   "deleting",
 ]
 
-function getInstanceStatusColor(status: InstanceStatus) {
+function getInstanceStatusColor(status: InstanceStatusEnum) {
   switch (status) {
     case "deleted":
     case "deleting":
@@ -70,7 +70,7 @@ function getInstanceStatusColor(status: InstanceStatus) {
   }
 }
 
-function getInstanceStatusAnimation(status: InstanceStatus) {
+function getInstanceStatusAnimation(status: InstanceStatusEnum) {
   switch (status) {
     case "queued":
     case "provisioning":
