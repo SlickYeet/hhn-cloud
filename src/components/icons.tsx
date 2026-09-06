@@ -3,6 +3,233 @@ import type * as React from "react"
 type IconProps = React.HTMLAttributes<SVGElement>
 
 export const Icons = {
+  centOS: (props: IconProps) => (
+    <svg
+      height="119.55683mm"
+      id="svg4197"
+      version="1.1"
+      viewBox="0 0 425.19685 423.62657"
+      width="120mm"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <title>CentOS</title>
+      <defs id="defs4199">
+        <marker
+          className="overflow-visible"
+          id="marker50353"
+          orient="auto"
+          refX="0.0"
+          refY="0.0"
+        >
+          <path
+            className="fill-[#b2b2b2] stroke-[#b2b2b2] stroke-[1pt]"
+            d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+            fillRule="evenodd"
+            id="path50351"
+            transform="scale(0.4)"
+          />
+        </marker>
+        <marker
+          className="overflow-visible"
+          id="marker50349"
+          orient="auto"
+          refX="0.0"
+          refY="0.0"
+        >
+          <path
+            className="fill-[#b2b2b2] stroke-[#b2b2b2] stroke-[1pt]"
+            d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+            fillRule="evenodd"
+            id="path50347"
+            transform="scale(-0.4)"
+          />
+        </marker>
+        <marker
+          className="overflow-visible"
+          id="Arrow1Sstart"
+          orient="auto"
+          refX="0.0"
+          refY="0.0"
+        >
+          <path
+            className="fill-[#b2b2b2] stroke-[#b2b2b2] stroke-[1pt]"
+            d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+            fillRule="evenodd"
+            id="path50025"
+            transform="scale(0.2) translate(6,0)"
+          />
+        </marker>
+        <marker
+          className="overflow-visible"
+          id="TriangleOutS"
+          orient="auto"
+          refX="0.0"
+          refY="0.0"
+        >
+          <path
+            className="fill-[#b2b2b2] stroke-[#b2b2b2] stroke-[1pt]"
+            d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+            id="path50161"
+            transform="scale(0.2)"
+          />
+        </marker>
+        <marker
+          className="overflow-visible"
+          id="Arrow2Mend"
+          orient="auto"
+          refX="0.0"
+          refY="0.0"
+        >
+          <path
+            className="fill-[#b2b2b2] stroke-[#b2b2b2] stroke-[0.625pt]"
+            d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+            id="path50040"
+            transform="scale(0.6) rotate(180) translate(0,0)"
+          />
+        </marker>
+      </defs>
+      <g id="layer1" transform="translate(-17.934854,-428.95389)">
+        <g
+          className="inline stroke-[0.88449931]"
+          id="g5800"
+          transform="matrix(6.1765846,0,0,6.1765846,-5398.8631,-4341.5109)"
+        >
+          <g
+            className="stroke-[0.88449931]"
+            id="g4450"
+            transform="translate(128.56702)"
+          >
+            <rect
+              className="visible inline overflow-visible fill-[#932279] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="16.075483"
+              id="rect4394"
+              transform="matrix(-0.71249676,0.7016754,-0.71249676,-0.7016754,0,0)"
+              width="16.075483"
+              x="27.658514"
+              y="-1122.2047"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#efa724] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="16.004166"
+              id="rect4396"
+              transform="matrix(-0.70494577,-0.70926121,0.70494577,-0.70926121,0,0)"
+              width="16.004166"
+              x="-1121.9808"
+              y="-12.326427"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#9ccd2a] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="16.075483"
+              id="rect4398"
+              transform="matrix(-0.71249676,0.7016754,-0.71249676,-0.7016754,0,0)"
+              width="16.075483"
+              x="27.808971"
+              y="-1141.5742"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#262577] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="16.004166"
+              id="rect4400"
+              transform="matrix(-0.70494577,-0.70926121,0.70494577,-0.70926121,0,0)"
+              width="16.004166"
+              x="-1141.3486"
+              y="-12.269588"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#efa724] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="15.406636"
+              id="rect4404"
+              width="15.293437"
+              x="784.49042"
+              y="809.06543"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#932279] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="15.329019"
+              id="rect4406"
+              width="15.344986"
+              x="784.55206"
+              y="789.1712"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#262577] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="15.975906"
+              id="rect4414"
+              width="15.975934"
+              x="763.9494"
+              y="809.06598"
+            />
+            <rect
+              className="visible inline overflow-visible fill-[#9ccd2a] stroke-1 stroke-none text-black"
+              clipRule="nonzero"
+              fillRule="nonzero"
+              height="15.883667"
+              id="rect4408"
+              width="15.976588"
+              x="763.94806"
+              y="788.52313"
+            />
+            <path
+              className="visible isolation-auto inline overflow-visible whitespace-normal fill-white stroke-1 stroke-none text-start indent-0 font-[sans-serif] font-normal text-black leading-normal tracking-normal decoration-0 decoration-black decoration-solid opacity-100 mix-blend-normal"
+              clipRule="nonzero"
+              d="m 782.24587,781.00889 -6.9021,6.94429 h -11.96728 v 0.57019 11.17913 l -7.23825,7.12827 7.24009,7.13011 v 11.65239 h 11.61774 l 7.10232,6.99451 7.10232,-6.99451 h 11.73827 v -11.61941 l 7.08558,-7.12894 -6.98799,-7.03067 v -11.78933 h -11.79752 z m -5e-4,1.61797 5.38508,5.41806 H 783.976 v 0.57219 13.35239 l -1.73063,1.74118 -1.75172,-1.76244 v -13.99506 h -3.54229 z m -17.72835,6.46685 h 9.69308 l -4.0517,4.07648 9.19455,9.2508 v 1.4149 h -1.72193 l -9.22585,-9.08573 -3.88815,3.82905 z m 11.30067,0 h 3.53526 v 11.7068 l -7.58545,-7.63182 z m 9.30102,0.0937 h 3.64742 l 3.95712,3.98139 -7.60454,7.65091 z m 5.25601,0 h 9.52132 v 9.49923 l -3.95762,-3.98173 -9.16859,9.22468 h -1.65112 v -1.49158 l 9.21296,-9.26937 z m 5.56387,7.13564 3.95745,3.98172 v 3.62482 h -11.51779 z m -27.53191,0.0291 7.59901,7.48367 h -11.48867 v -3.65311 z m -5.03019,4.95368 v 3.67069 h 13.78747 l 1.88281,1.85418 -1.69096,1.66534 h -13.97748 v 0.57035 3.29101 l -5.61191,-5.5267 z m 37.66008,0.14648 5.37973,5.41271 -5.47732,5.5108 v -3.88179 h -13.85895 l -1.61931,-1.62918 1.7837,-1.79458 h 13.79215 z m -20.54292,2.11634 1.75072,1.76143 0.40344,-0.40596 1.32819,-1.33639 v 1.48254 h 1.66016 l -1.7837,1.79458 1.61931,1.62918 h -1.55235 v 0.57236 1.17334 l -1.82086,-1.79324 -1.6029,1.57863 v -1.52908 h -1.51452 l 1.69096,-1.66534 -0.40629,-0.4001 -1.47651,-1.45408 h 1.70435 z m -15.97462,6.06792 h 11.67867 l -7.79102,7.67267 -3.88765,-3.82855 z m 13.30384,0 h 1.53008 v 1.51384 l -9.52132,9.37669 4.00432,3.94356 h -9.31692 v -9.3864 l 3.88614,3.82705 z m 7.23725,0 h 1.54716 l 9.33131,9.38824 0.40194,-0.40445 3.45775,-3.47884 v 9.33115 h -9.43946 l 4.0065,-3.94557 -0.40629,-0.40027 -8.89891,-8.76381 z m 3.15541,0 h 11.58275 v 3.88698 l -3.85969,3.88329 z m -6.11563,0.41199 1.81952,1.7919 v 13.77274 h 3.65612 l -5.47564,5.39244 -5.47565,-5.39244 h 3.87141 v -13.98468 z m -2.74695,2.70526 v 11.71684 h -3.88882 l -4.00432,-3.94356 z m 5.70717,0.21009 7.67987,7.56319 -4.00634,3.94557 h -3.67353 z"
+              fillRule="nonzero"
+              id="rect4329"
+            />
+          </g>
+        </g>
+      </g>
+    </svg>
+  ),
+  fedoraLinux: (props: IconProps) => (
+    <svg
+      height="64"
+      id="svg16"
+      version="1.1"
+      viewBox="0 0 64 64"
+      width="64"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <title>Fedora Linux</title>
+      <defs id="defs20" />
+      <g
+        id="g849"
+        transform="matrix(3.6146015,0,0,3.6146015,-341.92293,-41.230406)"
+      >
+        <path
+          className="fill-[#294172] stroke-[2.34451032]"
+          d="m 112.30088,20.260784 c 0,-4.889743 -3.96382,-8.853572 -8.85298,-8.853572 -4.887388,0 -8.849451,3.960297 -8.852983,8.847097 v -5.89e-4 6.851056 c 0.0029,1.109646 0.903464,2.007554 2.013112,2.007226 h 6.843401 c 4.88739,-0.0012 8.84945,-3.96383 8.84945,-8.851807 z"
+          id="path8"
+        />
+        <path
+          className="fill-[#3c6eb4] stroke-[2.34451032]"
+          d="m 106.04611,13.506264 c -2.29482,0 -4.15513,1.860316 -4.15513,4.155133 v 2.202062 h -2.192647 c -2.295654,0 -4.155723,1.851239 -4.155723,4.145716 0,2.294981 1.860451,4.155426 4.155428,4.155426 2.294982,0 4.155432,-1.860445 4.155432,-4.155426 v -2.21148 h 2.19264 c 2.29507,0 4.15572,-1.841232 4.15572,-4.136298 0,-2.295047 -1.86067,-4.155458 -4.15572,-4.155133 z m -4.15454,10.507031 c -0.002,1.20991 -0.98333,2.189703 -2.193237,2.189701 -1.211399,0 -2.201474,-0.983011 -2.201474,-2.193821 0,-1.211399 0.990075,-2.21148 2.201474,-2.21148 h 1.883617 c 0.1707,0 0.30962,0.138328 0.30962,0.309619 v 1.905393 z m 4.15454,-4.149836 h -1.88361 c -0.171,0 -0.30962,-0.138621 -0.30962,-0.309619 v -1.895975 c 0.002,-1.209909 0.98332,-2.189702 2.19323,-2.1897 1.2114,0 2.20206,0.981833 2.20206,2.193232 -0.004,1.21446 -0.9876,2.197919 -2.20206,2.201474 z"
+          id="path10"
+        />
+        <path
+          className="fill-[#ffffff] stroke-[2.34451032]"
+          d="M 101.89157,19.862871 V 17.66022 c 3.2e-4,-2.294817 1.8609,-4.15487 4.15572,-4.154545 0.31038,-0.0022 0.61952,0.03938 0.91826,0.123612 0.46914,0.123024 0.85351,0.507987 0.85351,0.955934 0,0.541539 -0.3932,0.93592 -0.98124,0.93592 -0.2796,0 -0.38085,-0.05415 -0.79112,-0.05415 -1.20968,3.24e-4 -2.1907,0.980022 -2.19265,2.189701 v 1.895975 c 0,0.170702 0.13833,0.310208 0.30962,0.310208 h 1.44097 c 0.53683,0 0.97006,0.42911 0.97006,0.967117 10e-4,0.535684 -0.43439,0.969732 -0.97006,0.967118 h -1.75059 v 2.21148 c -3.2e-4,2.294587 -1.86054,4.154545 -4.155129,4.154545 -0.310372,0.0021 -0.619497,-0.0395 -0.918261,-0.123612 -0.469138,-0.122435 -0.853513,-0.507987 -0.853513,-0.955934 0,-0.541539 0.393205,-0.93592 0.980657,-0.93592 0.280187,0 0.381431,0.05415 0.791117,0.05415 1.209909,1e-6 2.191289,-0.979792 2.193229,-2.189701 v -1.905393 c 0,-0.170998 -0.13862,-0.309619 -0.30962,-0.309619 h -1.44096 c -0.535676,0.0029 -0.971308,-0.430844 -0.970649,-0.966529 0,-0.541539 0.438529,-0.967706 0.980659,-0.967706 h 1.74057 z"
+          id="path12"
+        />
+      </g>
+    </svg>
+  ),
   linux: (props: IconProps) => (
     <svg viewBox="0 0 256 295" {...props}>
       <title>Linux</title>
@@ -465,7 +692,7 @@ export const Icons = {
     </svg>
   ),
   windows: (props: IconProps) => (
-    <svg {...props} viewBox="0 0 88 88">
+    <svg viewBox="0 0 88 88" {...props}>
       <title>Windows</title>
       <path
         d="m0 12.402 35.687-4.86.016 34.423-35.67.203zm35.67 33.529.028 34.453L.028 75.48.026 45.7zm4.326-39.025L87.314 0v41.527l-47.318.376zm47.329 39.349-.011 41.34-47.318-6.678-.066-34.739z"

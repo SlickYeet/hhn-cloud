@@ -72,11 +72,9 @@ export function getOperatingSystemIcon(os: string | undefined) {
     case "debian":
       return IconBrandDebian
     case "centos":
-      // TODO
-      return IconSquare
+      return Icons.centOS
     case "fedora":
-      // TODO
-      return IconSquare
+      return Icons.fedoraLinux
     case "windows":
       return IconBrandWindows
     default:
