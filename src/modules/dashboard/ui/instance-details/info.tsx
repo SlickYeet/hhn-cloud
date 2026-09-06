@@ -33,7 +33,7 @@ import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 import type {
   Instance,
-  InstancePowerActionEnum,
+  InstancePowerAction,
   InstanceStatus,
 } from "@/schemas/instance"
 
@@ -207,7 +207,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
     )
   }
 
-  function isDisabled(action: InstancePowerActionEnum) {
+  function isDisabled(action: InstancePowerAction) {
     switch (action) {
       case "start":
         return instance.status !== "stopped"
