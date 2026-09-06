@@ -134,7 +134,7 @@ export default function Page() {
                   {APP_NAME}
                 </h1>
                 <p className="text-pretty text-center text-muted-foreground text-sm">
-                  {APP_DESCRIPTION}.
+                  {APP_DESCRIPTION.replace(/ \|/g, ".")}.
                 </p>
               </div>
               <Button disabled={isLoading} onClick={handleLogin}>
