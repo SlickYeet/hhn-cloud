@@ -253,10 +253,9 @@ export const instanceRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: check if the instance belongs to the organization
-
       const existingInstance = await ctx.db.query.instanceTable.findFirst({
-        where: (instance, { eq }) => eq(instance.id, input.id),
+        where: (i, { and, eq }) =>
+          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
       })
 
       if (!existingInstance) {
