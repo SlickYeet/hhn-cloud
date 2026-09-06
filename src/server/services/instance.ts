@@ -156,36 +156,84 @@ export async function configureInstanceFirewall(
   })
 }
 
-export async function startInstance(
+export async function waitForVmStatus(
   proxmox: Proxmox.Api,
-  nextVmid: number,
+  vmid: number,
+  desiredStatus: "running" | "stopped",
 ): Promise<{ vmid: number }> {
-  await proxmox.nodes
-    .$(PROXMOX_DEFAULT_NODE)
-    .qemu.$(nextVmid)
-    .status.start.$post()
-
   const deadline = Date.now() + TASK_TIMEOUT_MS
 
   while (Date.now() < deadline) {
     const current = await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
-      .qemu.$(nextVmid)
+      .qemu.$(vmid)
       .status.current.$get()
-
-    if (current.status === "running") {
-      return { vmid: current.vmid }
-    }
-
+    if (current.status === desiredStatus) return { vmid: current.vmid }
     await new Promise((resolve) => setTimeout(resolve, TASK_POLL_INTERVAL_MS))
   }
-
-  throw new Error(`Timed out waiting for instance ${nextVmid} to start`)
+  throw new Error(
+    `Timed out waiting for instance ${vmid} to reach status ${desiredStatus}`,
+  )
 }
 
-function isVmNotFoundError(error: unknown): boolean {
+export async function startInstance(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<{ vmid: number }> {
+  await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).status.start.$post()
+  return waitForVmStatus(proxmox, vmid, "running")
+}
+
+export async function rebootInstance(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<{ vmid: number }> {
+  await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).status.reboot.$post()
+  return waitForVmStatus(proxmox, vmid, "running")
+}
+
+export async function shutdownInstance(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<{ vmid: number }> {
+  await proxmox.nodes
+    .$(PROXMOX_DEFAULT_NODE)
+    .qemu.$(vmid)
+    .status.shutdown.$post()
+  return waitForVmStatus(proxmox, vmid, "stopped")
+}
+
+export async function stopInstance(
+  proxmox: Proxmox.Api,
+  vmid: number,
+): Promise<{ vmid: number }> {
+  await proxmox.nodes.$(PROXMOX_DEFAULT_NODE).qemu.$(vmid).status.stop.$post()
+  return waitForVmStatus(proxmox, vmid, "stopped")
+}
+
+export function isVmNotFoundError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error)
   return message.includes("does not exist")
+}
+
+export async function getInstanceStatusFromProxmox(
+  proxmox: Proxmox.Api,
+  data: { pveVmid: number },
+): Promise<"running" | "stopped" | "unknown"> {
+  try {
+    const status = await proxmox.nodes
+      .$(PROXMOX_DEFAULT_NODE)
+      .qemu.$(data.pveVmid)
+      .status.current.$get()
+
+    return status.status === "running" ? "running" : "stopped"
+  } catch (error) {
+    if (isVmNotFoundError(error)) {
+      console.warn(`Instance ${data.pveVmid} does not exist.`)
+      return "unknown"
+    }
+    throw error
+  }
 }
 
 export async function stopInstanceIfRunning(
@@ -216,12 +264,7 @@ export async function stopInstanceIfRunning(
     return
   }
 
-  const upid = await proxmox.nodes
-    .$(PROXMOX_DEFAULT_NODE)
-    .qemu.$(vmid)
-    .status.stop.$post()
-
-  await waitForProxmoxTask(proxmox, upid)
+  await stopInstance(proxmox, vmid)
 }
 
 export async function destroyInstance(
