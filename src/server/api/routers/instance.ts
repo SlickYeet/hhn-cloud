@@ -1,13 +1,15 @@
 import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
+import type { inferProcedureBuilderResolverOptions } from "@trpc/server"
 import { TRPCError } from "@trpc/server"
-import { and, count, eq, isNull } from "drizzle-orm"
+import { and, count, eq, inArray, isNull } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
+import type { InstancePowerAction, InstanceStatus } from "@/schemas/instance"
 import {
   createInstanceSchema,
   insertInstanceSchema,
@@ -24,10 +26,24 @@ import { isUniqueConstraintError } from "@/server/db/utils"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
+import { addPowerActionJob } from "@/server/queues/power-action-queue"
 import { addProvisionJob } from "@/server/queues/provision-queue"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
+const VALID_SOURCE_STATUS: Record<InstancePowerAction, InstanceStatus[]> = {
+  reboot: ["running"],
+  shutdown: ["running"],
+  start: ["stopped"],
+  stop: ["running"],
+}
+const TRANSIENT_STATUS: Record<InstancePowerAction, InstanceStatus> = {
+  reboot: "restarting",
+  shutdown: "stopping",
+  start: "starting",
+  stop: "stopping",
+}
+
 const proxmox = getProxmoxClient()
 
 export const instanceRouter = createTRPCRouter({
@@ -413,37 +429,9 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (i, { and, eq }) =>
-          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-      })
+      const action: InstancePowerAction = "reboot"
 
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      await ctx.db
-        .update(instanceTable)
-        .set({ status: "restarting" })
-        .where(and(eq(instanceTable.id, instance.id)))
-
-      // TODO: send to power action queue
-      await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(Number(instance.pveVmid))
-        .status.reboot.$post()
-
-      setTimeout(async () => {
-        await ctx.db
-          .update(instanceTable)
-          .set({ status: "running" })
-          .where(and(eq(instanceTable.id, instance.id)))
-      }, 5000)
-
-      return { id: instance.id }
+      return await powerAction(action, { ctx, input })
     }),
 
   shutdown: protectedProcedure
@@ -460,37 +448,9 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (i, { and, eq }) =>
-          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-      })
+      const action: InstancePowerAction = "shutdown"
 
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      await ctx.db
-        .update(instanceTable)
-        .set({ status: "stopping" })
-        .where(and(eq(instanceTable.id, instance.id)))
-
-      // TODO: send to power action queue
-      await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(Number(instance.pveVmid))
-        .status.shutdown.$post()
-
-      setTimeout(async () => {
-        await ctx.db
-          .update(instanceTable)
-          .set({ status: "stopped" })
-          .where(and(eq(instanceTable.id, instance.id)))
-      }, 5000)
-
-      return { id: instance.id }
+      return await powerAction(action, { ctx, input })
     }),
 
   start: protectedProcedure
@@ -507,37 +467,9 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (i, { and, eq }) =>
-          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-      })
+      const action: InstancePowerAction = "start"
 
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      await ctx.db
-        .update(instanceTable)
-        .set({ status: "starting" })
-        .where(and(eq(instanceTable.id, instance.id)))
-
-      // TODO: send to power action queue
-      await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(Number(instance.pveVmid))
-        .status.start.$post()
-
-      setTimeout(async () => {
-        await ctx.db
-          .update(instanceTable)
-          .set({ status: "running" })
-          .where(and(eq(instanceTable.id, instance.id)))
-      }, 5000)
-
-      return { id: instance.id }
+      return await powerAction(action, { ctx, input })
     }),
 
   stop: protectedProcedure
@@ -554,37 +486,9 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (i, { and, eq }) =>
-          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-      })
+      const action: InstancePowerAction = "stop"
 
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      await ctx.db
-        .update(instanceTable)
-        .set({ status: "stopping" })
-        .where(and(eq(instanceTable.id, instance.id)))
-
-      // TODO: send to power action queue
-      await proxmox.nodes
-        .$(PROXMOX_DEFAULT_NODE)
-        .qemu.$(Number(instance.pveVmid))
-        .status.stop.$post()
-
-      setTimeout(async () => {
-        await ctx.db
-          .update(instanceTable)
-          .set({ status: "stopped" })
-          .where(and(eq(instanceTable.id, instance.id)))
-      }, 5000)
-
-      return { id: instance.id }
+      return await powerAction(action, { ctx, input })
     }),
 
   update: protectedProcedure
@@ -634,3 +538,62 @@ export const instanceRouter = createTRPCRouter({
       return { id: input.id }
     }),
 })
+
+async function powerAction(
+  action: InstancePowerAction,
+  opts: Pick<
+    inferProcedureBuilderResolverOptions<typeof protectedProcedure>,
+    "ctx"
+  > & { input: { id: string } },
+) {
+  const { ctx, input } = opts
+
+  const instance = await ctx.db.query.instanceTable.findFirst({
+    where: (i, { and, eq }) =>
+      and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
+  })
+
+  if (!instance) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: `Instance ${input.id} not found`,
+    })
+  }
+
+  const [updated] = await ctx.db
+    .update(instanceTable)
+    .set({ status: TRANSIENT_STATUS[action] })
+    .where(
+      and(
+        eq(instanceTable.id, instance.id),
+        inArray(instanceTable.status, VALID_SOURCE_STATUS[action]),
+      ),
+    )
+    .returning()
+
+  if (!updated) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: `Cannot ${action} instance while it is ${instance.status}`,
+    })
+  }
+
+  const { jobId } = await addPowerActionJob({
+    action,
+    instanceId: instance.id,
+  })
+
+  if (!jobId) {
+    await ctx.db
+      .update(instanceTable)
+      .set({ status: updated.status })
+      .where(eq(instanceTable.id, instance.id))
+
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Power action job could not be created",
+    })
+  }
+
+  return { id: instance.id }
+}
