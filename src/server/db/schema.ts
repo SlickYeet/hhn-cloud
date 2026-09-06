@@ -361,7 +361,7 @@ export const account = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     id: d.text("id").primaryKey(),
     idToken: d.text("id_token"),
-    issuer: d.text("issuer").notNull(),
+    issuer: d.text("issuer"),
     password: d.text("password"),
     providerId: d.text("provider_id").notNull(),
     refreshToken: d.text("refresh_token"),
