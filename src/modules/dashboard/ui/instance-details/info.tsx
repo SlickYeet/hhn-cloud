@@ -199,13 +199,6 @@ function InstanceActions({ instance }: { instance: Instance }) {
   })
 
   const isTransitionalStatus = TRANSITIONAL_STATUSES.includes(instance.status)
-  if (isTransitionalStatus) {
-    return (
-      <Button disabled size="sm" variant="outline">
-        Actions <IconChevronDown />
-      </Button>
-    )
-  }
 
   function isDisabled(action: InstancePowerAction) {
     switch (action) {
@@ -236,25 +229,25 @@ function InstanceActions({ instance }: { instance: Instance }) {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Power Actions</DropdownMenuLabel>
           <DropdownMenuItem
-            disabled={isDisabled("start")}
+            disabled={isDisabled("start") || isTransitionalStatus}
             onClick={() => startMutation.mutate({ id: instance.id })}
           >
             <IconPlayerPlayFilled /> Start
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={isDisabled("reboot")}
+            disabled={isDisabled("reboot") || isTransitionalStatus}
             onClick={() => rebootMutation.mutate({ id: instance.id })}
           >
             <IconRefresh /> Restart
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={isDisabled("shutdown")}
+            disabled={isDisabled("shutdown") || isTransitionalStatus}
             onClick={() => shutdownMutation.mutate({ id: instance.id })}
           >
             <IconPower /> Shutdown
           </DropdownMenuItem>
           <DropdownMenuItem
-            disabled={isDisabled("stop")}
+            disabled={isDisabled("stop") || isTransitionalStatus}
             onClick={() => stopMutation.mutate({ id: instance.id })}
             variant="destructive"
           >
