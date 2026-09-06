@@ -37,8 +37,8 @@ function wrapProxmoxErrors<T>(target: T): T {
               error,
               method: String(prop),
             })
-            if (Error instanceof Error) {
-              Error.message = redactHost(Error.message)
+            if (error instanceof Error) {
+              error.message = redactHost(error.message)
             }
             throw error
           })
