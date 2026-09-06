@@ -378,6 +378,64 @@ export const instanceRouter = createTRPCRouter({
       return instance
     }),
 
+  getActivity: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/instance/{id}/activity",
+          summary: "Get activity for an instance by ID",
+          tags: ["Instances"],
+        }),
+      ),
+    )
+    .input(z.object({ id: z.string() }))
+    .output(
+      z.array(
+        z.object({
+          description: z.string(),
+          origin: z.string().optional(),
+          timestamp: z.date(),
+          title: z.string(),
+        }),
+      ),
+    )
+    .query(async ({ ctx, input }) => {
+      // TODO: implement activity tracking for instances and return here
+
+      const instance = await ctx.db.query.instanceTable.findFirst({
+        where: (instance, { eq }) => eq(instance.id, input.id),
+      })
+
+      if (!instance) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Instance ${input.id} not found`,
+        })
+      }
+
+      if (instance.organizationId !== ctx.organizationId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "You are not authorized to access this instance",
+        })
+      }
+
+      return [
+        {
+          description: "This is a placeholder activity for the instance.",
+          timestamp: new Date(),
+          title: "Instance Activity Placeholder",
+        },
+        {
+          description: "This is another placeholder activity for the instance.",
+          origin: "system",
+          timestamp: new Date(),
+          title: "Another Instance Activity Placeholder",
+        },
+      ]
+    }),
+
   list: protectedProcedure
     .meta(
       toTRPCMeta(
