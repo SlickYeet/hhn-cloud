@@ -222,7 +222,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button size="sm" variant="outline" />}>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
         Actions <IconChevronDown />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={6}>
