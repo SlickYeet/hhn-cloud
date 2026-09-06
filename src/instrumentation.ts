@@ -3,5 +3,6 @@ export async function register() {
     await import("./server/workers/provision-worker")
     await import("./server/workers/delete-instance-worker")
     await import("./server/workers/firewall-sync-worker")
+    await import("./server/workers/power-action-worker")
   }
 }
