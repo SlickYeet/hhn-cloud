@@ -60,8 +60,8 @@ function getInstanceStatusColor(status: InstanceStatus) {
     case "restarting":
       return "bg-amber-500"
     case "queued":
-      return "bg-primary"
     case "provisioning":
+      return "bg-primary"
     case "starting":
     case "running":
       return "bg-green-500"
