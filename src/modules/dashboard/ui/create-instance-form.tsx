@@ -556,50 +556,54 @@ function ResourcePlanForm({
               onValueChange={field.onChange}
               value={field.value}
             >
-              {resourcePlans?.map((plan) => {
-                const Icon = getResourcePlanIcon(plan.slug)
+              {resourcePlans
+                ?.filter((plan) => plan.status === "active")
+                ?.map((plan) => {
+                  const Icon = getResourcePlanIcon(plan.slug)
 
-                return (
-                  <FieldLabel
-                    aria-disabled={plan.status !== "active"}
-                    className={cn(
-                      "border-l-4! bg-input/30 text-foreground! has-data-checked:border-primary/50! has-data-checked:hover:bg-primary/10!",
-                      getResourcePlanStatusColor(plan.status),
-                    )}
-                    htmlFor={`plan-${plan.id}`}
-                    key={plan.id}
-                  >
-                    <Field
-                      className="disabled:cursor-not-allowed disabled:opacity-50"
-                      data-invalid={fieldState.invalid}
-                      disabled={plan.status !== "active"}
-                      orientation="horizontal"
+                  return (
+                    <FieldLabel
+                      aria-disabled={plan.status !== "active"}
+                      className={cn(
+                        "border-l-4! bg-input/30 text-foreground! has-data-checked:border-primary/50! has-data-checked:hover:bg-primary/10!",
+                        getResourcePlanStatusColor(plan.status),
+                      )}
+                      htmlFor={`plan-${plan.id}`}
+                      key={plan.id}
                     >
-                      <FieldContent className="space-y-2">
-                        <div className="mb-1 flex items-center gap-2">
-                          <Icon className="size-5" />
-                          <FieldTitle>{plan.name}</FieldTitle>
-                        </div>
-                        <FieldDescription className="text-foreground/70 text-xs">
-                          {plan.description}
-                        </FieldDescription>
-                        <div className="mt-1 flex flex-wrap gap-2">
-                          <Badge variant="outline">
-                            {plan.cores} vCPU{plan.cores > 1 ? "s" : ""}
-                          </Badge>
-                          <Badge variant="outline">{plan.memory} Memory</Badge>
-                          <Badge variant="outline">{plan.disk} GB Disk</Badge>
-                        </div>
-                      </FieldContent>
-                      <RadioGroupItem
-                        aria-invalid={fieldState.invalid}
-                        id={`plan-${plan.id}`}
-                        value={plan.id}
-                      />
-                    </Field>
-                  </FieldLabel>
-                )
-              })}
+                      <Field
+                        className="disabled:cursor-not-allowed disabled:opacity-50"
+                        data-invalid={fieldState.invalid}
+                        disabled={plan.status !== "active"}
+                        orientation="horizontal"
+                      >
+                        <FieldContent className="space-y-2">
+                          <div className="mb-1 flex items-center gap-2">
+                            <Icon className="size-5" />
+                            <FieldTitle>{plan.name}</FieldTitle>
+                          </div>
+                          <FieldDescription className="text-foreground/70 text-xs">
+                            {plan.description}
+                          </FieldDescription>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            <Badge variant="outline">
+                              {plan.cores} vCPU{plan.cores > 1 ? "s" : ""}
+                            </Badge>
+                            <Badge variant="outline">
+                              {plan.memory} Memory
+                            </Badge>
+                            <Badge variant="outline">{plan.disk} GB Disk</Badge>
+                          </div>
+                        </FieldContent>
+                        <RadioGroupItem
+                          aria-invalid={fieldState.invalid}
+                          id={`plan-${plan.id}`}
+                          value={plan.id}
+                        />
+                      </Field>
+                    </FieldLabel>
+                  )
+                })}
             </RadioGroup>
             {fieldState.invalid && (
               <FieldError className="text-left" errors={[fieldState.error]} />
