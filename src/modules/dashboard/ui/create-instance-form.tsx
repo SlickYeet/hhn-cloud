@@ -48,6 +48,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { InputGroupAddon } from "@/components/ui/input-group"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Spinner } from "@/components/ui/spinner"
 import {
   Stepper,
@@ -139,10 +140,6 @@ function BasicInfoForm({
     form.reset(defaultValues)
   }, [defaultValues])
 
-  console.log(
-    basicInfoSchema.safeParse({ hostname: "bad_host!", sshKeyId: "abc" }),
-  )
-
   return (
     <form className="space-y-8" onSubmit={form.handleSubmit(onNext)}>
       <FieldGroup className="flex flex-col gap-4 md:flex-row">
@@ -199,7 +196,7 @@ function BasicInfoForm({
                         </InputGroupAddon>
                         <InputGroupAddon
                           align="inline-end"
-                          className="order-2 text-xs"
+                          className="order-2 @md:inline-flex hidden text-xs"
                         >
                           {sshKeys?.length || 0} available
                         </InputGroupAddon>
@@ -312,33 +309,49 @@ function OperatingSystemForm({
 
             <Tabs defaultValue={operatingSystemCategories?.[0]?.id}>
               <TabsList className="h-12! w-full" variant="line">
-                {operatingSystemCategories?.map((category) => {
-                  const Icon = getOperatingSystemCategoryIcon(category.name)
-
-                  return (
-                    <TabsTrigger
-                      className="cursor-pointer after:bg-primary group-data-[variant=line]/tabs-list:data-active:border group-data-[variant=line]/tabs-list:data-active:border-primary/50! group-data-[variant=line]/tabs-list:data-active:bg-primary/10! group-data-[variant=line]/tabs-list:data-active:after:opacity-0"
-                      key={category.id}
-                      value={category.id}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Icon className="size-6" />
-                        <span className="font-semibold text-base capitalize">
-                          {category.name}
-                        </span>
-                      </div>
-                    </TabsTrigger>
+                {operatingSystemCategories
+                  ?.filter((category) =>
+                    operatingSystems?.some(
+                      (os) =>
+                        os.release?.categoryId === category.id &&
+                        os.status === "active",
+                    ),
                   )
-                })}
+                  ?.map((category) => {
+                    const Icon = getOperatingSystemCategoryIcon(category.name)
+
+                    return (
+                      <TabsTrigger
+                        className="cursor-pointer after:bg-primary group-data-[variant=line]/tabs-list:data-active:border group-data-[variant=line]/tabs-list:data-active:border-primary/50! group-data-[variant=line]/tabs-list:data-active:bg-primary/10! group-data-[variant=line]/tabs-list:data-active:after:opacity-0"
+                        key={category.id}
+                        value={category.id}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className="size-6" />
+                          <span className="font-semibold text-base capitalize">
+                            {category.name}
+                          </span>
+                        </div>
+                      </TabsTrigger>
+                    )
+                  })}
               </TabsList>
               {operatingSystemCategories?.map((category) => {
-                const filteredOperatingSystems = operatingSystems?.filter(
-                  (os) => os.release?.categoryId === category.id,
+                const operatingSystemFamilies = Array.from(
+                  new Set(
+                    operatingSystems
+                      ?.filter(
+                        (os) =>
+                          os.release?.categoryId === category.id &&
+                          os.status === "active",
+                      )
+                      .map((os) => os.release?.family) || [],
+                  ),
                 )
 
                 if (
-                  !filteredOperatingSystems ||
-                  filteredOperatingSystems.length === 0
+                  !operatingSystemFamilies ||
+                  operatingSystemFamilies.length === 0
                 ) {
                   return (
                     <TabsContent
@@ -369,58 +382,111 @@ function OperatingSystemForm({
                     key={category.id}
                     value={category.id}
                   >
-                    <RadioGroup
-                      className="grid @4xl:grid-cols-3 @lg:grid-cols-2 grid-cols-1 gap-4"
-                      name={field.name}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
-                      {filteredOperatingSystems?.map((operatingSystem) => {
-                        const Icon = getOperatingSystemFamilyIcon(
-                          operatingSystem.release?.family,
-                        )
+                    <Tabs defaultValue={operatingSystemFamilies[0]}>
+                      <ScrollArea className="h-10.5 w-full">
+                        <TabsList
+                          className="flex h-10! w-max min-w-full gap-2"
+                          variant="line"
+                        >
+                          {operatingSystemFamilies.map((family) => {
+                            const Icon = getOperatingSystemFamilyIcon(family)
+
+                            return (
+                              <TabsTrigger
+                                className="cursor-pointer after:bg-primary group-data-[variant=line]/tabs-list:data-active:border group-data-[variant=line]/tabs-list:data-active:border-primary/50! group-data-[variant=line]/tabs-list:data-active:bg-primary/10! group-data-[variant=line]/tabs-list:data-active:after:opacity-0"
+                                key={family}
+                                value={family}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Icon className="size-6" />
+                                  <span className="font-semibold text-base capitalize">
+                                    {family}
+                                  </span>
+                                </div>
+                              </TabsTrigger>
+                            )
+                          })}
+                        </TabsList>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                      {operatingSystemFamilies.map((family) => {
+                        const filteredOperatingSystems =
+                          operatingSystems?.filter(
+                            (os) => os.release?.family === family,
+                          )
 
                         return (
-                          <FieldLabel
-                            aria-disabled={operatingSystem.status !== "active"}
-                            className={cn(
-                              "border-l-4! bg-input/30 text-foreground! has-data-checked:border-primary/50! has-data-checked:hover:bg-primary/10!",
-                              getOperatingSystemStatusColor(
-                                operatingSystem.status,
-                              ),
-                            )}
-                            htmlFor={`operatingSystem-${operatingSystem.slug}`}
-                            key={operatingSystem.id}
+                          <TabsContent
+                            className="h-full min-h-0 flex-1 py-4"
+                            key={family}
+                            value={family}
                           >
-                            <Field
-                              className="disabled:cursor-not-allowed disabled:opacity-50"
-                              data-invalid={fieldState.invalid}
-                              disabled={operatingSystem.status !== "active"}
-                              orientation="horizontal"
+                            <RadioGroup
+                              className="grid @4xl:grid-cols-3 @lg:grid-cols-2 grid-cols-1 gap-4"
+                              name={field.name}
+                              onValueChange={field.onChange}
+                              value={field.value}
                             >
-                              <FieldContent className="flex-row items-center gap-2">
-                                <Icon className="size-10" />
-                                <div className="flex flex-col items-start gap-1">
-                                  <FieldTitle>
-                                    {operatingSystem.name}
-                                  </FieldTitle>
-                                  {operatingSystem.release?.codename && (
-                                    <FieldDescription className="text-foreground/70 capitalize">
-                                      {operatingSystem.release?.codename}
-                                    </FieldDescription>
-                                  )}
-                                </div>
-                              </FieldContent>
-                              <RadioGroupItem
-                                aria-invalid={fieldState.invalid}
-                                id={`operatingSystem-${operatingSystem.slug}`}
-                                value={operatingSystem.id}
-                              />
-                            </Field>
-                          </FieldLabel>
+                              {filteredOperatingSystems?.map(
+                                (operatingSystem) => {
+                                  const Icon = getOperatingSystemFamilyIcon(
+                                    operatingSystem.release?.family,
+                                  )
+
+                                  return (
+                                    <FieldLabel
+                                      aria-disabled={
+                                        operatingSystem.status !== "active"
+                                      }
+                                      className={cn(
+                                        "border-l-4! bg-input/30 text-foreground! has-data-checked:border-primary/50! has-data-checked:hover:bg-primary/10!",
+                                        getOperatingSystemStatusColor(
+                                          operatingSystem.status,
+                                        ),
+                                      )}
+                                      htmlFor={`operatingSystem-${operatingSystem.slug}`}
+                                      key={operatingSystem.id}
+                                    >
+                                      <Field
+                                        className="disabled:cursor-not-allowed disabled:opacity-50"
+                                        data-invalid={fieldState.invalid}
+                                        disabled={
+                                          operatingSystem.status !== "active"
+                                        }
+                                        orientation="horizontal"
+                                      >
+                                        <FieldContent className="flex-row items-center gap-2">
+                                          <Icon className="size-10" />
+                                          <div className="flex flex-col items-start gap-1">
+                                            <FieldTitle>
+                                              {operatingSystem.name}
+                                            </FieldTitle>
+                                            {operatingSystem.release
+                                              ?.codename && (
+                                              <FieldDescription className="text-foreground/70 capitalize">
+                                                {
+                                                  operatingSystem.release
+                                                    ?.codename
+                                                }
+                                              </FieldDescription>
+                                            )}
+                                          </div>
+                                        </FieldContent>
+                                        <RadioGroupItem
+                                          aria-invalid={fieldState.invalid}
+                                          id={`operatingSystem-${operatingSystem.slug}`}
+                                          value={operatingSystem.id}
+                                        />
+                                      </Field>
+                                    </FieldLabel>
+                                  )
+                                },
+                              )}
+                            </RadioGroup>
+                          </TabsContent>
                         )
                       })}
-                    </RadioGroup>
+                    </Tabs>
                   </TabsContent>
                 )
               })}
