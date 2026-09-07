@@ -43,14 +43,12 @@ const provisionWorker = new Worker(
 
       if (!operatingSystem) throw new Error("Operating system not found")
 
-      // TODO: log new progress
       await cloneInstance(proxmox, {
         hostname: instance.hostname,
         nextVmid: instance.pveVmid,
         osVmid: operatingSystem.pveVmid,
       })
 
-      // log new progress
       await configureInstance(proxmox, {
         macAddress: data.macAddress,
         network: data.network,
@@ -59,7 +57,6 @@ const provisionWorker = new Worker(
         sshKeyId: data.sshKeyId,
       })
 
-      // log new progress
       await configureInstanceFirewall(proxmox, {
         adminCidr: env.PLATFORM_ADMIN_CIDR,
         hostname: instance.hostname,
@@ -68,16 +65,13 @@ const provisionWorker = new Worker(
         vmid: instance.pveVmid,
       })
 
-      // log new progress
       const newInstance = await startInstance(proxmox, instance.pveVmid)
 
-      // log new progress
       await db
         .update(instanceTable)
         .set({ status: "running" })
         .where(eq(instanceTable.id, data.instanceId))
 
-      // log new progress
       return {
         status: "running",
         vmid: String(newInstance.vmid),
