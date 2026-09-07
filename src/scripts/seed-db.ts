@@ -78,10 +78,26 @@ async function main() {
       {
         categoryId: categories[1].id,
         codename: "windows server 2022",
-        family: "windows",
+        family: "windows server",
         id: randomUUID(),
-        isLts: true,
+        isLts: false,
         version: "2022",
+      },
+      {
+        categoryId: categories[0].id,
+        codename: "centos 7",
+        family: "centos",
+        id: randomUUID(),
+        isLts: false,
+        version: "7",
+      },
+      {
+        categoryId: categories[0].id,
+        codename: "fedora 44",
+        family: "fedora",
+        id: randomUUID(),
+        isLts: false,
+        version: "44",
       },
     ])
     .onConflictDoUpdate({
@@ -142,6 +158,33 @@ async function main() {
         releaseId: findReleaseId("debian", "12"),
         slug: "debian-12",
         status: "active",
+      },
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "Windows Server 2022",
+        pveVmid: 9200,
+        releaseId: findReleaseId("windows server", "2022"),
+        slug: "windows-server-2022",
+        status: "inactive",
+      },
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "CentOS 7",
+        pveVmid: 9300,
+        releaseId: findReleaseId("centos", "7"),
+        slug: "centos-7",
+        status: "inactive",
+      },
+      {
+        cloudInitEnabled: true,
+        id: randomUUID(),
+        name: "Fedora 44",
+        pveVmid: 9400,
+        releaseId: findReleaseId("fedora", "44"),
+        slug: "fedora-44",
+        status: "inactive",
       },
     ])
     .onConflictDoUpdate({

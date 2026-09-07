@@ -1,7 +1,4 @@
 import {
-  IconBrandDebian,
-  IconBrandUbuntu,
-  IconBrandWindows,
   IconSquare,
   IconStack,
   IconStack2,
@@ -76,15 +73,17 @@ export function getOperatingSystemFamilyIcon(
 ) {
   switch (os) {
     case "ubuntu":
-      return IconBrandUbuntu
+      return Icons.ubuntu
     case "debian":
-      return IconBrandDebian
+      return Icons.debian
     case "centos":
       return Icons.centOS
     case "fedora":
       return Icons.fedoraLinux
     case "windows":
-      return IconBrandWindows
+      return Icons.windows
+    case "windows server":
+      return Icons.windows
     default:
       return IconSquare
   }

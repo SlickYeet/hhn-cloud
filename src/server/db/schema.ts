@@ -55,11 +55,12 @@ export const operatingSystemCategoryTable = createTable(
 )
 
 export const operatingSystemFamilyEnum = pgEnum("operating_system_family", [
-  "centos",
+  "ubuntu",
   "debian",
   "fedora",
-  "ubuntu",
+  "centos",
   "windows",
+  "windows server",
 ])
 
 export const operatingSystemReleaseTable = createTable(
