@@ -13,7 +13,12 @@ type CloudMapProps = React.ComponentProps<typeof MapComponent>
 
 export function CloudMap(props: CloudMapProps) {
   return (
-    <MapComponent center={[-122.8059, 49.294]} zoom={12} {...props}>
+    <MapComponent
+      center={[-122.8059, 49.294]}
+      className="bg-gray-50 dark:bg-card"
+      zoom={12}
+      {...props}
+    >
       {CLOUD_LOCATIONS.map((location) => (
         <MapMarker
           key={location.id}
