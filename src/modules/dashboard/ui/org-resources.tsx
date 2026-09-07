@@ -86,13 +86,13 @@ export function OrgResources() {
   ]
 
   return (
-    <div className="flex max-w-full flex-col rounded-md bg-gray-50 lg:max-w-96 lg:rounded-l-none dark:bg-card">
-      <div className="flex items-center justify-between rounded-b-none border-b bg-muted px-4 py-2 lg:rounded-tl-none lg:rounded-tr-md">
+    <div className="flex max-w-full flex-col rounded-2xl bg-gray-50 lg:max-w-96 lg:rounded-l-none dark:bg-card">
+      <div className="flex items-center justify-between rounded-b-none border-b bg-muted px-4 py-2 lg:rounded-tl-none lg:rounded-tr-2xl">
         <p className="text-muted-foreground uppercase">Org Resources</p>
         <IconMap className="size-4" />
       </div>
       <ScrollArea className="h-[calc(var(--dashboard-card-height)-var(--dashboard-0rg-resources-header-height))]">
-        <div className="grid grid-cols-1 md:grid-cols-2 max-lg:[&>*:last-child]:rounded-br-md max-lg:[&>*:nth-last-child(2)]:rounded-bl-md">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-lg:[&>*:last-child]:rounded-br-2xl max-lg:[&>*:nth-last-child(2)]:rounded-bl-2xl">
           {ORG_RESOURCES.map((resource) => {
             const Icon = resource.icon
 
@@ -111,7 +111,7 @@ export function OrgResources() {
                 <Icon className="size-7 stroke-[1.5] stroke-primary" />
                 <div className="flex flex-col">
                   {resource.isPending ? (
-                    <div className="h-7 w-10 animate-pulse rounded-md bg-muted" />
+                    <div className="h-7 w-10 animate-pulse rounded-2xl bg-muted" />
                   ) : (
                     <p className="font-medium text-xl">{resource.value}</p>
                   )}
