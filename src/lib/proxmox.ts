@@ -1,10 +1,20 @@
 import proxmoxApi from "proxmox-api"
+import type { RequestInit } from "undici"
+import { Agent, fetch as undiciFetch } from "undici"
 
 import { env } from "@/env"
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
-
 let proxmoxClient: ReturnType<typeof proxmoxApi> | null = null
+
+const proxmoxAgent = new Agent({
+  connect: {
+    rejectUnauthorized: false,
+  },
+})
+
+function proxmoxFetch(url: string | URL, options?: RequestInit) {
+  return undiciFetch(url, { ...options, dispatcher: proxmoxAgent })
+}
 
 function redactHost(message: string): string {
   return message
@@ -53,6 +63,7 @@ export function getProxmoxClient() {
   if (proxmoxClient) return proxmoxClient
 
   const client = proxmoxApi({
+    fetch: proxmoxFetch,
     host: env.PROXMOX_HOST,
     port: 8006,
     schema: "https",
