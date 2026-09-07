@@ -74,9 +74,14 @@ export const sshKeyTable = createTable(
       .defaultNow()
       .$onUpdate(() => /* @__PURE__ */ new Date())
       .notNull(),
+    userId: d
+      .text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
   }),
   (t) => [
     index("ssh_key_organizationId_idx").on(t.organizationId),
+    index("ssh_key_userId_idx").on(t.userId),
     uniqueIndex("ssh_key_name_idx").on(t.organizationId, t.name),
   ],
 )
@@ -538,6 +543,7 @@ export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   invitations: many(invitation),
   members: many(member),
+  sshKeys: many(sshKeyTable),
 }))
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -579,6 +585,10 @@ export const sshKeyRelations = relations(sshKeyTable, ({ one, many }) => ({
   organization: one(organization, {
     fields: [sshKeyTable.organizationId],
     references: [organization.id],
+  }),
+  user: one(user, {
+    fields: [sshKeyTable.userId],
+    references: [user.id],
   }),
 }))
 

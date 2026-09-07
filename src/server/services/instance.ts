@@ -64,7 +64,11 @@ export async function configureInstance(
     ciupgrade: true,
     ciuser: "admin",
     cores: data.plan.cores,
-    description: `Cloud instance created from template ${data.plan.name}`,
+    description: `
+Template: ${data.plan.name}
+Organization: ${sshKey.organizationId}
+Creator: ${sshKey.userId}
+`,
     ipconfig0: `gw=${data.network.gateway},ip=${data.network.ip}`,
     memory: String(data.plan.memory),
     nameserver: data.network.gateway,
