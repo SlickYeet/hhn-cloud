@@ -6,9 +6,11 @@ import { TRPCError } from "@trpc/server"
 import { and, count, eq, inArray, isNull } from "drizzle-orm"
 import * as z from "zod"
 
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
+import { selectActivitySchema } from "@/schemas/activity"
 import type {
   InstancePowerAction,
   InstanceStatusEnum,
@@ -392,20 +394,9 @@ export const instanceRouter = createTRPCRouter({
         }),
       ),
     )
-    .input(z.object({ id: z.string() }))
-    .output(
-      z.array(
-        z.object({
-          description: z.string(),
-          origin: z.string().optional(),
-          timestamp: z.date(),
-          title: z.string(),
-        }),
-      ),
-    )
+    .input(z.object({ id: z.string(), limit: z.number().optional() }))
+    .output(z.array(selectActivitySchema))
     .query(async ({ ctx, input }) => {
-      // TODO: implement activity tracking for instances and return here
-
       const instance = await ctx.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
       })
@@ -417,26 +408,17 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
-      if (instance.organizationId !== ctx.organizationId) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You are not authorized to access this instance",
-        })
-      }
+      const activity = await ctx.db.query.activityTable.findMany({
+        limit: input?.limit ?? DEFAULT_PAGE_SIZE,
+        orderBy: (ac, { desc }) => desc(ac.timestamp),
+        where: (ac, { and, eq }) =>
+          and(
+            eq(ac.organizationId, ctx.organizationId),
+            eq(ac.referenceId, input.id),
+          ),
+      })
 
-      return [
-        {
-          description: "This is a placeholder activity for the instance.",
-          timestamp: new Date(),
-          title: "Instance Activity Placeholder",
-        },
-        {
-          description: "This is another placeholder activity for the instance.",
-          origin: "system",
-          timestamp: new Date(),
-          title: "Another Instance Activity Placeholder",
-        },
-      ]
+      return activity
     }),
 
   list: protectedProcedure
