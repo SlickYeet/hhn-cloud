@@ -290,9 +290,9 @@ export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
   if (!instance) return notFound()
 
   return (
-    <div className="mb-4 flex h-auto flex-col gap-4 md:h-16 md:flex-row md:items-center md:justify-between md:gap-0">
-      <div className="flex flex-col items-start gap-1">
-        <div className="ml-0.5 flex items-center gap-4">
+    <div className="mb-4 flex h-auto flex-col gap-4 md:h-20 md:flex-row md:items-center md:justify-between md:gap-0">
+      <div className="flex flex-col items-start gap-2">
+        <div className="flex items-center gap-4">
           <Hint label={`Instance: ${instance.status}`} side="bottom">
             <div
               className={cn(
