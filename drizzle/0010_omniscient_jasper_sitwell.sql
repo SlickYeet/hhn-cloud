@@ -1,1 +1,0 @@
-ALTER TYPE "public"."operating_system_category" RENAME TO "operating_system_category_name";
