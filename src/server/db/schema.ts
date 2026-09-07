@@ -10,6 +10,52 @@ import {
 
 export const createTable = pgTableCreator((name) => name)
 
+export const activityActorEnum = pgEnum("activity_actor", [
+  "system",
+  "user",
+  "external",
+])
+
+export const activityChannelEnum = pgEnum("activity_channel", [
+  "dashboard",
+  "api",
+  "worker",
+])
+
+export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
+  "instance",
+  "user",
+])
+
+export const activityTypeEnum = pgEnum("activity_type", [
+  "instance_provisioning",
+  "instance_created",
+  "instance_started",
+  "instance_stopped",
+  "instance_deleted",
+  "instance_updated",
+  "user_logged_in",
+  "user_logged_out",
+  "user_updated",
+  "user_deleted",
+])
+
+export const activityTable = createTable("activity", (d) => ({
+  actorId: d.text("actor_id"),
+  actorType: activityActorEnum("actor_type").notNull(),
+  channel: activityChannelEnum("channel").notNull(),
+  id: d.uuid("id").primaryKey(),
+  metadata: d.jsonb("metadata").$type<Record<string, unknown>>(),
+  organizationId: d
+    .text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
+  referenceId: d.text("reference_id").notNull(),
+  referenceType: activityReferenceTypeEnum("reference_type").notNull(),
+  timestamp: d.timestamp("timestamp").defaultNow().notNull(),
+  type: activityTypeEnum("type").notNull(),
+}))
+
 export const sshKeyTable = createTable(
   "ssh_key",
   (d) => ({
