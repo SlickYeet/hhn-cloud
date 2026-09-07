@@ -156,7 +156,7 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                 )
               })
             ) : (
-              <Item className="px-0">
+              <Item className="@lg:px-4 px-0">
                 <ItemMedia variant="icon">
                   <CircleQuestionMarkIcon />
                 </ItemMedia>
