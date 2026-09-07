@@ -1,11 +1,13 @@
 import {
-  IconSquare,
+  IconQuestionMark,
+  IconServer2,
   IconStack,
   IconStack2,
   IconStack2Filled,
   IconStack3,
   IconStack3Filled,
   IconStackFilled,
+  IconUser,
 } from "@tabler/icons-react"
 import type { ClassValue } from "clsx"
 import { clsx } from "clsx"
@@ -13,6 +15,7 @@ import { twMerge } from "tailwind-merge"
 
 import { Icons } from "@/components/icons"
 import { env } from "@/env"
+import type { ActivityTypeEnum } from "@/schemas/activity"
 import type {
   OperatingSystem,
   OperatingSystemCategoryEnum,
@@ -51,7 +54,7 @@ export function getResourcePlanIcon(
     case "2x-large":
       return IconStack3Filled
     default:
-      return IconStack
+      return IconQuestionMark
   }
 }
 
@@ -64,7 +67,7 @@ export function getOperatingSystemCategoryIcon(
     case "windows":
       return Icons.windows
     default:
-      return IconSquare
+      return IconQuestionMark
   }
 }
 
@@ -85,7 +88,7 @@ export function getOperatingSystemFamilyIcon(
     case "windows server":
       return Icons.windows
     default:
-      return IconSquare
+      return IconQuestionMark
   }
 }
 
@@ -114,5 +117,24 @@ export function getResourcePlanStatusColor(status: ResourcePlan["status"]) {
       return "border-l-destructive/50 text-destructive"
     default:
       return "border-gray-500 text-gray-500"
+  }
+}
+
+export function getActivityTypeIcon(type: ActivityTypeEnum) {
+  switch (type) {
+    case "instance_created":
+    case "instance_deleted":
+    case "instance_provisioning":
+    case "instance_started":
+    case "instance_stopped":
+    case "instance_updated":
+      return IconServer2
+    case "user_deleted":
+    case "user_logged_in":
+    case "user_logged_out":
+    case "user_updated":
+      return IconUser
+    default:
+      return IconQuestionMark
   }
 }
