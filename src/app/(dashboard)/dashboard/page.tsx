@@ -63,7 +63,7 @@ export default async function Page() {
         <div
           className={cn(
             "flex flex-col gap-4 lg:flex-row",
-            "[--activities-header-height:--spacing(16)] [--dashboard-0rg-resources-header-height:--spacing(8)] [--dashboard-card-height:calc(100dvh-40dvh)] lg:[--dashboard-card-height:calc(100dvh-55dvh)]",
+            "[--activities-header-height:--spacing(16)] [--dashboard-0rg-resources-header-height:--spacing(8)] [--dashboard-card-height:calc(100dvh-40dvh)] md:[--dashboard-card-height:calc(100dvh-55dvh)]",
           )}
         >
           <div className="inline-flex h-(--dashboard-card-height) flex-1 flex-col overflow-y-hidden rounded-t-2xl lg:flex-row lg:rounded-r-none lg:rounded-l-2xl">
