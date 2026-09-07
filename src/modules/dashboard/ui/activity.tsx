@@ -102,12 +102,14 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                         {item.actorType === "user" ? (
                           <HoverCard>
                             <HoverCardTrigger
+                              closeDelay={100}
+                              delay={10}
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
                               }}
                               render={
-                                <span className="underline-offset-4 group-hover/activity:underline" />
+                                <Button className="px-0" variant="link" />
                               }
                             >
                               {item.actorType}
