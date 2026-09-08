@@ -68,7 +68,7 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                     }
                   >
                     <ItemMedia>
-                      <Avatar size="sm">
+                      <Avatar>
                         <AvatarFallback>
                           <Icon className="size-4" />
                         </AvatarFallback>
@@ -82,11 +82,7 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                         sideOffset={8}
                       >
                         <ItemTitle className="line-clamp-1 text-left font-normal text-base">
-                          {item.type
-                            .slice(0, 1)
-                            .toUpperCase()
-                            .concat(item.type.slice(1))
-                            .replace(/_/g, " ")}
+                          {item.type.replace(/_/g, " ")}
                         </ItemTitle>
                       </Hint>
                       <ItemDescription className="line-clamp-2 text-xs">
