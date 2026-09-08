@@ -33,6 +33,7 @@ import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
 import { addPowerActionJob } from "@/server/queues/power-action-queue"
 import { addProvisionJob } from "@/server/queues/provision-queue"
+import { logActivity } from "@/server/services/activity"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
@@ -246,6 +247,29 @@ export const instanceRouter = createTRPCRouter({
           message: "Provision job could not be created",
         })
       }
+
+      await logActivity(ctx.db, {
+        actorId: ctx.session.session.userId,
+        actorType: "user",
+        channel: "dashboard",
+        metadata: {
+          instance: {
+            cores: plan.cores,
+            disk: plan.disk,
+            hostname: input.hostname,
+            memory: plan.memory,
+          },
+          user: {
+            email: ctx.session.user.email,
+            name: ctx.session.user.name,
+            role: ctx.session.user.role,
+          },
+        },
+        organizationId: ctx.organizationId,
+        referenceId: instance.id,
+        referenceType: "instance",
+        type: "instance_provision_requested",
+      })
 
       return {
         instanceId: instance.id,

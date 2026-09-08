@@ -7,6 +7,7 @@ import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable } from "@/server/db/schema"
+import { logActivity } from "@/server/services/activity"
 import {
   cloneInstance,
   configureInstance,
@@ -72,6 +73,15 @@ const provisionWorker = new Worker(
         .set({ status: "running" })
         .where(eq(instanceTable.id, data.instanceId))
 
+      await logActivity(db, {
+        actorType: "system",
+        channel: "worker",
+        organizationId: instance.organizationId,
+        referenceId: instance.id,
+        referenceType: "instance",
+        type: "instance_created",
+      })
+
       return {
         status: "running",
         vmid: String(newInstance.vmid),
@@ -97,12 +107,30 @@ provisionWorker.on("completed", (job) => {
 
 provisionWorker.on("failed", async (job, error) => {
   console.error("Worker failed:", job?.id, error)
-  if (job?.data.instanceId) {
-    await db
-      .update(instanceTable)
-      .set({ status: "failed" })
-      .where(eq(instanceTable.id, job.data.instanceId))
-  }
+
+  if (!job?.data.instanceId) return
+
+  const maxAttempts = job.opts.attempts ?? 1
+  const isFinalAttempt = job.attemptsMade >= maxAttempts
+
+  if (!isFinalAttempt) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({ status: "failed" })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_provisioning_failed",
+  })
 })
 
 provisionWorker.run()
