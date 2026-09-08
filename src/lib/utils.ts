@@ -1,4 +1,5 @@
 import {
+  IconKey,
   IconQuestionMark,
   IconServer2,
   IconStack,
@@ -129,6 +130,10 @@ export function getActivityTypeIcon(type: ActivityTypeEnum) {
     case "instance_stopped":
     case "instance_updated":
       return IconServer2
+    case "ssh_key_created":
+    case "ssh_key_deleted":
+    case "ssh_key_updated":
+      return IconKey
     case "user_deleted":
     case "user_logged_in":
     case "user_logged_out":
