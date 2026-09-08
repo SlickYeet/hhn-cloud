@@ -1,0 +1,1 @@
+ALTER TYPE "public"."activity_type" ADD VALUE 'instance_provisioning_failed' BEFORE 'instance_created';
