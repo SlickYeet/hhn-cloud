@@ -1,7 +1,7 @@
 "use client"
 
 import { IconBell, IconChevronRight } from "@tabler/icons-react"
-import { formatDistanceToNow } from "date-fns"
+import { formatDate, formatDistanceToNowStrict } from "date-fns"
 import { CircleQuestionMarkIcon } from "lucide-react"
 import Link from "next/link"
 
@@ -50,15 +50,15 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
             View All <IconChevronRight />
           </Button>
         </CardHeader>
-        <ScrollArea className="h-[50dvh] lg:h-[35dvh]">
-          <ItemGroup className="gap-y-0">
+        <ScrollArea className="-mx-4 h-[50dvh] lg:h-[35dvh]">
+          <ItemGroup className="gap-y-0!">
             {activity?.length ? (
               activity?.map((item) => {
                 const Icon = getActivityTypeIcon(item.type)
 
                 return (
                   <Item
-                    className="group/activity"
+                    className="group/activity flex-row items-start @lg:px-4 px-1"
                     key={item.id}
                     render={
                       <Link
@@ -68,32 +68,39 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                     }
                   >
                     <ItemMedia>
-                      <Avatar>
+                      <Avatar size="sm">
                         <AvatarFallback>
                           <Icon className="size-4" />
                         </AvatarFallback>
                       </Avatar>
                     </ItemMedia>
-                    <ItemContent className="gap-1">
-                      <ItemTitle className="line-clamp-1 font-normal text-base">
-                        {item.type
-                          .slice(0, 1)
-                          .toUpperCase()
-                          .concat(item.type.slice(1))
-                          .replace(/_/g, " ")}
-                      </ItemTitle>
+                    <ItemContent>
+                      <Hint
+                        align="start"
+                        label={item.type}
+                        side="top"
+                        sideOffset={8}
+                      >
+                        <ItemTitle className="line-clamp-1 text-left font-normal text-base">
+                          {item.type
+                            .slice(0, 1)
+                            .toUpperCase()
+                            .concat(item.type.slice(1))
+                            .replace(/_/g, " ")}
+                        </ItemTitle>
+                      </Hint>
                       <ItemDescription className="line-clamp-2 text-xs">
                         {item.referenceType}
                       </ItemDescription>
                     </ItemContent>
                     <ItemContent className="flex-none shrink-0">
                       <Hint
-                        label={item.timestamp.toDateString()}
-                        side="left"
+                        label={formatDate(new Date(item.timestamp), "PPpp")}
+                        side="top"
                         sideOffset={8}
                       >
-                        <ItemDescription className="text-right">
-                          {formatDistanceToNow(new Date(item.timestamp), {
+                        <ItemDescription className="truncate text-right">
+                          {formatDistanceToNowStrict(new Date(item.timestamp), {
                             addSuffix: true,
                           })}
                         </ItemDescription>
@@ -114,13 +121,14 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                             >
                               {item.actorType}
                             </HoverCardTrigger>
-                            <HoverCardContent
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                              }}
-                            >
-                              {item.metadata && "user" in item.metadata && (
+                            {item.metadata && "user" in item.metadata && (
+                              <HoverCardContent
+                                className="flex flex-row items-center gap-3"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                }}
+                              >
                                 <Avatar>
                                   <AvatarImage
                                     alt={
@@ -146,8 +154,35 @@ export function ActivityCard({ activity, className }: ActivityCardProps) {
                                     )?.name?.[0] ?? ""}
                                   </AvatarFallback>
                                 </Avatar>
-                              )}
-                            </HoverCardContent>
+                                <div className="flex w-full flex-col">
+                                  <div className="flex flex-row items-center gap-2">
+                                    <span className="text-sm">
+                                      {(
+                                        item.metadata.user as
+                                          | { name?: string }
+                                          | undefined
+                                      )?.name ?? "Unknown User"}
+                                    </span>
+                                    <span className="text-foreground/70 text-xs capitalize">
+                                      (
+                                      {(
+                                        item.metadata.user as
+                                          | { role?: string }
+                                          | undefined
+                                      )?.role ?? "Unknown Role"}
+                                      )
+                                    </span>
+                                  </div>
+                                  <span className="text-muted-foreground text-sm">
+                                    {(
+                                      item.metadata.user as
+                                        | { email?: string }
+                                        | undefined
+                                    )?.email ?? "No email available"}
+                                  </span>
+                                </div>
+                              </HoverCardContent>
+                            )}
                           </HoverCard>
                         ) : (
                           item.actorType
