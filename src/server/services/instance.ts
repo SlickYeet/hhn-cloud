@@ -106,24 +106,23 @@ export async function configureInstanceFirewall(
 ) {
   const ipsetName = `org_${data.organizationId.toLowerCase()}`
 
-  await proxmox.cluster.firewall.ipset
-    .$post({
+  try {
+    await proxmox.cluster.firewall.ipset.$post({
       comment: data.organizationId.toLowerCase(),
       name: ipsetName,
     })
-    .catch((e) => {
-      if (!isProxmoxAlreadyExistsError(e)) throw e
-    })
+  } catch (error) {
+    if (!isProxmoxAlreadyExistsError(error)) throw error
+  }
 
-  await proxmox.cluster.firewall.ipset
-    .$(ipsetName)
-    .$post({
+  try {
+    await proxmox.cluster.firewall.ipset.$(ipsetName).$post({
       cidr: String(data.network.ip),
       comment: data.hostname,
     })
-    .catch((e) => {
-      if (!isProxmoxAlreadyExistsError(e)) throw e
-    })
+  } catch (error) {
+    if (!isProxmoxAlreadyExistsError(error)) throw error
+  }
 
   await proxmox.nodes
     .$(PROXMOX_DEFAULT_NODE)
