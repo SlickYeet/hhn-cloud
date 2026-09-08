@@ -1,6 +1,7 @@
 import { apiKey } from "@better-auth/api-key"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api"
 import { nextCookies } from "better-auth/next-js"
 import { admin, genericOAuth, organization } from "better-auth/plugins"
 import { eq } from "drizzle-orm"
@@ -17,6 +18,7 @@ import { ac, adminRole, memberRole } from "@/server/auth/ac"
 import { db } from "@/server/db"
 import { user as userTable } from "@/server/db/schema"
 import { getInitialOrganizationId } from "@/server/queries/organization"
+import { logActivity } from "@/server/services/activity"
 
 const incrementScript = `
 local value = redis.call("INCR", KEYS[1])
@@ -86,6 +88,46 @@ export const auth = betterAuth({
     },
   },
   emailAndPassword: { enabled: false },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith("/callback")) {
+        const newSession = ctx.context.newSession
+        if (newSession) {
+          await logActivity(db, {
+            actorId: newSession.user.id,
+            actorType: "user",
+            channel: "dashboard",
+            metadata: {
+              user: newSession.user,
+            },
+            organizationId: newSession.session.activeOrganizationId ?? null,
+            referenceId: newSession.user.id,
+            referenceType: "user",
+            type: "user_logged_in",
+          })
+        }
+      }
+    }),
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/sign-out") {
+        const session = await getSessionFromCtx(ctx, { disableRefresh: true })
+        if (session) {
+          await logActivity(db, {
+            actorId: session.user.id,
+            actorType: "user",
+            channel: "dashboard",
+            metadata: {
+              user: session.user,
+            },
+            organizationId: session.session.activeOrganizationId,
+            referenceId: session.user.id,
+            referenceType: "user",
+            type: "user_logged_out",
+          })
+        }
+      }
+    }),
+  },
   plugins: [
     admin(),
     genericOAuth({
