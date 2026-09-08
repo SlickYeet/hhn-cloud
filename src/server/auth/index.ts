@@ -98,7 +98,11 @@ export const auth = betterAuth({
             actorType: "user",
             channel: "dashboard",
             metadata: {
-              user: newSession.user,
+              user: {
+                email: newSession.user.email,
+                name: newSession.user.name,
+                role: newSession.user.role,
+              },
             },
             organizationId: newSession.session.activeOrganizationId ?? null,
             referenceId: newSession.user.id,
@@ -117,7 +121,11 @@ export const auth = betterAuth({
             actorType: "user",
             channel: "dashboard",
             metadata: {
-              user: session.user,
+              user: {
+                email: session.user.email,
+                name: session.user.name,
+                role: session.user.role,
+              },
             },
             organizationId: session.session.activeOrganizationId,
             referenceId: session.user.id,
