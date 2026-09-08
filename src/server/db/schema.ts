@@ -52,7 +52,6 @@ export const activityTable = createTable("activity", (d) => ({
   metadata: d.jsonb("metadata").$type<Record<string, unknown>>(),
   organizationId: d
     .text("organization_id")
-    .notNull()
     .references(() => organization.id, { onDelete: "cascade" }),
   referenceId: d.text("reference_id").notNull(),
   referenceType: activityReferenceTypeEnum("reference_type").notNull(),
