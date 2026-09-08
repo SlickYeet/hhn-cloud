@@ -10,6 +10,7 @@ import { createSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
+import { logActivity } from "@/server/services/activity"
 
 function bufferToLengthEncoded(buf: Buffer): Buffer {
   const len = Buffer.alloc(4)
@@ -93,6 +94,16 @@ export const sshKeyRouter = createTRPCRouter({
             userId: ctx.session.session.userId,
           })
           .returning()
+
+        await logActivity(ctx.db, {
+          actorId: ctx.session.session.userId,
+          actorType: "user",
+          channel: "dashboard",
+          organizationId: ctx.organizationId,
+          referenceId: sshKey.id,
+          referenceType: "ssh_key",
+          type: "ssh_key_created",
+        })
 
         return {
           ...sshKey,
