@@ -68,20 +68,6 @@ const provisionWorker = new Worker(
 
       const newInstance = await startInstance(proxmox, instance.pveVmid)
 
-      await db
-        .update(instanceTable)
-        .set({ status: "running" })
-        .where(eq(instanceTable.id, data.instanceId))
-
-      await logActivity(db, {
-        actorType: "system",
-        channel: "worker",
-        organizationId: instance.organizationId,
-        referenceId: instance.id,
-        referenceType: "instance",
-        type: "instance_created",
-      })
-
       return {
         status: "running",
         vmid: String(newInstance.vmid),
@@ -101,8 +87,27 @@ const provisionWorker = new Worker(
   },
 )
 
-provisionWorker.on("completed", (job) => {
+provisionWorker.on("completed", async (job) => {
   console.info("Provision job completed:", job.id, job.returnvalue)
+
+  if (!job?.data.instanceId) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({ status: "running" })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_created",
+  })
 })
 
 provisionWorker.on("failed", async (job, error) => {
