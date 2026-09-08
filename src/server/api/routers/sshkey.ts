@@ -82,13 +82,15 @@ export const sshKeyRouter = createTRPCRouter({
       const sha256 = createHash("sha256").update(blob).digest("base64")
       const fingerprint = `SHA256:${sha256.replace(/=+$/, "")}`
 
+      const name = input.name.trim() || `SSH Key ${new Date().toISOString()}`
+
       try {
         const [sshKey] = await ctx.db
           .insert(sshKeyTable)
           .values({
             fingerprint,
             id: randomUUID(),
-            name: input.name,
+            name,
             organizationId: ctx.organizationId,
             publicKey: publicKeyString,
             userId: ctx.session.session.userId,
