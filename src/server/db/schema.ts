@@ -29,7 +29,7 @@ export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
 ])
 
 export const activityTypeEnum = pgEnum("activity_type", [
-  "instance_provisioning",
+  "instance_provision_requested",
   "instance_provisioning_failed",
   "instance_created",
   "instance_started",

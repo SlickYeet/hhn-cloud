@@ -125,7 +125,7 @@ export function getActivityTypeIcon(type: ActivityTypeEnum) {
   switch (type) {
     case "instance_created":
     case "instance_deleted":
-    case "instance_provisioning":
+    case "instance_provision_requested":
     case "instance_provisioning_failed":
     case "instance_started":
     case "instance_stopped":

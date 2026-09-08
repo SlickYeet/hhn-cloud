@@ -127,6 +127,13 @@
       "when": 1788837504748,
       "tag": "0017_fair_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788837775901,
+      "tag": "0018_glamorous_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }
