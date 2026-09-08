@@ -24,6 +24,7 @@ export const activityChannelEnum = pgEnum("activity_channel", [
 
 export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
   "instance",
+  "ssh_key",
   "user",
 ])
 
@@ -34,6 +35,9 @@ export const activityTypeEnum = pgEnum("activity_type", [
   "instance_stopped",
   "instance_deleted",
   "instance_updated",
+  "ssh_key_created",
+  "ssh_key_updated",
+  "ssh_key_deleted",
   "user_logged_in",
   "user_logged_out",
   "user_updated",
