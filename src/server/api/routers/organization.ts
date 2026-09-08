@@ -3,10 +3,10 @@ import { toTRPCMeta } from "@orpc/trpc"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
-import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { selectActivitySchema } from "@/schemas/activity"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { member as organizationMemberTable } from "@/server/db/schema"
+import { queryActivity } from "@/server/queries/activity"
 
 export const organizationRouter = createTRPCRouter({
   getActivity: protectedProcedure
@@ -23,16 +23,15 @@ export const organizationRouter = createTRPCRouter({
     .input(
       z
         .object({
-          limit: z.number().optional(),
+          limit: z.int().positive().max(100).optional(),
         })
         .optional(),
     )
     .output(z.array(selectActivitySchema))
     .query(async ({ ctx, input }) => {
-      const activity = await ctx.db.query.activityTable.findMany({
-        limit: input?.limit ?? DEFAULT_PAGE_SIZE,
-        orderBy: (ac, { desc }) => desc(ac.timestamp),
-        where: (ac, { eq }) => eq(ac.organizationId, ctx.organizationId),
+      const activity = await queryActivity(ctx.db, {
+        limit: input?.limit,
+        organizationId: ctx.organizationId,
       })
 
       return activity

@@ -6,7 +6,6 @@ import { TRPCError } from "@trpc/server"
 import { and, count, eq, inArray, isNull } from "drizzle-orm"
 import * as z from "zod"
 
-import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
@@ -28,6 +27,7 @@ import {
   sshKeyTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
+import { queryActivity } from "@/server/queries/activity"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
@@ -394,28 +394,30 @@ export const instanceRouter = createTRPCRouter({
         }),
       ),
     )
-    .input(z.object({ id: z.string(), limit: z.number().optional() }))
+    .input(
+      z.object({
+        id: z.string(),
+        limit: z.int().positive().max(100).optional(),
+      }),
+    )
     .output(z.array(selectActivitySchema))
     .query(async ({ ctx, input }) => {
       const instance = await ctx.db.query.instanceTable.findFirst({
         where: (instance, { eq }) => eq(instance.id, input.id),
       })
 
-      if (!instance) {
+      if (!instance || instance.organizationId !== ctx.organizationId) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: `Instance ${input.id} not found`,
         })
       }
 
-      const activity = await ctx.db.query.activityTable.findMany({
-        limit: input?.limit ?? DEFAULT_PAGE_SIZE,
-        orderBy: (ac, { desc }) => desc(ac.timestamp),
-        where: (ac, { and, eq }) =>
-          and(
-            eq(ac.organizationId, ctx.organizationId),
-            eq(ac.referenceId, input.id),
-          ),
+      const activity = await queryActivity(ctx.db, {
+        limit: input.limit,
+        organizationId: ctx.organizationId,
+        referenceId: instance.id,
+        referenceType: "instance",
       })
 
       return activity
