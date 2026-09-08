@@ -10,6 +10,8 @@ import { activityTable } from "@/server/db/schema"
 export const insertActivitySchema = createInsertSchema(activityTable)
 export const selectActivitySchema = createSelectSchema(activityTable)
 
+export type InsertActivity = z.infer<typeof insertActivitySchema>
+
 export type Activity = z.infer<typeof selectActivitySchema>
 export type ActivityTypeEnum = (typeof activityTypeEnum.enumValues)[number]
 export type ActivityReferenceTypeEnum =
