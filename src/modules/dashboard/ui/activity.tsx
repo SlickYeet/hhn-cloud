@@ -23,6 +23,7 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import type { RouterInputs } from "@/lib/api/client"
 import { api } from "@/lib/api/client"
@@ -49,7 +50,7 @@ export function ActivityCard({
   return (
     <Card className={cn("@container", className)}>
       <CardContent>
-        <CardHeader className="mb-4 flex items-center justify-between gap-2 @md:px-4 px-0">
+        <CardHeader className="flex items-center justify-between gap-2 @md:px-4 px-0">
           <CardTitle className="flex items-center gap-2">
             <IconBell className="size-5 stroke-primary" />
             <p className="text-lg uppercase">Activity</p>
@@ -64,6 +65,7 @@ export function ActivityCard({
             View All <IconChevronRight />
           </Button>
         </CardHeader>
+        <Separator className="my-2" />
         <ScrollArea className="-mx-4 h-[50dvh] lg:h-[35dvh]">
           <ItemGroup className="gap-y-0!">
             {activity?.length ? (
