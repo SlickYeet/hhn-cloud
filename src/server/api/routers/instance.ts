@@ -9,7 +9,6 @@ import * as z from "zod"
 import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
-import { selectActivitySchema } from "@/schemas/activity"
 import type {
   InstancePowerAction,
   InstanceStatusEnum,
@@ -27,7 +26,6 @@ import {
   sshKeyTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
-import { queryActivity } from "@/server/queries/activity"
 import { getNextVmid } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
@@ -405,46 +403,6 @@ export const instanceRouter = createTRPCRouter({
       }
 
       return instance
-    }),
-
-  getActivity: protectedProcedure
-    .meta(
-      toTRPCMeta(
-        openapi({
-          method: "GET",
-          path: "/instance/{id}/activity",
-          summary: "Get activity for an instance by ID",
-          tags: ["Instances"],
-        }),
-      ),
-    )
-    .input(
-      z.object({
-        id: z.string(),
-        limit: z.int().positive().max(100).optional(),
-      }),
-    )
-    .output(z.array(selectActivitySchema))
-    .query(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (instance, { eq }) => eq(instance.id, input.id),
-      })
-
-      if (!instance || instance.organizationId !== ctx.organizationId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      const activity = await queryActivity(ctx.db, {
-        limit: input.limit,
-        organizationId: ctx.organizationId,
-        referenceId: instance.id,
-        referenceType: "instance",
-      })
-
-      return activity
     }),
 
   list: protectedProcedure

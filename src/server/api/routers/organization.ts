@@ -3,40 +3,10 @@ import { toTRPCMeta } from "@orpc/trpc"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
-import { selectActivitySchema } from "@/schemas/activity"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { member as organizationMemberTable } from "@/server/db/schema"
-import { queryActivity } from "@/server/queries/activity"
 
 export const organizationRouter = createTRPCRouter({
-  getActivity: protectedProcedure
-    .meta(
-      toTRPCMeta(
-        openapi({
-          method: "GET",
-          path: "/organization/activity",
-          summary: "Get all activity of the active organization of the user",
-          tags: ["Organization Activity"],
-        }),
-      ),
-    )
-    .input(
-      z
-        .object({
-          limit: z.int().positive().max(100).optional(),
-        })
-        .optional(),
-    )
-    .output(z.array(selectActivitySchema))
-    .query(async ({ ctx, input }) => {
-      const activity = await queryActivity(ctx.db, {
-        limit: input?.limit,
-        organizationId: ctx.organizationId,
-      })
-
-      return activity
-    }),
-
   member: {
     count: protectedProcedure
       .meta(
