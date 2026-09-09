@@ -101,6 +101,13 @@ export const sshKeyRouter = createTRPCRouter({
           actorId: ctx.session.session.userId,
           actorType: "user",
           channel: "dashboard",
+          metadata: {
+            user: {
+              email: ctx.session.user.email,
+              name: ctx.session.user.name,
+              role: ctx.session.user.role,
+            },
+          },
           organizationId: ctx.organizationId,
           referenceId: sshKey.id,
           referenceType: "ssh_key",
