@@ -9,12 +9,20 @@ export function isUniqueConstraintError(
   error: unknown,
   constraintName: string,
 ): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "23505" &&
-    "constraint_name" in error &&
-    error.constraint_name === constraintName
-  )
+  let current: unknown = error
+
+  while (typeof current === "object" && current !== null) {
+    if (
+      "code" in current &&
+      current.code === "23505" &&
+      "constraint_name" in current &&
+      current.constraint_name === constraintName
+    ) {
+      return true
+    }
+
+    current = "cause" in current ? current.cause : null
+  }
+
+  return false
 }
