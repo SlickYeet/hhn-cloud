@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { DASHBOARD_INFO_CARDS } from "@/constants/app"
+import { DASHBOARD_INFO_CARDS, DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
 import { cn } from "@/lib/utils"
 import { ActivityCard } from "@/modules/dashboard/ui/activity"
@@ -27,8 +27,10 @@ export default async function Page() {
   // await api.snapshot.count.prefetch()
   // await api.apiKey.count.prefetch()
   await api.organization.member.count.prefetch()
-  // TODO: infinite scroll
-  const activity = await api.organization.getActivity()
+  await api.activity.list.prefetch({
+    limit: DEFAULT_PAGE_SIZE,
+    scope: "organization",
+  })
 
   return (
     <main className="mx-auto size-full max-w-384 px-4 pb-6 sm:px-6">
@@ -73,8 +75,8 @@ export default async function Page() {
             <OrgResources />
           </div>
           <ActivityCard
-            activity={activity}
             className="h-(--dashboard-card-height) w-full lg:max-w-80"
+            scope="organization"
           />
         </div>
       </HydrateClient>

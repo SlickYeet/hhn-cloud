@@ -83,7 +83,7 @@ export function CreateSshKeyModal({
       setSshKey(data)
       form.reset()
       await utils.sshKey.list.invalidate()
-      await utils.organization.getActivity.invalidate()
+      await utils.activity.list.invalidate()
     },
   })
 

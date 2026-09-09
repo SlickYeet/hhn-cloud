@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { Tabs } from "@/components/ui/tabs"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
 import { ActivityCard } from "@/modules/dashboard/ui/activity"
 import { InstanceDetailsInfo } from "@/modules/dashboard/ui/instance-details/info"
@@ -17,7 +18,11 @@ export default async function Page({
   if (!instanceId) return notFound()
 
   await api.instance.get.prefetch({ id: instanceId })
-  const activity = await api.instance.getActivity({ id: instanceId })
+  await api.activity.list.prefetch({
+    instanceId,
+    limit: DEFAULT_PAGE_SIZE,
+    scope: "instance",
+  })
 
   return (
     <main className="flex flex-col gap-4 bg-background">
@@ -33,7 +38,7 @@ export default async function Page({
           <div className="mx-auto mt-4 flex size-full max-w-384 flex-col gap-6 px-4 sm:px-6">
             <InstanceResources instanceId={instanceId} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <ActivityCard activity={activity} />
+              <ActivityCard instanceId={instanceId} scope="instance" />
               <div className="flex flex-col gap-4">
                 <InstanceOptions instanceId={instanceId} />
                 <InstanceLocation instanceId={instanceId} />

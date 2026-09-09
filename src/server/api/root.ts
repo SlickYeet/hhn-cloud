@@ -1,5 +1,6 @@
 import { toORPCRouter } from "@orpc/trpc"
 
+import { activityRouter } from "@/server/api/routers/activity"
 import { firewallRuleRouter } from "@/server/api/routers/firewall-rule"
 import { instanceRouter } from "@/server/api/routers/instance"
 import { ipAllocationRouter } from "@/server/api/routers/ip-allocation"
@@ -12,6 +13,7 @@ import { sshKeyRouter } from "@/server/api/routers/sshkey"
 import { createCallerFactory, createTRPCRouter } from "./init"
 
 export const appRouter = createTRPCRouter({
+  activity: activityRouter,
   firewallRule: firewallRuleRouter,
   instance: instanceRouter,
   ipAllocation: ipAllocationRouter,

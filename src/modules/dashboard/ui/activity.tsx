@@ -23,15 +23,29 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
+import type { RouterInputs } from "@/lib/api/client"
+import { api } from "@/lib/api/client"
 import { cn, getActivityTypeIcon } from "@/lib/utils"
-import type { Activity } from "@/schemas/activity"
 
 interface ActivityCardProps {
-  activity?: Activity[]
+  scope: RouterInputs["activity"]["list"]["scope"]
+  instanceId?: string
   className?: string
 }
 
-export function ActivityCard({ activity, className }: ActivityCardProps) {
+export function ActivityCard({
+  scope,
+  instanceId,
+  className,
+}: ActivityCardProps) {
+  // TODO: infinite scroll
+  const { data: activity } = api.activity.list.useQuery({
+    instanceId,
+    limit: DEFAULT_PAGE_SIZE,
+    scope,
+  })
+
   return (
     <Card className={cn("@container", className)}>
       <CardContent>
