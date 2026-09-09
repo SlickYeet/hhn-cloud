@@ -75,7 +75,7 @@ export default async function Page() {
             <OrgResources />
           </div>
           <ActivityCard
-            className="h-(--dashboard-card-height) w-full lg:max-w-80"
+            className="h-(--dashboard-card-height) w-full lg:max-w-sm"
             scope="organization"
           />
         </div>
