@@ -135,12 +135,14 @@ export const sshKeyRouter = createTRPCRouter({
 
   list: protectedProcedure
     .meta(
-      openapi({
-        method: "GET",
-        path: "/sshkeys",
-        summary: "List all SSH keys",
-        tags: ["SSH Keys"],
-      }),
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/sshkeys",
+          summary: "List all SSH keys",
+          tags: ["SSH Keys"],
+        }),
+      ),
     )
     .output(z.array(selectSshKeySchema))
     .query(async ({ ctx }) => {
