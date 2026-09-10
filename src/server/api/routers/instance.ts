@@ -359,6 +359,26 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
+      await logActivity(ctx.db, {
+        actorId: ctx.session.session.userId,
+        actorType: "user",
+        channel: "dashboard",
+        metadata: {
+          instance: {
+            hostname: instance.hostname,
+          },
+          user: {
+            email: ctx.session.user.email,
+            name: ctx.session.user.name,
+            role: ctx.session.user.role,
+          },
+        },
+        organizationId: ctx.organizationId,
+        referenceId: instance.id,
+        referenceType: "instance",
+        type: "instance_deletion_requested",
+      })
+
       return {
         instanceId: instance.id,
         jobId,
@@ -621,6 +641,27 @@ async function powerAction(
       message: "Power action job could not be created",
     })
   }
+
+  await logActivity(ctx.db, {
+    actorId: ctx.session.session.userId,
+    actorType: "user",
+    channel: "dashboard",
+    metadata: {
+      action,
+      instance: {
+        hostname: instance.hostname,
+      },
+      user: {
+        email: ctx.session.user.email,
+        name: ctx.session.user.name,
+        role: ctx.session.user.role,
+      },
+    },
+    organizationId: ctx.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_power_action_requested",
+  })
 
   return { id: instance.id }
 }

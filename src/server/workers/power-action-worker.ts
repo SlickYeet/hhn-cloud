@@ -5,6 +5,7 @@ import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable } from "@/server/db/schema"
+import { logActivity } from "@/server/services/activity"
 import {
   getInstanceStatusFromProxmox,
   isVmNotFoundError,
@@ -65,14 +66,9 @@ const powerActionWorker = new Worker(
 
     if (currentStatus === "unknown") {
       throw new Error(
-        `Instance ${instance.pveVmid} status is unknown. Setting status to 'stopped'.`,
+        `Instance ${instance.pveVmid} status is unknown. Setting status to 'failed'.`,
       )
     }
-
-    await db
-      .update(instanceTable)
-      .set({ status: currentStatus })
-      .where(eq(instanceTable.id, instance.id))
 
     return {
       status: "success",
@@ -89,20 +85,55 @@ const powerActionWorker = new Worker(
   },
 )
 
-powerActionWorker.on("completed", (job) => {
+powerActionWorker.on("completed", async (job) => {
   console.info(`Power action job ${job.id} completed`)
+
+  if (!job?.data.instanceId) return
+
+  const instance = await db.query.instanceTable.findFirst({
+    columns: { id: true, organizationId: true, pveVmid: true },
+    where: (i, { eq }) => eq(i.id, job.data.instanceId),
+  })
+
+  if (!instance) return
+
+  // cast as Exclude "unknown" because we throw if currentStatus is "unknown" in the worker
+  const currentStatus = (await getInstanceStatusFromProxmox(proxmox, {
+    pveVmid: instance.pveVmid,
+  })) as Exclude<
+    Awaited<ReturnType<typeof getInstanceStatusFromProxmox>>,
+    "unknown"
+  >
+
+  await db
+    .update(instanceTable)
+    .set({ status: currentStatus })
+    .where(eq(instanceTable.id, instance.id))
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    metadata: { action: job.data.action },
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_power_action_completed",
+  })
 })
 
 powerActionWorker.on("failed", async (job, err) => {
   console.error(`Power action job ${job?.id} failed: ${err.message}`)
 
-  if ((job?.attemptsMade ?? 0) < (job?.opts.attempts ?? 1)) return
+  if (!job?.data.instanceId) return
 
-  const instanceId = job?.data?.instanceId
-  if (typeof instanceId !== "string") return
+  const maxAttempts = job.opts.attempts ?? 1
+  const isFinalAttempt = job.attemptsMade >= maxAttempts
+
+  if (!isFinalAttempt) return
 
   const instance = await db.query.instanceTable.findFirst({
-    where: (i, { eq }) => eq(i.id, instanceId),
+    columns: { id: true, organizationId: true, pveVmid: true },
+    where: (i, { eq }) => eq(i.id, job.data.instanceId),
   })
 
   if (!instance) return
@@ -115,6 +146,17 @@ powerActionWorker.on("failed", async (job, err) => {
     .update(instanceTable)
     .set({ status: currentStatus === "unknown" ? "failed" : currentStatus })
     .where(eq(instanceTable.id, instance.id))
+    .returning()
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    metadata: { error: err?.message ?? "Unknown error" },
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_power_action_failed",
+  })
 })
 
 powerActionWorker.run()

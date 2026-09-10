@@ -7,6 +7,7 @@ import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable, ipAllocationTable } from "@/server/db/schema"
 import { DELETE_INSTANCE_QUEUE_KEY } from "@/server/queues/delete-instance-queue"
+import { logActivity } from "@/server/services/activity"
 import {
   destroyInstance,
   stopInstanceIfRunning,
@@ -46,11 +47,6 @@ const deleteInstanceWorker = new Worker(
         .where(eq(ipAllocationTable.id, ipAllocation.id))
     }
 
-    await db
-      .update(instanceTable)
-      .set({ deletedAt: new Date(), status: "deleted" })
-      .where(eq(instanceTable.id, instanceId))
-
     return {
       instanceId,
       status: "deleted",
@@ -66,18 +62,55 @@ const deleteInstanceWorker = new Worker(
   },
 )
 
-deleteInstanceWorker.on("completed", (job) => {
+deleteInstanceWorker.on("completed", async (job) => {
   console.info("Delete instance job completed:", job.id, job.returnvalue)
+
+  if (!job?.data.instanceId) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({ deletedAt: new Date(), status: "deleted" })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_deleted",
+  })
 })
 
 deleteInstanceWorker.on("failed", async (job, error) => {
   console.error("Delete instance job failed:", job?.id, error)
-  if (job?.data.instanceId) {
-    await db
-      .update(instanceTable)
-      .set({ status: "failed" })
-      .where(eq(instanceTable.id, job.data.instanceId))
-  }
+  if (!job?.data.instanceId) return
+
+  const maxAttempts = job.opts.attempts ?? 1
+  const isFinalAttempt = job.attemptsMade >= maxAttempts
+
+  if (!isFinalAttempt) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({ status: "failed" })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    metadata: { error: error?.message ?? "Unknown error" },
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "instance_deletion_failed",
+  })
 })
 
 deleteInstanceWorker.run()
