@@ -41,11 +41,16 @@ export function ActivityCard({
   className,
 }: ActivityCardProps) {
   // TODO: infinite scroll
-  const { data: activity } = api.activity.list.useQuery({
-    instanceId,
-    limit: DEFAULT_PAGE_SIZE,
-    scope,
-  })
+  const { data: activity } = api.activity.list.useQuery(
+    {
+      instanceId,
+      limit: DEFAULT_PAGE_SIZE,
+      scope,
+    },
+    {
+      refetchInterval: 10000,
+    },
+  )
 
   return (
     <Card className={cn("@container", className)}>
@@ -101,8 +106,11 @@ export function ActivityCard({
                           {item.type.replace(/_/g, " ")}
                         </ItemTitle>
                       </Hint>
-                      <ItemDescription className="line-clamp-2 text-xs">
-                        {item.referenceType}
+                      <ItemDescription className="line-clamp-2 text-xs capitalize">
+                        {item.referenceType}{" "}
+                        {typeof item.metadata?.action === "string" ? (
+                          <span>- {item.metadata.action}</span>
+                        ) : null}
                       </ItemDescription>
                     </ItemContent>
                     <ItemContent className="flex-none shrink-0">
