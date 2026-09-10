@@ -123,22 +123,27 @@ export function getResourcePlanStatusColor(status: ResourcePlan["status"]) {
 
 export function getActivityTypeIcon(type: ActivityTypeEnum) {
   switch (type) {
-    case "instance_created":
-    case "instance_deleted":
     case "instance_provision_requested":
     case "instance_provisioning_failed":
+    case "instance_created":
+    case "instance_power_action_requested":
+    case "instance_power_action_completed":
+    case "instance_power_action_failed":
     case "instance_started":
     case "instance_stopped":
+    case "instance_deletion_requested":
+    case "instance_deletion_failed":
+    case "instance_deleted":
     case "instance_updated":
       return IconServer2
     case "ssh_key_created":
     case "ssh_key_deleted":
     case "ssh_key_updated":
       return IconKey
-    case "user_deleted":
     case "user_logged_in":
     case "user_logged_out":
     case "user_updated":
+    case "user_deleted":
       return IconUser
     default:
       return IconQuestionMark
