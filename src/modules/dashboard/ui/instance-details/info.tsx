@@ -150,6 +150,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       await utils.instance.get.invalidate({ id: data.id })
+      await utils.activity.list.invalidate({
+        instanceId: data.id,
+        scope: "instance",
+      })
     },
   })
   const rebootMutation = api.instance.reboot.useMutation({
@@ -161,6 +165,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       await utils.instance.get.invalidate({ id: data.id })
+      await utils.activity.list.invalidate({
+        instanceId: data.id,
+        scope: "instance",
+      })
     },
   })
   const shutdownMutation = api.instance.shutdown.useMutation({
@@ -172,6 +180,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       await utils.instance.get.invalidate({ id: data.id })
+      await utils.activity.list.invalidate({
+        instanceId: data.id,
+        scope: "instance",
+      })
     },
   })
   const stopMutation = api.instance.stop.useMutation({
@@ -183,6 +195,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       await utils.instance.get.invalidate({ id: data.id })
+      await utils.activity.list.invalidate({
+        instanceId: data.id,
+        scope: "instance",
+      })
     },
   })
   const deleteMutation = api.instance.delete.useMutation({
@@ -194,7 +210,10 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       await utils.instance.get.invalidate({ id: data.instanceId })
-      await utils.instance.list.invalidate()
+      await utils.activity.list.invalidate({
+        instanceId: data.instanceId,
+        scope: "instance",
+      })
     },
   })
 
