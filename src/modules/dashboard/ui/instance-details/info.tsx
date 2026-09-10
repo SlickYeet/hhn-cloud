@@ -266,11 +266,12 @@ function InstanceActions({ instance }: { instance: Instance }) {
             <IconPower /> Shutdown
           </DropdownMenuItem>
           <DropdownMenuItem
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
             disabled={isDisabled("stop") || isTransitionalStatus}
             onClick={() => stopMutation.mutate({ id: instance.id })}
-            variant="destructive"
           >
-            <IconPlayerStopFilled /> Stop
+            <IconPlayerStopFilled />
+            <span>Stop</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -280,11 +281,12 @@ function InstanceActions({ instance }: { instance: Instance }) {
             <IconCopy /> Copy ID
           </DropdownMenuItem>
           <DropdownMenuItem
+            className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
             disabled={!isDeletable}
             onClick={() => deleteMutation.mutate({ id: instance.id })}
-            variant="destructive"
           >
-            <IconTrash /> Delete
+            <IconTrash />
+            <span>Delete</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
