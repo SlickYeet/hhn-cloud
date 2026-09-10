@@ -131,6 +131,7 @@ provisionWorker.on("failed", async (job, error) => {
   await logActivity(db, {
     actorType: "system",
     channel: "worker",
+    metadata: { error: error?.message ?? "Unknown error" },
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
