@@ -60,9 +60,9 @@ export async function configureInstance(
   const config: Omit<Proxmox.nodesQemuConfigVmConfig, "digest"> = {
     agent: "enabled=1,fstrim_cloned_disks=1,freeze-fs=1,type=virtio",
     autostart: true,
-    bios: "seabios", // TODO: if Windows use "bios=ovmf"
+    bios: "seabios", // TODO: if Windows, use "bios=ovmf"
     ciupgrade: true,
-    ciuser: "admin",
+    ciuser: "cloud-user",
     cores: data.plan.cores,
     description: `
 Template: ${data.plan.name}
