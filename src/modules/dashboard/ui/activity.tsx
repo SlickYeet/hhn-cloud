@@ -80,148 +80,140 @@ export function ActivityCard({
                   const Icon = getActivityTypeIcon(item.type)
 
                   return (
-                    <React.Fragment key={item.id}>
-                      <Item
-                        className="group/activity flex-row items-start @lg:px-4 px-1"
-                        render={
-                          <Link
-                            // @ts-expect-error: cannot use typedRoutes here
-                            href={`/dashboard/activity/${item.id}`}
-                          />
-                        }
-                      >
-                        <ItemMedia>
-                          <Avatar>
-                            <AvatarFallback>
-                              <Icon className="size-4" />
-                            </AvatarFallback>
-                          </Avatar>
-                        </ItemMedia>
-                        <ItemContent>
-                          <Hint
-                            align="start"
-                            label={item.type}
-                            side="top"
-                            sideOffset={8}
-                          >
-                            <ItemTitle className="line-clamp-1 text-left font-normal text-base">
-                              {item.type.replace(/_/g, " ")}
-                            </ItemTitle>
-                          </Hint>
-                          <ItemDescription className="line-clamp-2 text-xs capitalize">
-                            {item.referenceType}{" "}
-                            {typeof item.metadata?.action === "string" ? (
-                              <span>- {item.metadata.action}</span>
-                            ) : null}
+                    <Item
+                      className="group/activity flex-row items-start @lg:px-4 px-1"
+                      key={item.id}
+                      render={
+                        <Link
+                          // @ts-expect-error: cannot use typedRoutes here
+                          href={`/dashboard/activity/${item.id}`}
+                        />
+                      }
+                    >
+                      <ItemMedia>
+                        <Avatar>
+                          <AvatarFallback>
+                            <Icon className="size-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                      </ItemMedia>
+                      <ItemContent>
+                        <Hint
+                          align="start"
+                          label={item.type}
+                          side="top"
+                          sideOffset={8}
+                        >
+                          <ItemTitle className="line-clamp-1 text-left font-normal text-base">
+                            {item.type.replace(/_/g, " ")}
+                          </ItemTitle>
+                        </Hint>
+                        <ItemDescription className="line-clamp-2 text-xs capitalize">
+                          {item.referenceType}{" "}
+                          {typeof item.metadata?.action === "string" ? (
+                            <span>- {item.metadata.action}</span>
+                          ) : null}
+                        </ItemDescription>
+                      </ItemContent>
+                      <ItemContent className="flex-none shrink-0">
+                        <Hint
+                          label={formatDate(new Date(item.timestamp), "PPpp")}
+                          side="top"
+                          sideOffset={8}
+                        >
+                          <ItemDescription className="truncate text-right">
+                            {formatDistanceToNowStrict(
+                              new Date(item.timestamp),
+                              { addSuffix: true },
+                            )}
                           </ItemDescription>
-                        </ItemContent>
-                        <ItemContent className="flex-none shrink-0">
-                          <Hint
-                            label={formatDate(new Date(item.timestamp), "PPpp")}
-                            side="top"
-                            sideOffset={8}
-                          >
-                            <ItemDescription className="truncate text-right">
-                              {formatDistanceToNowStrict(
-                                new Date(item.timestamp),
-                                { addSuffix: true },
-                              )}
-                            </ItemDescription>
-                          </Hint>
-                          <ItemDescription className="text-right text-foreground/70">
-                            {item.actorType === "user" ? (
-                              <HoverCard>
-                                <HoverCardTrigger
-                                  className="-mt-2.5"
-                                  closeDelay={100}
-                                  delay={10}
+                        </Hint>
+                        <ItemDescription className="text-right text-foreground/70">
+                          {item.actorType === "user" ? (
+                            <HoverCard>
+                              <HoverCardTrigger
+                                className="-mt-2.5"
+                                closeDelay={100}
+                                delay={10}
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                }}
+                                render={
+                                  <Button className="px-0" variant="link" />
+                                }
+                              >
+                                {item.actorType}
+                              </HoverCardTrigger>
+                              {item.metadata && "user" in item.metadata && (
+                                <HoverCardContent
+                                  className="flex flex-row items-center gap-3"
                                   onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                   }}
-                                  render={
-                                    <Button className="px-0" variant="link" />
-                                  }
                                 >
-                                  {item.actorType}
-                                </HoverCardTrigger>
-                                {item.metadata && "user" in item.metadata && (
-                                  <HoverCardContent
-                                    className="flex flex-row items-center gap-3"
-                                    onClick={(e) => {
-                                      e.preventDefault()
-                                      e.stopPropagation()
-                                    }}
-                                  >
-                                    <Avatar>
-                                      <AvatarImage
-                                        alt={
-                                          (
-                                            item.metadata.user as
-                                              | { name?: string }
-                                              | undefined
-                                          )?.name ?? ""
-                                        }
-                                        src={
-                                          (
-                                            item.metadata.user as
-                                              | { image?: string }
-                                              | undefined
-                                          )?.image ?? ""
-                                        }
-                                      />
-                                      <AvatarFallback>
+                                  <Avatar>
+                                    <AvatarImage
+                                      alt={
+                                        (
+                                          item.metadata.user as
+                                            | { name?: string }
+                                            | undefined
+                                        )?.name ?? ""
+                                      }
+                                      src={
+                                        (
+                                          item.metadata.user as
+                                            | { image?: string }
+                                            | undefined
+                                        )?.image ?? ""
+                                      }
+                                    />
+                                    <AvatarFallback>
+                                      {(
+                                        item.metadata.user as
+                                          | { name?: string }
+                                          | undefined
+                                      )?.name?.[0] ?? ""}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex w-full flex-col">
+                                    <div className="flex flex-row items-center gap-2">
+                                      <span className="text-sm">
                                         {(
                                           item.metadata.user as
                                             | { name?: string }
                                             | undefined
-                                        )?.name?.[0] ?? ""}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex w-full flex-col">
-                                      <div className="flex flex-row items-center gap-2">
-                                        <span className="text-sm">
-                                          {(
-                                            item.metadata.user as
-                                              | { name?: string }
-                                              | undefined
-                                          )?.name ?? "Unknown User"}
-                                        </span>
-                                        <span className="text-foreground/70 text-xs capitalize">
-                                          (
-                                          {(
-                                            item.metadata.user as
-                                              | { role?: string }
-                                              | undefined
-                                          )?.role ?? "Unknown Role"}
-                                          )
-                                        </span>
-                                      </div>
-                                      <span className="text-muted-foreground text-sm">
+                                        )?.name ?? "Unknown User"}
+                                      </span>
+                                      <span className="text-foreground/70 text-xs capitalize">
+                                        (
                                         {(
                                           item.metadata.user as
-                                            | { email?: string }
+                                            | { role?: string }
                                             | undefined
-                                        )?.email ?? "No email available"}
+                                        )?.role ?? "Unknown Role"}
+                                        )
                                       </span>
                                     </div>
-                                  </HoverCardContent>
-                                )}
-                              </HoverCard>
-                            ) : (
-                              item.actorType
-                            )}
-                          </ItemDescription>
-                        </ItemContent>
-                      </Item>
-                      <InfiniteScroll
-                        className={cn(query.hasNextPage ? "flex" : "hidden")}
-                        fetchNextPage={query.fetchNextPage}
-                        hasNextPage={query.hasNextPage}
-                        isFetchingNextPage={query.isFetchingNextPage}
-                        isManual
-                      />
-                    </React.Fragment>
+                                    <span className="text-muted-foreground text-sm">
+                                      {(
+                                        item.metadata.user as
+                                          | { email?: string }
+                                          | undefined
+                                      )?.email ?? "No email available"}
+                                    </span>
+                                  </div>
+                                </HoverCardContent>
+                              )}
+                            </HoverCard>
+                          ) : (
+                            item.actorType
+                          )}
+                        </ItemDescription>
+                      </ItemContent>
+                    </Item>
                   )
                 })
             ) : (
@@ -238,6 +230,12 @@ export function ActivityCard({
               </Item>
             )}
           </ItemGroup>
+          <InfiniteScroll
+            className={cn(query.hasNextPage ? "flex" : "hidden")}
+            fetchNextPage={query.fetchNextPage}
+            hasNextPage={query.hasNextPage}
+            isFetchingNextPage={query.isFetchingNextPage}
+          />
         </ScrollArea>
       </CardContent>
     </Card>
