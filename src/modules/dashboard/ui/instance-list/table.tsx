@@ -1,6 +1,11 @@
 "use client"
 
-import type { ColumnDef, RowData, SortingState } from "@tanstack/react-table"
+import type {
+  ColumnDef,
+  PaginationState,
+  RowData,
+  SortingState,
+} from "@tanstack/react-table"
 import { useTable } from "@tanstack/react-table"
 import * as React from "react"
 
@@ -15,30 +20,61 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 
 interface InstanceTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[]
   data: TData[]
+  fetchNextPage: () => void
+  hasNextPage: boolean
+  isFetchingNextPage: boolean
 }
 
 export function InstanceTable<TData extends RowData>({
   columns,
   data,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
 }: InstanceTableProps<TData>) {
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  })
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [rowSelection, setRowSelection] = React.useState({})
+  const loadedPageCount = Math.ceil(data.length / pagination.pageSize)
 
   const table = useTable({
     columns,
     data,
     features,
+    onPaginationChange: setPagination,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
+    pageCount: loadedPageCount + (hasNextPage ? 1 : 0),
     state: {
+      pagination,
       rowSelection,
       sorting,
     },
   })
+
+  React.useEffect(() => {
+    if (
+      pagination.pageIndex >= loadedPageCount &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage()
+    }
+  }, [
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    loadedPageCount,
+    pagination.pageIndex,
+  ])
 
   return (
     <>

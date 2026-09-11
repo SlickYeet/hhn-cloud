@@ -8,11 +8,12 @@ import { columns } from "./columns"
 import { InstanceTable } from "./table"
 
 export function InstanceList() {
-  const { data: instances } = api.instance.list.useQuery({
-    limit: DEFAULT_PAGE_SIZE,
-  })
+  const [instances, query] = api.instance.list.useSuspenseInfiniteQuery(
+    { limit: DEFAULT_PAGE_SIZE },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor },
+  )
 
-  if (!instances || instances.length === 0) {
+  if (!instances.pages.at(0)?.items.length) {
     return (
       <Card>
         <CardContent>
@@ -22,10 +23,18 @@ export function InstanceList() {
     )
   }
 
+  const instanceData = instances.pages.flatMap((page) => page.items)
+
   return (
     <Card>
       <CardContent>
-        <InstanceTable columns={columns} data={instances} />
+        <InstanceTable
+          columns={columns}
+          data={instanceData}
+          fetchNextPage={query.fetchNextPage}
+          hasNextPage={query.hasNextPage}
+          isFetchingNextPage={query.isFetchingNextPage}
+        />
       </CardContent>
     </Card>
   )
