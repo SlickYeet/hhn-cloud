@@ -27,7 +27,7 @@ export default async function Page() {
   // await api.snapshot.count.prefetch()
   // await api.apiKey.count.prefetch()
   await api.organization.member.count.prefetch()
-  await api.activity.list.prefetch({
+  await api.activity.list.prefetchInfinite({
     limit: DEFAULT_PAGE_SIZE,
     scope: "organization",
   })

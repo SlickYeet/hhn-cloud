@@ -18,7 +18,7 @@ export default async function Page({
   if (!instanceId) return notFound()
 
   await api.instance.get.prefetch({ id: instanceId })
-  await api.activity.list.prefetch({
+  await api.activity.list.prefetchInfinite({
     instanceId,
     limit: DEFAULT_PAGE_SIZE,
     scope: "instance",

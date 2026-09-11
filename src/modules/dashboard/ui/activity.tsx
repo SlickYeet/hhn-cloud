@@ -4,8 +4,10 @@ import { IconBell, IconChevronRight } from "@tabler/icons-react"
 import { formatDate, formatDistanceToNowStrict } from "date-fns"
 import { CircleQuestionMarkIcon } from "lucide-react"
 import Link from "next/link"
+import * as React from "react"
 
 import { Hint } from "@/components/hint"
+import { InfiniteScroll } from "@/components/infinite-scroll"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -39,14 +41,16 @@ export function ActivityCard({
   instanceId,
   className,
 }: ActivityCardProps) {
-  // TODO: infinite scroll
-  const { data: activity } = api.activity.list.useQuery(
+  const [activity, query] = api.activity.list.useSuspenseInfiniteQuery(
     {
-      instanceId,
+      ...(scope === "instance" ? { instanceId } : {}),
       limit: DEFAULT_PAGE_SIZE,
       scope,
     },
-    { refetchInterval: 10000 },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      refetchInterval: 60000,
+    },
   )
 
   return (
@@ -69,145 +73,157 @@ export function ActivityCard({
         </CardHeader>
         <ScrollArea className="-mx-4 min-h-0 flex-1">
           <ItemGroup className="gap-y-0!">
-            {activity?.length ? (
-              activity?.map((item) => {
-                const Icon = getActivityTypeIcon(item.type)
+            {activity.pages.flatMap((page) => page.items).length ? (
+              activity.pages
+                .flatMap((page) => page.items)
+                .map((item) => {
+                  const Icon = getActivityTypeIcon(item.type)
 
-                return (
-                  <Item
-                    className="group/activity flex-row items-start @lg:px-4 px-1"
-                    key={item.id}
-                    render={
-                      <Link
-                        // @ts-expect-error: cannot use typedRoutes here
-                        href={`/dashboard/activity/${item.id}`}
-                      />
-                    }
-                  >
-                    <ItemMedia>
-                      <Avatar>
-                        <AvatarFallback>
-                          <Icon className="size-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    </ItemMedia>
-                    <ItemContent>
-                      <Hint
-                        align="start"
-                        label={item.type}
-                        side="top"
-                        sideOffset={8}
+                  return (
+                    <React.Fragment key={item.id}>
+                      <Item
+                        className="group/activity flex-row items-start @lg:px-4 px-1"
+                        render={
+                          <Link
+                            // @ts-expect-error: cannot use typedRoutes here
+                            href={`/dashboard/activity/${item.id}`}
+                          />
+                        }
                       >
-                        <ItemTitle className="line-clamp-1 text-left font-normal text-base">
-                          {item.type.replace(/_/g, " ")}
-                        </ItemTitle>
-                      </Hint>
-                      <ItemDescription className="line-clamp-2 text-xs capitalize">
-                        {item.referenceType}{" "}
-                        {typeof item.metadata?.action === "string" ? (
-                          <span>- {item.metadata.action}</span>
-                        ) : null}
-                      </ItemDescription>
-                    </ItemContent>
-                    <ItemContent className="flex-none shrink-0">
-                      <Hint
-                        label={formatDate(new Date(item.timestamp), "PPpp")}
-                        side="top"
-                        sideOffset={8}
-                      >
-                        <ItemDescription className="truncate text-right">
-                          {formatDistanceToNowStrict(new Date(item.timestamp), {
-                            addSuffix: true,
-                          })}
-                        </ItemDescription>
-                      </Hint>
-                      <ItemDescription className="text-right text-foreground/70">
-                        {item.actorType === "user" ? (
-                          <HoverCard>
-                            <HoverCardTrigger
-                              closeDelay={100}
-                              delay={10}
-                              onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                              }}
-                              render={
-                                <Button className="px-0" variant="link" />
-                              }
-                            >
-                              {item.actorType}
-                            </HoverCardTrigger>
-                            {item.metadata && "user" in item.metadata && (
-                              <HoverCardContent
-                                className="flex flex-row items-center gap-3"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                }}
-                              >
-                                <Avatar>
-                                  <AvatarImage
-                                    alt={
-                                      (
-                                        item.metadata.user as
-                                          | { name?: string }
-                                          | undefined
-                                      )?.name ?? ""
-                                    }
-                                    src={
-                                      (
-                                        item.metadata.user as
-                                          | { image?: string }
-                                          | undefined
-                                      )?.image ?? ""
-                                    }
-                                  />
-                                  <AvatarFallback>
-                                    {(
-                                      item.metadata.user as
-                                        | { name?: string }
-                                        | undefined
-                                    )?.name?.[0] ?? ""}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex w-full flex-col">
-                                  <div className="flex flex-row items-center gap-2">
-                                    <span className="text-sm">
-                                      {(
-                                        item.metadata.user as
-                                          | { name?: string }
-                                          | undefined
-                                      )?.name ?? "Unknown User"}
-                                    </span>
-                                    <span className="text-foreground/70 text-xs capitalize">
-                                      (
-                                      {(
-                                        item.metadata.user as
-                                          | { role?: string }
-                                          | undefined
-                                      )?.role ?? "Unknown Role"}
-                                      )
-                                    </span>
-                                  </div>
-                                  <span className="text-muted-foreground text-sm">
-                                    {(
-                                      item.metadata.user as
-                                        | { email?: string }
-                                        | undefined
-                                    )?.email ?? "No email available"}
-                                  </span>
-                                </div>
-                              </HoverCardContent>
+                        <ItemMedia>
+                          <Avatar>
+                            <AvatarFallback>
+                              <Icon className="size-4" />
+                            </AvatarFallback>
+                          </Avatar>
+                        </ItemMedia>
+                        <ItemContent>
+                          <Hint
+                            align="start"
+                            label={item.type}
+                            side="top"
+                            sideOffset={8}
+                          >
+                            <ItemTitle className="line-clamp-1 text-left font-normal text-base">
+                              {item.type.replace(/_/g, " ")}
+                            </ItemTitle>
+                          </Hint>
+                          <ItemDescription className="line-clamp-2 text-xs capitalize">
+                            {item.referenceType}{" "}
+                            {typeof item.metadata?.action === "string" ? (
+                              <span>- {item.metadata.action}</span>
+                            ) : null}
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemContent className="flex-none shrink-0">
+                          <Hint
+                            label={formatDate(new Date(item.timestamp), "PPpp")}
+                            side="top"
+                            sideOffset={8}
+                          >
+                            <ItemDescription className="truncate text-right">
+                              {formatDistanceToNowStrict(
+                                new Date(item.timestamp),
+                                { addSuffix: true },
+                              )}
+                            </ItemDescription>
+                          </Hint>
+                          <ItemDescription className="text-right text-foreground/70">
+                            {item.actorType === "user" ? (
+                              <HoverCard>
+                                <HoverCardTrigger
+                                  className="-mt-2.5"
+                                  closeDelay={100}
+                                  delay={10}
+                                  onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                  }}
+                                  render={
+                                    <Button className="px-0" variant="link" />
+                                  }
+                                >
+                                  {item.actorType}
+                                </HoverCardTrigger>
+                                {item.metadata && "user" in item.metadata && (
+                                  <HoverCardContent
+                                    className="flex flex-row items-center gap-3"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                    }}
+                                  >
+                                    <Avatar>
+                                      <AvatarImage
+                                        alt={
+                                          (
+                                            item.metadata.user as
+                                              | { name?: string }
+                                              | undefined
+                                          )?.name ?? ""
+                                        }
+                                        src={
+                                          (
+                                            item.metadata.user as
+                                              | { image?: string }
+                                              | undefined
+                                          )?.image ?? ""
+                                        }
+                                      />
+                                      <AvatarFallback>
+                                        {(
+                                          item.metadata.user as
+                                            | { name?: string }
+                                            | undefined
+                                        )?.name?.[0] ?? ""}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex w-full flex-col">
+                                      <div className="flex flex-row items-center gap-2">
+                                        <span className="text-sm">
+                                          {(
+                                            item.metadata.user as
+                                              | { name?: string }
+                                              | undefined
+                                          )?.name ?? "Unknown User"}
+                                        </span>
+                                        <span className="text-foreground/70 text-xs capitalize">
+                                          (
+                                          {(
+                                            item.metadata.user as
+                                              | { role?: string }
+                                              | undefined
+                                          )?.role ?? "Unknown Role"}
+                                          )
+                                        </span>
+                                      </div>
+                                      <span className="text-muted-foreground text-sm">
+                                        {(
+                                          item.metadata.user as
+                                            | { email?: string }
+                                            | undefined
+                                        )?.email ?? "No email available"}
+                                      </span>
+                                    </div>
+                                  </HoverCardContent>
+                                )}
+                              </HoverCard>
+                            ) : (
+                              item.actorType
                             )}
-                          </HoverCard>
-                        ) : (
-                          item.actorType
-                        )}
-                      </ItemDescription>
-                    </ItemContent>
-                  </Item>
-                )
-              })
+                          </ItemDescription>
+                        </ItemContent>
+                      </Item>
+                      <InfiniteScroll
+                        className={cn(query.hasNextPage ? "flex" : "hidden")}
+                        fetchNextPage={query.fetchNextPage}
+                        hasNextPage={query.hasNextPage}
+                        isFetchingNextPage={query.isFetchingNextPage}
+                        isManual
+                      />
+                    </React.Fragment>
+                  )
+                })
             ) : (
               <Item className="@lg:px-4 px-0">
                 <ItemMedia variant="icon">
