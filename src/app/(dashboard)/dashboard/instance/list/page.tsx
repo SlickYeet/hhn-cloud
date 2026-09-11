@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
-import { InstanceList } from "@/modules/dashboard/ui/instance-list"
+import { InstanceList } from "@/modules/dashboard/ui/instance-list/list"
 import { getSession } from "@/server/auth/utils"
 
 export default async function Page() {
