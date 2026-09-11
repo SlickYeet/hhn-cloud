@@ -4,7 +4,6 @@ import { IconBell, IconChevronRight } from "@tabler/icons-react"
 import { formatDate, formatDistanceToNowStrict } from "date-fns"
 import { CircleQuestionMarkIcon } from "lucide-react"
 import Link from "next/link"
-import * as React from "react"
 
 import { Hint } from "@/components/hint"
 import { InfiniteScroll } from "@/components/infinite-scroll"
