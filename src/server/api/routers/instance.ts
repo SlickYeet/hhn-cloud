@@ -3,7 +3,7 @@ import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
 import type { inferProcedureBuilderResolverOptions } from "@trpc/server"
 import { TRPCError } from "@trpc/server"
-import { and, count, eq, inArray, isNull } from "drizzle-orm"
+import { and, count, eq, inArray, isNull, lt, or } from "drizzle-orm"
 import * as z from "zod"
 
 import { env } from "@/env"
@@ -440,27 +440,62 @@ export const instanceRouter = createTRPCRouter({
       ),
     )
     .input(
-      z
-        .object({
-          limit: z.coerce.number().optional(),
-        })
-        .optional(),
+      z.object({
+        cursor: z
+          .object({
+            createdAt: z.date(),
+            id: z.uuid(),
+          })
+          .nullish(),
+        limit: z.int().positive().max(100),
+      }),
     )
-    .output(z.array(selectInstanceSchema).nullable())
-    .query(async ({ ctx }) => {
+    .output(
+      z.object({
+        items: z.array(selectInstanceSchema),
+        nextCursor: z
+          .object({
+            createdAt: z.date(),
+            id: z.uuid(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
       const instances = await ctx.db.query.instanceTable.findMany({
+        limit: input.limit + 1,
         orderBy: (instances, { desc }) => desc(instances.createdAt),
         where: (i, { and, eq }) =>
-          and(eq(i.organizationId, ctx.organizationId), isNull(i.deletedAt)),
+          and(
+            eq(i.organizationId, ctx.organizationId),
+            isNull(i.deletedAt),
+            input.cursor
+              ? or(
+                  lt(i.createdAt, input.cursor.createdAt),
+                  and(
+                    eq(i.id, input.cursor.id),
+                    eq(i.createdAt, input.cursor.createdAt),
+                  ),
+                )
+              : undefined,
+          ),
         with: {
           ipAllocations: true,
           sshKeys: true,
         },
       })
 
-      if (!instances || instances.length === 0) return []
+      const hasMore = instances.length > input.limit
+      const items = hasMore ? instances.slice(0, -1) : instances
+      const lastItem = items[items.length - 1]
+      const nextCursor = hasMore
+        ? { createdAt: lastItem.createdAt, id: lastItem.id }
+        : undefined
 
-      return instances
+      return {
+        items,
+        nextCursor,
+      }
     }),
 
   reboot: protectedProcedure

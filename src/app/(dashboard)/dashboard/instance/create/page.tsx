@@ -11,7 +11,7 @@ export default async function Page() {
   const session = await getSession()
   if (!session?.user) return redirect("/auth/sign-in")
 
-  await api.instance.list.prefetch({ limit: DEFAULT_PAGE_SIZE })
+  await api.instance.list.prefetchInfinite({ limit: DEFAULT_PAGE_SIZE })
   await api.sshKey.list.prefetch()
   await api.operatingSystem.category.list.prefetch()
   await api.operatingSystem.list.prefetch()
