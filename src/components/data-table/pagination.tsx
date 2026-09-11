@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useHydrated } from "@/hooks/use-hydrated"
 
 import type { DataTableFeatures } from "./features"
 
@@ -24,6 +25,8 @@ interface DataTablePaginationProps<TData extends RowData> {
 export function DataTablePagination<TData extends RowData>({
   table,
 }: DataTablePaginationProps<TData>) {
+  const isHydrated = useHydrated()
+
   return (
     <div className="@container flex items-center justify-between px-2">
       <div className="@lg:block hidden flex-1 text-muted-foreground text-sm">
@@ -63,7 +66,7 @@ export function DataTablePagination<TData extends RowData>({
           <div className="flex items-center space-x-2">
             <Button
               className="@lg:flex hidden size-8"
-              disabled={!table.getCanPreviousPage()}
+              disabled={isHydrated && !table.getCanPreviousPage()}
               onClick={() => table.setPageIndex(0)}
               size="icon"
               variant="outline"
@@ -73,7 +76,7 @@ export function DataTablePagination<TData extends RowData>({
             </Button>
             <Button
               className="size-8"
-              disabled={!table.getCanPreviousPage()}
+              disabled={isHydrated && !table.getCanPreviousPage()}
               onClick={() => table.previousPage()}
               size="icon"
               variant="outline"
@@ -83,7 +86,7 @@ export function DataTablePagination<TData extends RowData>({
             </Button>
             <Button
               className="size-8"
-              disabled={!table.getCanNextPage()}
+              disabled={isHydrated && !table.getCanNextPage()}
               onClick={() => table.nextPage()}
               size="icon"
               variant="outline"
@@ -93,7 +96,7 @@ export function DataTablePagination<TData extends RowData>({
             </Button>
             <Button
               className="@lg:flex hidden size-8"
-              disabled={!table.getCanNextPage()}
+              disabled={isHydrated && !table.getCanNextPage()}
               onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               size="icon"
               variant="outline"
