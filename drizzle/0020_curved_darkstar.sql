@@ -1,0 +1,1 @@
+ALTER TABLE "ip_allocation" ADD COLUMN "is_primary" boolean DEFAULT false NOT NULL;

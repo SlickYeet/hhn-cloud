@@ -178,13 +178,14 @@ export const instanceRouter = createTRPCRouter({
           })
         }
 
-        const ipAllocations = await tx
+        const ipAllocation = await tx
           .insert(ipAllocationTable)
           .values({
             gateway: network.gateway,
             id: randomUUID(),
             instanceId: newInstance.id,
             ipAddress: network.ip.split("/")[0],
+            isPrimary: true,
             macAddress,
             networkId: network.id,
           })
@@ -197,7 +198,7 @@ export const instanceRouter = createTRPCRouter({
             throw error
           })
 
-        if (!ipAllocations) {
+        if (!ipAllocation) {
           throw new TRPCError({
             code: "CONFLICT",
             message: `IP ${network.ip.split("/")[0]} already allocated`,

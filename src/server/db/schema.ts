@@ -353,6 +353,7 @@ export const ipAllocationTable = createTable(
       .text("instance_id")
       .references(() => instanceTable.id, { onDelete: "set null" }),
     ipAddress: d.inet("ip_address").unique().notNull(),
+    isPrimary: d.boolean("is_primary").default(false).notNull(),
     macAddress: d.macaddr("mac_address").unique(),
     networkId: d
       .text("network_id")
