@@ -17,6 +17,7 @@ import { twMerge } from "tailwind-merge"
 import { Icons } from "@/components/icons"
 import { env } from "@/env"
 import type { ActivityTypeEnum } from "@/schemas/activity"
+import type { InstanceStatusEnum } from "@/schemas/instance"
 import type {
   OperatingSystem,
   OperatingSystemCategoryEnum,
@@ -118,6 +119,44 @@ export function getResourcePlanStatusColor(status: ResourcePlan["status"]) {
       return "border-l-destructive/50 text-destructive"
     default:
       return "border-gray-500 text-gray-500"
+  }
+}
+
+export function getInstanceStatusColor(status: InstanceStatusEnum) {
+  switch (status) {
+    case "deleted":
+    case "deleting":
+    case "failed":
+      return "bg-destructive"
+    case "stopped":
+      return "bg-gray-500"
+    case "stopping":
+    case "pending_deletion":
+    case "restarting":
+      return "bg-amber-500"
+    case "queued":
+    case "provisioning":
+      return "bg-primary"
+    case "starting":
+    case "running":
+      return "bg-green-500"
+    default:
+      return "bg-gray-500"
+  }
+}
+
+export function getInstanceStatusAnimation(status: InstanceStatusEnum) {
+  switch (status) {
+    case "queued":
+    case "provisioning":
+    case "restarting":
+    case "starting":
+    case "stopping":
+    case "pending_deletion":
+    case "deleting":
+      return "animate-pulse"
+    default:
+      return ""
   }
 }
 

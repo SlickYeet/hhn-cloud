@@ -11,12 +11,11 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react"
-import { GlobeIcon } from "lucide-react"
 import { notFound } from "next/navigation"
-import * as React from "react"
 import { toast } from "sonner"
 
 import { Hint } from "@/components/hint"
+import { IPAddress } from "@/components/parse-ip-addres"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -30,7 +29,11 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
-import { cn } from "@/lib/utils"
+import {
+  cn,
+  getInstanceStatusAnimation,
+  getInstanceStatusColor,
+} from "@/lib/utils"
 import type {
   Instance,
   InstancePowerAction,
@@ -46,96 +49,6 @@ const TRANSITIONAL_STATUSES: InstanceStatusEnum[] = [
   "pending_deletion",
   "deleting",
 ]
-
-function getInstanceStatusColor(status: InstanceStatusEnum) {
-  switch (status) {
-    case "deleted":
-    case "deleting":
-    case "failed":
-      return "bg-destructive"
-    case "stopped":
-      return "bg-gray-500"
-    case "stopping":
-    case "pending_deletion":
-    case "restarting":
-      return "bg-amber-500"
-    case "queued":
-    case "provisioning":
-      return "bg-primary"
-    case "starting":
-    case "running":
-      return "bg-green-500"
-    default:
-      return "bg-gray-500"
-  }
-}
-
-function getInstanceStatusAnimation(status: InstanceStatusEnum) {
-  switch (status) {
-    case "queued":
-    case "provisioning":
-    case "restarting":
-    case "starting":
-    case "stopping":
-    case "pending_deletion":
-    case "deleting":
-      return "animate-pulse"
-    default:
-      return ""
-  }
-}
-
-function IPAddress({ ipAddress }: { ipAddress: string }) {
-  const { isCopied, copyToClipboard } = useCopyToClipboard()
-
-  const [isRevealed, setIsRevealed] = React.useState(false)
-
-  function handleReveal() {
-    if (isRevealed) setIsRevealed(false)
-    else setIsRevealed(true)
-  }
-
-  const parsedIpAddress = isRevealed
-    ? ipAddress
-    : ipAddress.replace(/[a-zA-Z0-9]/g, "*")
-
-  return (
-    <div className="group/ipAddress flex items-center gap-2">
-      <GlobeIcon
-        className={cn(
-          "size-4 stroke-primary group-hover/ipAddress:hidden",
-          isCopied && "hidden",
-        )}
-      />
-      <Button
-        className={cn(
-          "hidden w-4 group-hover/ipAddress:inline-flex",
-          isCopied && "inline-flex",
-        )}
-        onClick={() => copyToClipboard(ipAddress)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault()
-            copyToClipboard(ipAddress)
-          }
-        }}
-        size="icon-sm"
-        variant="ghost"
-      >
-        {isCopied ? <IconCheck className="text-green-500" /> : <IconCopy />}
-        <span className="sr-only">Copy to clipboard</span>
-      </Button>
-      <Button
-        className="px-0 active:not-aria-[haspopup]:translate-y-0"
-        onClick={handleReveal}
-        size="sm"
-        variant="ghost"
-      >
-        <span className="font-mono">{parsedIpAddress}</span>
-      </Button>
-    </div>
-  )
-}
 
 function InstanceActions({ instance }: { instance: Instance }) {
   const utils = api.useUtils()
