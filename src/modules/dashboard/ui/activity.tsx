@@ -46,14 +46,12 @@ export function ActivityCard({
       limit: DEFAULT_PAGE_SIZE,
       scope,
     },
-    {
-      refetchInterval: 10000,
-    },
+    { refetchInterval: 10000 },
   )
 
   return (
-    <Card className={cn("@container", className)}>
-      <CardContent>
+    <Card className={cn("@container pb-2", className)}>
+      <CardContent className="flex flex-1 flex-col overflow-hidden">
         <CardHeader className="mb-4 flex items-center justify-between gap-2 @md:px-4 px-0">
           <CardTitle className="flex items-center gap-2">
             <IconBell className="size-5 stroke-primary" />
@@ -69,7 +67,7 @@ export function ActivityCard({
             View All <IconChevronRight />
           </Button>
         </CardHeader>
-        <ScrollArea className="-mx-4 h-[50dvh] lg:h-[35dvh]">
+        <ScrollArea className="-mx-4 min-h-0 flex-1">
           <ItemGroup className="gap-y-0!">
             {activity?.length ? (
               activity?.map((item) => {
