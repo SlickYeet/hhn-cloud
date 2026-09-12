@@ -1,5 +1,6 @@
-import { isNull, relations } from "drizzle-orm"
+import { isNull, relations, sql } from "drizzle-orm"
 import {
+  check,
   foreignKey,
   index,
   pgEnum,
@@ -224,9 +225,9 @@ export const firewallRuleProtocolEnum = pgEnum("firewall_rule_protocol", [
   "any",
 ])
 export const firewallRuleSourceTypeEnum = pgEnum("firewall_rule_source_type", [
-  "cidr",
-  "self", // refers to owner's IPSet, e.g. +org_123
-  "any", // refers to any other source within the same organization
+  "cidr", // explicit sourceCidr, e.g. "203.0.113.4/32"
+  "org", // owner's org IPSet, e.g. +org_9vv32...; sourceCidr must be null
+  "any", // unrestricted, 0.0.0.0/0; sourceCidr must be null
 ])
 
 export const instanceFirewallRuleTable = createTable(
@@ -257,6 +258,10 @@ export const instanceFirewallRuleTable = createTable(
     uniqueIndex("firewall_rule_instanceId_priority_idx").on(
       t.instanceId,
       t.priority,
+    ),
+    check(
+      "source_cidr_matches_source_type",
+      sql`(${t.sourceType} = 'cidr' AND ${t.sourceCidr} IS NOT NULL) OR (${t.sourceType} != 'cidr' AND ${t.sourceCidr} IS NULL)`,
     ),
   ],
 )

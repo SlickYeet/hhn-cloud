@@ -67,7 +67,7 @@ export function toProxmoxRule(
   const source =
     rule.sourceType === "cidr"
       ? (rule.sourceCidr ?? undefined)
-      : rule.sourceType === "self"
+      : rule.sourceType === "org"
         ? `+org_${context.organizationId.toLowerCase()}`
         : undefined
 
