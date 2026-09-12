@@ -35,8 +35,7 @@ const firewallSyncWorker = new Worker(
 
     const queriedRules = await db.query.instanceFirewallRuleTable.findMany({
       orderBy: (i, { asc }) => asc(i.priority),
-      where: (i, { and, eq }) =>
-        and(eq(i.instanceId, instanceId), eq(i.enabled, true)),
+      where: (i, { eq }) => eq(i.instanceId, instanceId),
     })
 
     const platformRules = buildPlatformRules({
@@ -49,7 +48,7 @@ const firewallSyncWorker = new Worker(
       toProxmoxRule(rule, { organizationId: instance.organizationId }),
     )
 
-    const fullRuleSet = [...platformRules, ...userRules]
+    const fullRuleSet = [...userRules, ...platformRules]
 
     await replaceProxmoxRules(proxmox, {
       rules: fullRuleSet,

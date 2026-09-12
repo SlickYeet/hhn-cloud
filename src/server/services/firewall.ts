@@ -9,7 +9,7 @@ const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 export interface ProxmoxFirewallRuleInput {
   action: "ACCEPT" | "DROP"
   comment?: string
-  enable: 1
+  enable: 0 | 1
   dport?: string
   proto?: "tcp" | "udp" | "icmp"
   source?: string
@@ -29,16 +29,14 @@ export function buildPlatformRules({
 }: PlatformRulesInput): ProxmoxFirewallRuleInput[] {
   const ipsetName = `org_${organizationId.toLowerCase()}`
 
-  /**
-   * ! IMPORTANT: Rules will be applied in the reverse order of the array.
-   * ? The first rule in the array will be the last rule in the firewall ruleset.
-   */
   return [
     {
-      action: "DROP",
-      comment: "Deny other tenants on shared subnet",
+      action: "ACCEPT",
+      comment: "Platform operator SSH access",
+      dport: "22",
       enable: 1,
-      source: subnetCidr,
+      proto: "tcp",
+      source: adminCidr,
       type: "in",
     },
     {
@@ -49,12 +47,10 @@ export function buildPlatformRules({
       type: "in",
     },
     {
-      action: "ACCEPT",
-      comment: "Platform operator SSH access",
-      dport: "22",
+      action: "DROP",
+      comment: "Deny other tenants on shared subnet",
       enable: 1,
-      proto: "tcp",
-      source: adminCidr,
+      source: subnetCidr,
       type: "in",
     },
   ]
@@ -75,7 +71,7 @@ export function toProxmoxRule(
     action: rule.action,
     comment: rule.comment ?? undefined,
     dport: rule.protocol === "icmp" ? undefined : (rule.portRange ?? undefined),
-    enable: 1,
+    enable: rule.enabled ? 1 : 0,
     proto: rule.protocol === "any" ? undefined : rule.protocol,
     source,
     type: "in",
@@ -107,7 +103,7 @@ export async function replaceProxmoxRules(
       })
   }
 
-  for (const rule of data.rules) {
+  for (const rule of [...data.rules].reverse()) {
     await proxmox.nodes
       .$(PROXMOX_DEFAULT_NODE)
       .qemu.$(data.vmid)
