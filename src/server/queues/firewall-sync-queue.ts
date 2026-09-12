@@ -15,7 +15,11 @@ function getFirewallSyncQueue(): Queue {
     firewallSyncQueue = new Queue(FIREWALL_SYNC_QUEUE_KEY, {
       connection,
       defaultJobOptions: {
-        attempts: 1,
+        attempts: 3,
+        backoff: {
+          delay: 2000,
+          type: "exponential",
+        },
         removeOnComplete: { age: 3600, count: 1000 },
         removeOnFail: { age: 24 * 3600 },
       },
@@ -33,12 +37,12 @@ export async function addFirewallSyncJob(
 ) {
   const parsed = firewallSyncJobSchema.parse(data)
 
-  const jobId = `${FIREWALL_SYNC_QUEUE_KEY}-${parsed.instanceId}`
+  const dedupId = `${FIREWALL_SYNC_QUEUE_KEY}-${parsed.instanceId}`
 
   const job = await getFirewallSyncQueue().add(
     FIREWALL_SYNC_QUEUE_KEY,
     parsed,
-    { deduplication: { id: jobId }, jobId },
+    { deduplication: { id: dedupId } },
   )
 
   return { jobId: job.id }
