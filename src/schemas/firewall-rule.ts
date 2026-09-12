@@ -1,11 +1,16 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
+import type {
+  firewallRuleActionEnum,
+  firewallRuleProtocolEnum,
+  firewallRuleSourceTypeEnum,
+} from "@/server/db/schema"
 import { instanceFirewallRuleTable } from "@/server/db/schema"
 
 const instanceFirewallRuleSchemaConstraints = {
   createdAt: z.coerce.date().optional(),
-  priority: z.int().min(1).max(100),
+  priority: z.int().min(0).max(1000),
   updatedAt: z.coerce.date().optional(),
 }
 
@@ -25,11 +30,27 @@ export const createInstanceFirewallRuleSchema = insertInstanceFirewallRuleSchema
     updatedAt: true,
   })
   // require sourceCidr when sourceType is "cidr"
-  .refine((data) => {
-    if (data.sourceType === "cidr") {
-      return data.sourceCidr !== undefined && data.sourceCidr !== ""
+  .superRefine((val, ctx) => {
+    if (val.sourceType === "cidr" && !val.sourceCidr) {
+      ctx.addIssue({
+        code: "custom",
+        message: "sourceCidr is required when sourceType is 'cidr'",
+        path: ["sourceCidr"],
+      })
     }
-    return true
+    if (val.sourceType !== "cidr" && val.sourceCidr) {
+      ctx.addIssue({
+        code: "custom",
+        message: "sourceCidr must be omitted unless sourceType is 'cidr'",
+        path: ["sourceCidr"],
+      })
+    }
   })
 
+export type FirewallRuleActionEnum =
+  (typeof firewallRuleActionEnum.enumValues)[number]
+export type FirewallRuleProtocolEnum =
+  (typeof firewallRuleProtocolEnum.enumValues)[number]
+export type FirewallRuleSourceTypeEnum =
+  (typeof firewallRuleSourceTypeEnum.enumValues)[number]
 export type InstanceFirewallRule = typeof instanceFirewallRuleTable.$inferSelect
