@@ -134,7 +134,7 @@ export function ActivityCard({
                           {item.actorType === "user" ? (
                             <HoverCard>
                               <HoverCardTrigger
-                                className="-mt-2.5"
+                                className="-my-2.5"
                                 closeDelay={100}
                                 delay={10}
                                 onClick={(e) => {
