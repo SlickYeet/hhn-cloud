@@ -1,8 +1,11 @@
+import { TRPCError } from "@trpc/server"
 import type { Proxmox } from "proxmox-api"
 
 import { env } from "@/env"
 import { isProxmoxNotFoundError } from "@/lib/proxmox"
 import type { InstanceFirewallRule } from "@/schemas/firewall-rule"
+import { db } from "@/server/db"
+import { getOrgInstanceOrThrow } from "@/server/services/instance"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
 
@@ -130,4 +133,25 @@ export async function syncPlatformFirewallRules(
     rules: platformRules,
     vmid: data.vmid,
   })
+}
+
+export async function getOrgFirewallRuleOrThrow(
+  ruleId: string,
+  organizationId: string,
+  userId: string,
+) {
+  const rule = await db.query.instanceFirewallRuleTable.findFirst({
+    where: (r, { eq }) => eq(r.id, ruleId),
+  })
+
+  if (!rule) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Firewall rule not found",
+    })
+  }
+
+  await getOrgInstanceOrThrow(rule.instanceId, organizationId, userId)
+
+  return rule
 }

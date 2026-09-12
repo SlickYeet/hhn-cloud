@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server"
 import { eq } from "drizzle-orm"
 import type { Proxmox } from "proxmox-api"
 
@@ -311,4 +312,37 @@ async function waitForProxmoxTask(
   }
 
   throw new Error(`Timed out waiting for task ${upid}`)
+}
+
+export async function getOrgInstanceOrThrow(
+  instanceId: string,
+  organizationId: string,
+  userId: string,
+  extra?: {
+    ipAllocations?: boolean
+    sshKeys?: boolean
+  },
+) {
+  const instance = await db.query.instanceTable.findFirst({
+    where: (i, { and, eq }) =>
+      and(eq(i.id, instanceId), eq(i.organizationId, organizationId)),
+    with: {
+      ipAllocations: extra?.ipAllocations ? true : undefined,
+      organization: {
+        with: {
+          members: { where: (m, { eq }) => eq(m.userId, userId) },
+        },
+      },
+      sshKeys: extra?.sshKeys ? true : undefined,
+    },
+  })
+
+  if (!instance || instance.organization.members.length === 0) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Instance not found",
+    })
+  }
+
+  return instance
 }
