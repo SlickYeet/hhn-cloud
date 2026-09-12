@@ -96,7 +96,7 @@ export const auth = betterAuth({
           await logActivity(db, {
             actorId: newSession.user.id,
             actorType: "user",
-            channel: "dashboard",
+            channel: "api",
             metadata: {
               user: {
                 email: newSession.user.email,
@@ -119,7 +119,7 @@ export const auth = betterAuth({
           await logActivity(db, {
             actorId: session.user.id,
             actorType: "user",
-            channel: "dashboard",
+            channel: "api",
             metadata: {
               user: {
                 email: session.user.email,

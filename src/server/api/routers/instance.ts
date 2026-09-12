@@ -250,7 +250,7 @@ export const instanceRouter = createTRPCRouter({
       await logActivity(ctx.db, {
         actorId: ctx.session.session.userId,
         actorType: "user",
-        channel: "dashboard",
+        channel: "api",
         metadata: {
           instance: {
             cores: plan.cores,
@@ -363,7 +363,7 @@ export const instanceRouter = createTRPCRouter({
       await logActivity(ctx.db, {
         actorId: ctx.session.session.userId,
         actorType: "user",
-        channel: "dashboard",
+        channel: "api",
         metadata: {
           instance: {
             hostname: instance.hostname,
@@ -681,7 +681,7 @@ async function powerAction(
   await logActivity(ctx.db, {
     actorId: ctx.session.session.userId,
     actorType: "user",
-    channel: "dashboard",
+    channel: "api",
     metadata: {
       action,
       instance: {

@@ -100,7 +100,7 @@ export const sshKeyRouter = createTRPCRouter({
         await logActivity(ctx.db, {
           actorId: ctx.session.session.userId,
           actorType: "user",
-          channel: "dashboard",
+          channel: "api",
           metadata: {
             user: {
               email: ctx.session.user.email,
