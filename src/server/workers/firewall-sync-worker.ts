@@ -1,14 +1,17 @@
 import type { Job } from "bullmq"
 import { createNodeRedisClient, Worker } from "bullmq"
+import { eq } from "drizzle-orm"
 
 import { env } from "@/env"
 import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
+import { instanceTable } from "@/server/db/schema"
 import {
   FIREWALL_SYNC_QUEUE_KEY,
   firewallSyncJobSchema,
 } from "@/server/queues/firewall-sync-queue"
+import { logActivity } from "@/server/services/activity"
 import {
   buildPlatformRules,
   replaceProxmoxRules,
@@ -63,10 +66,59 @@ const firewallSyncWorker = new Worker(
   },
 )
 
-firewallSyncWorker.on("completed", (job) => {
+firewallSyncWorker.on("completed", async (job) => {
   console.info("Firewall sync job completed:", job.id, job.returnvalue)
+
+  if (!job?.data.instanceId) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({
+      firewallSyncedAt: new Date(),
+      firewallSyncStatus: "synced",
+    })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "firewall_sync_completed",
+  })
 })
 
-firewallSyncWorker.on("failed", (job, error) => {
+firewallSyncWorker.on("failed", async (job, error) => {
   console.error("Firewall sync job failed:", job?.id, error)
+
+  if (!job?.data.instanceId) return
+
+  const maxAttempts = job.opts.attempts ?? 1
+  const isFinalAttempt = job.attemptsMade >= maxAttempts
+
+  if (!isFinalAttempt) return
+
+  const [instance] = await db
+    .update(instanceTable)
+    .set({ firewallSyncStatus: "failed" })
+    .where(eq(instanceTable.id, job.data.instanceId))
+    .returning()
+
+  if (!instance) return
+
+  await logActivity(db, {
+    actorType: "system",
+    channel: "worker",
+    metadata: { error: error?.message ?? "Unknown error" },
+    organizationId: instance.organizationId,
+    referenceId: instance.id,
+    referenceType: "instance",
+    type: "firewall_sync_failed",
+  })
 })
+
+firewallSyncWorker.run()
