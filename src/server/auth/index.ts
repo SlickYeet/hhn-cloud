@@ -144,6 +144,14 @@ export const auth = betterAuth({
           clientId: env.OAUTH_CLIENT_ID,
           clientSecret: env.OAUTH_CLIENT_SECRET,
           discoveryUrl: env.OAUTH_DISCOVERY_URL,
+          mapProfileToUser(profile) {
+            return {
+              image:
+                typeof profile.picture === "string"
+                  ? profile.picture
+                  : undefined,
+            }
+          },
           providerId: env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
           scopes: ["openid", "email", "profile"],
         },
