@@ -17,11 +17,7 @@ export const activityActorEnum = pgEnum("activity_actor", [
   "external",
 ])
 
-export const activityChannelEnum = pgEnum("activity_channel", [
-  "dashboard",
-  "api",
-  "worker",
-])
+export const activityChannelEnum = pgEnum("activity_channel", ["api", "worker"])
 
 export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
   "instance",
@@ -30,6 +26,13 @@ export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
 ])
 
 export const activityTypeEnum = pgEnum("activity_type", [
+  "firewall_rule_created",
+  "firewall_sync_requested",
+  "firewall_sync_completed",
+  "firewall_sync_failed",
+  "firewall_rule_deleted",
+  "firewall_rule_reordered",
+  "firewall_rule_updated",
   "instance_provision_requested",
   "instance_provisioning_failed",
   "instance_created",
@@ -266,6 +269,11 @@ export const instanceFirewallRuleTable = createTable(
   ],
 )
 
+export const firewallSyncStatus = pgEnum("firewall_sync_status", [
+  "pending",
+  "synced",
+  "failed",
+])
 export const instanceStatusEnum = pgEnum("instance_status", [
   "queued",
   "provisioning",
@@ -287,6 +295,10 @@ export const instanceTable = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     deletedAt: d.timestamp("deleted_at"),
     disk: d.integer("disk").notNull(),
+    firewallSyncedAt: d.timestamp("firewall_synced_at"),
+    firewallSyncStatus: firewallSyncStatus("firewall_sync_status")
+      .default("pending")
+      .notNull(),
     hostname: d.text("hostname").notNull(),
     id: d.text("id").primaryKey(),
     memory: d.integer("memory").notNull(),

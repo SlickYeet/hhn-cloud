@@ -9,6 +9,7 @@ import {
   IconStack3Filled,
   IconStackFilled,
   IconUser,
+  IconWall,
 } from "@tabler/icons-react"
 import type { ClassValue } from "clsx"
 import { clsx } from "clsx"
@@ -162,6 +163,14 @@ export function getInstanceStatusAnimation(status: InstanceStatusEnum) {
 
 export function getActivityTypeIcon(type: ActivityTypeEnum) {
   switch (type) {
+    case "firewall_rule_created":
+    case "firewall_sync_requested":
+    case "firewall_sync_completed":
+    case "firewall_sync_failed":
+    case "firewall_rule_deleted":
+    case "firewall_rule_reordered":
+    case "firewall_rule_updated":
+      return IconWall
     case "instance_provision_requested":
     case "instance_provisioning_failed":
     case "instance_created":
