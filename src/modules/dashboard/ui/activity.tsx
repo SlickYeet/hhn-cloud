@@ -120,7 +120,10 @@ export function ActivityCard({
                           side="top"
                           sideOffset={8}
                         >
-                          <ItemDescription className="truncate text-right">
+                          <ItemDescription
+                            className="truncate text-right"
+                            suppressHydrationWarning
+                          >
                             {formatDistanceToNowStrict(
                               new Date(item.timestamp),
                               { addSuffix: true },
