@@ -87,6 +87,7 @@ deleteInstanceWorker.on("completed", async (job) => {
 
 deleteInstanceWorker.on("failed", async (job, error) => {
   console.error("Delete instance job failed:", job?.id, error)
+
   if (!job?.data.instanceId) return
 
   const maxAttempts = job.opts.attempts ?? 1
