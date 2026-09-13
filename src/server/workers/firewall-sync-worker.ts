@@ -33,27 +33,33 @@ const firewallSyncWorker = new Worker(
 
     if (!instance) return
 
-    const queriedRules = await db.query.instanceFirewallRuleTable.findMany({
-      orderBy: (i, { asc }) => asc(i.priority),
-      where: (i, { eq }) => eq(i.instanceId, instanceId),
-    })
+    try {
+      const queriedRules = await db.query.instanceFirewallRuleTable.findMany({
+        orderBy: (i, { asc }) => asc(i.priority),
+        where: (i, { eq }) => eq(i.instanceId, instanceId),
+      })
 
-    const platformRules = buildPlatformRules({
-      adminCidr: env.PLATFORM_ADMIN_CIDR,
-      organizationId: instance.organizationId,
-      subnetCidr: env.CLOUD_NETWORK_CIDR,
-    })
+      const platformRules = buildPlatformRules({
+        adminCidr: env.PLATFORM_ADMIN_CIDR,
+        organizationId: instance.organizationId,
+        subnetCidr: env.CLOUD_NETWORK_CIDR,
+      })
 
-    const userRules = queriedRules.map((rule) =>
-      toProxmoxRule(rule, { organizationId: instance.organizationId }),
-    )
+      const userRules = queriedRules.map((rule) =>
+        toProxmoxRule(rule, { organizationId: instance.organizationId }),
+      )
 
-    const fullRuleSet = [...userRules, ...platformRules]
-
-    await replaceProxmoxRules(proxmox, {
-      rules: fullRuleSet,
-      vmid: instance.pveVmid,
-    })
+      await replaceProxmoxRules(proxmox, {
+        rules: [...userRules, ...platformRules],
+        vmid: instance.pveVmid,
+      })
+    } catch (error) {
+      throw new Error(
+        `Failed to sync firewall rules for instance ${instanceId}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      )
+    }
   },
   {
     autorun: false,
@@ -73,6 +79,7 @@ firewallSyncWorker.on("completed", async (job) => {
   const [instance] = await db
     .update(instanceTable)
     .set({
+      firewallSyncError: null,
       firewallSyncedAt: new Date(),
       firewallSyncStatus: "synced",
     })
@@ -103,7 +110,11 @@ firewallSyncWorker.on("failed", async (job, error) => {
 
   const [instance] = await db
     .update(instanceTable)
-    .set({ firewallSyncStatus: "failed" })
+    .set({
+      firewallSyncError:
+        error instanceof Error ? error.message : "Unknown error",
+      firewallSyncStatus: "failed",
+    })
     .where(eq(instanceTable.id, job.data.instanceId))
     .returning()
 
