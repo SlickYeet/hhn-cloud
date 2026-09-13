@@ -82,7 +82,7 @@ export const firewallRuleRouter = createTRPCRouter({
       const rule = await ctx.db.transaction(async (tx) => {
         await tx
           .update(instanceTable)
-          .set({ firewallSyncedAt: null, firewallSyncStatus: "pending" })
+          .set({ firewallSyncStatus: "pending" })
           .where(eq(instanceTable.id, input.instanceId))
 
         const priority =
@@ -187,7 +187,7 @@ export const firewallRuleRouter = createTRPCRouter({
       const rule = await ctx.db.transaction(async (tx) => {
         await tx
           .update(instanceTable)
-          .set({ firewallSyncedAt: null, firewallSyncStatus: "pending" })
+          .set({ firewallSyncStatus: "pending" })
           .where(eq(instanceTable.id, existingRule.instanceId))
 
         const [ruleRow] = await tx
@@ -312,7 +312,7 @@ export const firewallRuleRouter = createTRPCRouter({
       await ctx.db.transaction(async (tx) => {
         await tx
           .update(instanceTable)
-          .set({ firewallSyncedAt: null, firewallSyncStatus: "pending" })
+          .set({ firewallSyncStatus: "pending" })
           .where(eq(instanceTable.id, input.instanceId))
 
         // pass 1 pushes everyting to negative placeholder priorities
@@ -430,7 +430,7 @@ export const firewallRuleRouter = createTRPCRouter({
       const [updatedRule] = await ctx.db.transaction(async (tx) => {
         await tx
           .update(instanceTable)
-          .set({ firewallSyncedAt: null, firewallSyncStatus: "pending" })
+          .set({ firewallSyncStatus: "pending" })
           .where(eq(instanceTable.id, existingRule.instanceId))
 
         return await tx
