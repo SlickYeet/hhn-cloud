@@ -20,6 +20,7 @@ import {
 } from "@/schemas/instance"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import {
+  firewallSyncStatusEnum,
   instanceSshKeyTable,
   instanceTable,
   ipAllocationTable,
@@ -379,6 +380,39 @@ export const instanceRouter = createTRPCRouter({
         instanceId: instance.id,
         jobId,
         message: "Your instance is being deleted.",
+      }
+    }),
+
+  firewallStatus: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/firewall-rule/status",
+          summary: "Get the firewall sync status for a given instance",
+          tags: ["Firewall Rules"],
+        }),
+      ),
+    )
+    .input(z.object({ instanceId: z.string() }))
+    .output(
+      z.object({
+        firewallSyncError: z.string().nullable(),
+        firewallSyncedAt: z.date().nullable(),
+        firewallSyncStatus: z.enum(firewallSyncStatusEnum.enumValues),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const instance = await getOrgInstanceOrThrow(
+        input.instanceId,
+        ctx.organizationId,
+        ctx.session.session.userId,
+      )
+
+      return {
+        firewallSyncError: instance.firewallSyncError,
+        firewallSyncedAt: instance.firewallSyncedAt,
+        firewallSyncStatus: instance.firewallSyncStatus,
       }
     }),
 
