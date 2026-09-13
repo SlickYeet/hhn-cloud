@@ -166,18 +166,12 @@ export const instanceRouter = createTRPCRouter({
 
         if (!instanceRow) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: `VMID ${nextVmid} already exists`,
-          })
-        }
-
-        const [newInstance] = instanceRow
-        if (!newInstance) {
-          throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to create instance",
           })
         }
+
+        const [newInstance] = instanceRow
 
         const ipAllocation = await tx
           .insert(ipAllocationTable)
