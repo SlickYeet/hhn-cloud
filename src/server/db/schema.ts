@@ -269,7 +269,7 @@ export const instanceFirewallRuleTable = createTable(
   ],
 )
 
-export const firewallSyncStatus = pgEnum("firewall_sync_status", [
+export const firewallSyncStatusEnum = pgEnum("firewall_sync_status", [
   "pending",
   "synced",
   "failed",
@@ -295,9 +295,10 @@ export const instanceTable = createTable(
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
     deletedAt: d.timestamp("deleted_at"),
     disk: d.integer("disk").notNull(),
+    firewallSyncError: d.text("firewall_sync_error"),
     firewallSyncedAt: d.timestamp("firewall_synced_at"),
-    firewallSyncStatus: firewallSyncStatus("firewall_sync_status")
-      .default("pending")
+    firewallSyncStatus: firewallSyncStatusEnum("firewall_sync_status")
+      .default("synced")
       .notNull(),
     hostname: d.text("hostname").notNull(),
     id: d.text("id").primaryKey(),
