@@ -370,6 +370,72 @@ export const firewallRuleRouter = createTRPCRouter({
       }
     }),
 
+  retrySync: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/firewall-rule/retry-sync",
+          summary: "Retry syncing firewall rules for a given instance",
+          tags: ["Firewall Rules"],
+        }),
+      ),
+    )
+    .input(z.object({ instanceId: z.string() }))
+    .output(
+      z.object({
+        id: z.uuid(),
+        jobId: z.string(),
+        message: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await getOrgInstanceOrThrow(
+        input.instanceId,
+        ctx.organizationId,
+        ctx.session.session.userId,
+      )
+
+      await ctx.db
+        .update(instanceTable)
+        .set({ firewallSyncStatus: "pending" })
+        .where(eq(instanceTable.id, input.instanceId))
+
+      const { jobId } = await addFirewallSyncJob({
+        instanceId: input.instanceId,
+      })
+
+      if (!jobId) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Retry firewall sync job could not be created",
+        })
+      }
+
+      await logActivity(ctx.db, {
+        actorId: ctx.session.session.userId,
+        actorType: "user",
+        channel: "api",
+        metadata: {
+          user: {
+            email: ctx.session.user.email,
+            name: ctx.session.user.name,
+            role: ctx.session.user.role,
+          },
+        },
+        organizationId: ctx.organizationId,
+        referenceId: input.instanceId,
+        referenceType: "instance",
+        type: "firewall_sync_requested",
+      })
+
+      return {
+        id: input.instanceId,
+        jobId,
+        message: "Firewall sync retried successfully",
+      }
+    }),
+
   update: protectedProcedure
     .meta(
       toTRPCMeta(
