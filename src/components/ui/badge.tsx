@@ -23,6 +23,10 @@ const badgeVariants = cva(
           "border-border bg-input/30 text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         secondary:
           "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        success:
+          "bg-green-600/10 text-green-600 focus-visible:ring-green-600/20 dark:bg-green-500/20 dark:focus-visible:ring-green-500/40 [a]:hover:bg-green-600/15 dark:[a]:hover:bg-green-500/15",
+        warning:
+          "bg-yellow-600/10 text-yellow-600 focus-visible:ring-yellow-600/20 dark:bg-yellow-500/20 dark:focus-visible:ring-yellow-500/40 [a]:hover:bg-yellow-600/15 dark:[a]:hover:bg-yellow-500/15",
       },
     },
   },
