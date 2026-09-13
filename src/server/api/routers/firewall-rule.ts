@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server"
 import { and, count, eq, inArray, sql } from "drizzle-orm"
 import * as z from "zod"
 
+import { FIREWALL_RULE_PRIORITY_STEP } from "@/constants/app"
 import {
   createInstanceFirewallRuleSchema,
   insertInstanceFirewallRuleSchema,
@@ -16,8 +17,6 @@ import { addFirewallSyncJob } from "@/server/queues/firewall-sync-queue"
 import { logActivity } from "@/server/services/activity"
 import { getOrgFirewallRuleOrThrow } from "@/server/services/firewall"
 import { getOrgInstanceOrThrow } from "@/server/services/instance"
-
-const PRIORITY_STEP = 10
 
 export const firewallRuleRouter = createTRPCRouter({
   /**
@@ -102,7 +101,10 @@ export const firewallRuleRouter = createTRPCRouter({
             })
             .from(instanceFirewallRuleTable)
             .where(eq(instanceFirewallRuleTable.instanceId, input.instanceId))
-            .then((rows) => (rows[0]?.maxPriority ?? 0) + PRIORITY_STEP))
+            .then(
+              (rows) =>
+                (rows[0]?.maxPriority ?? 0) + FIREWALL_RULE_PRIORITY_STEP,
+            ))
 
         const [ruleRow] = await tx
           .insert(instanceFirewallRuleTable)
@@ -338,7 +340,7 @@ export const firewallRuleRouter = createTRPCRouter({
           input.orderedRuleIds.map((id, idx) =>
             tx
               .update(instanceFirewallRuleTable)
-              .set({ priority: (idx + 1) * PRIORITY_STEP })
+              .set({ priority: (idx + 1) * FIREWALL_RULE_PRIORITY_STEP })
               .where(eq(instanceFirewallRuleTable.id, id)),
           ),
         )

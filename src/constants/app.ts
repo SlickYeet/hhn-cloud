@@ -53,3 +53,5 @@ export const INSTANCE_DETAILS_TABS = [
   { label: "Rebuild", value: "rebuild" },
   { label: "Delete", value: "delete" },
 ]
+
+export const FIREWALL_RULE_PRIORITY_STEP = 10
