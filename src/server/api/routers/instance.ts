@@ -32,6 +32,7 @@ import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
 import { addPowerActionJob } from "@/server/queues/power-action-queue"
 import { addProvisionJob } from "@/server/queues/provision-queue"
 import { logActivity } from "@/server/services/activity"
+import { getOrgInstanceOrThrow } from "@/server/services/instance"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
@@ -401,27 +402,12 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object(selectInstanceSchema.shape))
     .query(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (instance, { eq }) => eq(instance.id, input.id),
-        with: {
-          ipAllocations: true,
-          sshKeys: true,
-        },
-      })
-
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
-
-      if (instance.organizationId !== ctx.organizationId) {
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "You are not authorized to access this instance",
-        })
-      }
+      const instance = await getOrgInstanceOrThrow(
+        input.id,
+        ctx.organizationId,
+        ctx.session.session.userId,
+        { ipAllocations: true, sshKeys: true },
+      )
 
       return instance
     }),
@@ -596,17 +582,11 @@ export const instanceRouter = createTRPCRouter({
     )
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const instance = await ctx.db.query.instanceTable.findFirst({
-        where: (i, { and, eq }) =>
-          and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-      })
-
-      if (!instance) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: `Instance ${input.id} not found`,
-        })
-      }
+      const instance = await getOrgInstanceOrThrow(
+        input.id,
+        ctx.organizationId,
+        ctx.session.session.userId,
+      )
 
       const instanceHostname = input.hostname.toLowerCase()
 
@@ -631,17 +611,11 @@ async function powerAction(
 ) {
   const { ctx, input } = opts
 
-  const instance = await ctx.db.query.instanceTable.findFirst({
-    where: (i, { and, eq }) =>
-      and(eq(i.id, input.id), eq(i.organizationId, ctx.organizationId)),
-  })
-
-  if (!instance) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: `Instance ${input.id} not found`,
-    })
-  }
+  const instance = await getOrgInstanceOrThrow(
+    input.id,
+    ctx.organizationId,
+    ctx.session.session.userId,
+  )
 
   const [updated] = await ctx.db
     .update(instanceTable)
