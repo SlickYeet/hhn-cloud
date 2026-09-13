@@ -18,10 +18,7 @@ function getDeleteInstanceQueue(): Queue {
       connection,
       defaultJobOptions: {
         attempts: 3,
-        backoff: {
-          delay: 2000,
-          type: "exponential",
-        },
+        backoff: { delay: 2000, type: "exponential" },
         delay: env.NODE_ENV === "production" ? SEVEN_DAYS_MS : 0,
         removeOnComplete: { age: 3600, count: 1000 },
         removeOnFail: { age: 24 * 3600 },
