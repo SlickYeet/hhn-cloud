@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
 import { TRPCError } from "@trpc/server"
-import { count, eq, inArray, sql } from "drizzle-orm"
+import { and, count, eq, inArray, sql } from "drizzle-orm"
 import * as z from "zod"
 
 import {
@@ -20,6 +20,11 @@ import { getOrgInstanceOrThrow } from "@/server/services/instance"
 const PRIORITY_STEP = 10
 
 export const firewallRuleRouter = createTRPCRouter({
+  /**
+   * Counts the number of firewalls in an organization by counting the number of instances that have firewall rules
+   *
+   * @returns The number of firewalls in the organization
+   */
   count: protectedProcedure
     .meta(
       toTRPCMeta(
@@ -40,17 +45,21 @@ export const firewallRuleRouter = createTRPCRouter({
 
       if (orgInstanceIds.length === 0) return 0
 
-      const [firewallRuleCount] = await ctx.db
+      const firewallRuleCount = await ctx.db
         .select({ count: count() })
-        .from(instanceFirewallRuleTable)
+        .from(instanceTable)
         .where(
-          inArray(
-            instanceFirewallRuleTable.instanceId,
-            orgInstanceIds.map((instance) => instance.id),
+          and(
+            eq(instanceTable.organizationId, ctx.organizationId),
+            inArray(
+              instanceTable.id,
+              orgInstanceIds.map((i) => i.id),
+            ),
           ),
         )
+        .then((rows) => rows[0]?.count ?? 0)
 
-      return firewallRuleCount.count
+      return firewallRuleCount
     }),
 
   create: protectedProcedure
