@@ -53,4 +53,6 @@ export type FirewallRuleProtocolEnum =
   (typeof firewallRuleProtocolEnum.enumValues)[number]
 export type FirewallRuleSourceTypeEnum =
   (typeof firewallRuleSourceTypeEnum.enumValues)[number]
-export type InstanceFirewallRule = typeof instanceFirewallRuleTable.$inferSelect
+export type InstanceFirewallRule = z.infer<
+  typeof selectInstanceFirewallRuleSchema
+>
