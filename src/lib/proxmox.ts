@@ -1,5 +1,6 @@
+import type { ProxmoxEngineOptions } from "proxmox-api"
 import proxmoxApi from "proxmox-api"
-import type { RequestInit } from "undici"
+import type { RequestInit as UndiciRequestInit } from "undici"
 import { Agent, fetch as undiciFetch } from "undici"
 
 import { env } from "@/env"
@@ -7,13 +8,26 @@ import { env } from "@/env"
 let proxmoxClient: ReturnType<typeof proxmoxApi> | null = null
 
 const proxmoxAgent = new Agent({
-  connect: {
-    rejectUnauthorized: false,
-  },
+  connect: { rejectUnauthorized: false },
 })
 
-function proxmoxFetch(url: string | URL, options?: RequestInit) {
-  return undiciFetch(url, { ...options, dispatcher: proxmoxAgent })
+type FetchInterface = NonNullable<ProxmoxEngineOptions["fetch"]>
+
+function proxmoxFetch(url: string | URL, options?: globalThis.RequestInit) {
+  if (process.versions.bun) {
+    return fetch(
+      url as string,
+      {
+        ...options,
+        tls: { rejectUnauthorized: false },
+      } as globalThis.RequestInit,
+    )
+  }
+
+  return undiciFetch(url, {
+    ...options,
+    dispatcher: proxmoxAgent,
+  } as UndiciRequestInit)
 }
 
 function redactHost(message: string): string {
@@ -63,7 +77,7 @@ export function getProxmoxClient() {
   if (proxmoxClient) return proxmoxClient
 
   const client = proxmoxApi({
-    fetch: proxmoxFetch,
+    fetch: proxmoxFetch as FetchInterface,
     host: env.PROXMOX_HOST,
     port: 8006,
     schema: "https",
