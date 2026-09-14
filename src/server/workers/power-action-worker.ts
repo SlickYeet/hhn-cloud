@@ -5,9 +5,9 @@ import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
 import { instanceTable } from "@/server/db/schema"
+import { getInstanceStatusFromProxmox } from "@/server/queries/instance"
 import { logActivity } from "@/server/services/activity"
 import {
-  getInstanceStatusFromProxmox,
   isVmNotFoundError,
   rebootInstance,
   shutdownInstance,

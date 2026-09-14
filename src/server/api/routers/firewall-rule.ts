@@ -14,10 +14,10 @@ import {
 } from "@/schemas/firewall-rule"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { instanceFirewallRuleTable, instanceTable } from "@/server/db/schema"
+import { getOrgFirewallRuleOrThrow } from "@/server/queries/firewall"
+import { getOrgInstanceOrThrow } from "@/server/queries/instance"
 import { addFirewallSyncJob } from "@/server/queues/firewall-sync-queue"
 import { logActivity } from "@/server/services/activity"
-import { getOrgFirewallRuleOrThrow } from "@/server/services/firewall"
-import { getOrgInstanceOrThrow } from "@/server/services/instance"
 
 export const firewallRuleRouter = createTRPCRouter({
   /**

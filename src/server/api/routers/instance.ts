@@ -27,13 +27,12 @@ import {
   sshKeyTable,
 } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
-import { getNextVmid } from "@/server/queries/instance"
+import { getNextVmid, getOrgInstanceOrThrow } from "@/server/queries/instance"
 import { getCloudNetwork } from "@/server/queries/network"
 import { addDeleteInstanceJob } from "@/server/queues/delete-instance-queue"
 import { addPowerActionJob } from "@/server/queues/power-action-queue"
 import { addProvisionJob } from "@/server/queues/provision-queue"
 import { logActivity } from "@/server/services/activity"
-import { getOrgInstanceOrThrow } from "@/server/services/instance"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
