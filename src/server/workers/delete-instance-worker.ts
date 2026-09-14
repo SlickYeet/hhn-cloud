@@ -38,9 +38,7 @@ const deleteInstanceWorker = new Worker(
     await stopInstanceIfRunning(proxmox, instance.pveVmid)
     await destroyInstance(proxmox, instance.pveVmid)
 
-    // TODO: Handle multiple IP allocations
-    const ipAllocation = instance.ipAllocations[0]
-    if (ipAllocation) {
+    for (const ipAllocation of instance.ipAllocations) {
       await releaseIpAddress(ipAllocation.ipAddress)
       await db
         .delete(ipAllocationTable)
