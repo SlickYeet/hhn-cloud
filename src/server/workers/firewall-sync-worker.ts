@@ -3,6 +3,7 @@ import { createNodeRedisClient, Worker } from "bullmq"
 import { eq } from "drizzle-orm"
 
 import { env } from "@/env"
+import { validateSourcePair } from "@/lib/network"
 import { getProxmoxClient } from "@/lib/proxmox"
 import { getRedisClient } from "@/lib/redis"
 import { db } from "@/server/db"
@@ -38,6 +39,17 @@ const firewallSyncWorker = new Worker(
         orderBy: (i, { asc }) => asc(i.priority),
         where: (i, { eq }) => eq(i.instanceId, instanceId),
       })
+
+      for (const rule of queriedRules) {
+        if (rule.sourceType === "cidr" && rule.sourceCidr) {
+          const error = validateSourcePair(rule.sourceType, rule.sourceCidr)
+          if (error) {
+            throw new Error(
+              `Rule "${rule.comment || rule.id}" has an invalid CIDR: ${error}`,
+            )
+          }
+        }
+      }
 
       const platformRules = buildPlatformRules({
         adminCidr: env.PLATFORM_ADMIN_CIDR,

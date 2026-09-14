@@ -1,6 +1,7 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
+import { validateSourcePair } from "@/lib/network"
 import type {
   firewallRuleActionEnum,
   firewallRuleProtocolEnum,
@@ -31,17 +32,11 @@ export const createInstanceFirewallRuleSchema = insertInstanceFirewallRuleSchema
   })
   // require sourceCidr when sourceType is "cidr"
   .superRefine((val, ctx) => {
-    if (val.sourceType === "cidr" && !val.sourceCidr) {
+    const error = validateSourcePair(val.sourceType, val.sourceCidr)
+    if (error) {
       ctx.addIssue({
         code: "custom",
-        message: "sourceCidr is required when sourceType is 'cidr'",
-        path: ["sourceCidr"],
-      })
-    }
-    if (val.sourceType !== "cidr" && val.sourceCidr) {
-      ctx.addIssue({
-        code: "custom",
-        message: "sourceCidr must be omitted unless sourceType is 'cidr'",
+        message: error,
         path: ["sourceCidr"],
       })
     }

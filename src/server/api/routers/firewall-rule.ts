@@ -6,6 +6,7 @@ import { and, count, eq, inArray, sql } from "drizzle-orm"
 import * as z from "zod"
 
 import { FIREWALL_RULE_PRIORITY_STEP } from "@/constants/app"
+import { validateSourcePair } from "@/lib/network"
 import {
   createInstanceFirewallRuleSchema,
   insertInstanceFirewallRuleSchema,
@@ -488,17 +489,11 @@ export const firewallRuleRouter = createTRPCRouter({
         sourceType: input.sourceType ?? existingRule.sourceType,
       }
 
-      if (merged.sourceType === "cidr" && !merged.sourceCidr) {
+      const error = validateSourcePair(merged.sourceType, merged.sourceCidr)
+      if (error) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "sourceCidr is required when sourceType is 'cidr'",
-        })
-      }
-
-      if (merged.sourceType !== "cidr" && merged.sourceCidr) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "sourceCidr must be omitted unless sourceType is 'cidr'",
+          message: error,
         })
       }
 
