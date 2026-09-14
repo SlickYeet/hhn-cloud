@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Empty, EmptyContent } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -134,6 +135,33 @@ function SortableRuleRow({
   } = useSortable({ id: rule.id })
   const isMobile = useIsMobile()
 
+  const [draftSourceType, setDraftSourceType] = React.useState(rule.sourceType)
+  const [draftSourceCidr, setDraftSourceCidr] = React.useState(
+    rule.sourceCidr ?? "",
+  )
+
+  React.useEffect(() => {
+    setDraftSourceType(rule.sourceType)
+    setDraftSourceCidr(rule.sourceCidr ?? "")
+  }, [rule.sourceType, rule.sourceCidr])
+
+  function handleSourceTypeChange(
+    next: InstanceFirewallRule["sourceType"] | null,
+  ) {
+    if (next === null) return
+
+    setDraftSourceType(next)
+
+    if (next !== "cidr") onChange({ sourceCidr: null, sourceType: next })
+  }
+
+  function commitCidr() {
+    const trimmed = draftSourceCidr.trim()
+    if (draftSourceType === "cidr" && trimmed && trimmed !== rule.sourceCidr) {
+      onChange({ sourceCidr: trimmed, sourceType: "cidr" })
+    }
+  }
+
   const style = {
     opacity: isDragging ? 0.5 : 1,
     transform: CSS.Transform.toString(transform),
@@ -179,21 +207,34 @@ function SortableRuleRow({
 
         <div className="flex-1 space-y-3">
           <Input
-            onChange={(e) => onChange({ comment: e.target.value || null })}
-            placeholder="Rule description"
+            className="border-none bg-transparent text-foreground/70 placeholder:underline placeholder:underline-offset-5 focus-visible:ring-0"
+            onChange={(e) => onChange({ comment: e.target.value })}
+            placeholder="Add description"
             value={rule.comment ?? ""}
           />
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 pl-3">
             <Select
               onValueChange={(val) =>
                 onChange({ action: val as InstanceFirewallRule["action"] })
               }
               value={rule.action}
             >
-              <SelectTrigger className="w-28">
-                <SelectValue />
-              </SelectTrigger>
+              <div className="group relative">
+                <Label
+                  className="absolute top-0 left-2 z-1 block -translate-y-1/2 bg-card px-1 pr-2.5 text-foreground text-xs"
+                  htmlFor="action"
+                >
+                  Action
+                  <span className="absolute -top-1 text-destructive">*</span>
+                </Label>
+                <SelectTrigger
+                  className="w-28 bg-card uppercase hover:cursor-pointer hover:bg-transparent!"
+                  id="action"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+              </div>
               <SelectContent>
                 {firewallRuleActionEnum.enumValues.map((v) => (
                   <SelectItem key={v} value={v}>
@@ -204,33 +245,57 @@ function SortableRuleRow({
             </Select>
 
             <Select
-              onValueChange={(val) =>
-                onChange({
-                  sourceCidr: val === "cidr" ? rule.sourceCidr : null,
-                  sourceType: val as InstanceFirewallRule["sourceType"],
-                })
-              }
-              value={rule.sourceType}
+              onValueChange={handleSourceTypeChange}
+              value={draftSourceType}
             >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
+              <div className="group relative">
+                <Label
+                  className="absolute top-0 left-2 z-1 block -translate-y-1/2 bg-card px-1 pr-2.5 text-foreground text-xs"
+                  htmlFor="sourceType"
+                >
+                  Source
+                  <span className="absolute -top-1 text-destructive">*</span>
+                </Label>
+                <SelectTrigger
+                  className="w-36 bg-card uppercase hover:cursor-pointer hover:bg-transparent!"
+                  id="sourceType"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+              </div>
               <SelectContent>
                 {firewallRuleSourceTypeEnum.enumValues.map((v) => (
-                  <SelectItem key={v} value={v}>
+                  <SelectItem className="uppercase" key={v} value={v}>
                     {v}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {rule.sourceType === "cidr" && (
-              <Input
-                className="w-44"
-                onChange={(e) => onChange({ sourceCidr: e.target.value })}
-                placeholder="203.0.113.4/32"
-                value={rule.sourceCidr ?? ""}
-              />
+            {draftSourceType === "cidr" && (
+              <div className="group relative">
+                <Label
+                  className="absolute top-0 left-2 z-1 block -translate-y-1/2 bg-card px-1 pr-2.5 text-foreground text-xs"
+                  htmlFor="sourceCidr"
+                >
+                  Source CIDR
+                  <span className="absolute -top-1 text-destructive">*</span>
+                </Label>
+                <Input
+                  className="w-44 bg-card"
+                  id="sourceCidr"
+                  onBlur={commitCidr}
+                  onChange={(e) => setDraftSourceCidr(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      commitCidr()
+                    }
+                  }}
+                  placeholder="203.0.113.0/24"
+                  value={draftSourceCidr}
+                />
+              </div>
             )}
 
             <Select
@@ -239,12 +304,24 @@ function SortableRuleRow({
               }
               value={rule.protocol}
             >
-              <SelectTrigger className="w-28">
-                <SelectValue />
-              </SelectTrigger>
+              <div className="group relative">
+                <Label
+                  className="absolute top-0 left-2 z-1 block -translate-y-1/2 bg-card px-1 pr-2.5 text-foreground text-xs"
+                  htmlFor="protocol"
+                >
+                  Protocol
+                  <span className="absolute -top-1 text-destructive">*</span>
+                </Label>
+                <SelectTrigger
+                  className="w-28 bg-card uppercase hover:cursor-pointer hover:bg-transparent!"
+                  id="protocol"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+              </div>
               <SelectContent>
                 {firewallRuleProtocolEnum.enumValues.map((v) => (
-                  <SelectItem key={v} value={v}>
+                  <SelectItem className="uppercase" key={v} value={v}>
                     {v}
                   </SelectItem>
                 ))}
@@ -252,14 +329,23 @@ function SortableRuleRow({
             </Select>
 
             {rule.protocol !== "icmp" && (
-              <Input
-                className="w-36"
-                onChange={(e) =>
-                  onChange({ portRange: e.target.value || null })
-                }
-                placeholder="Port or range"
-                value={rule.portRange ?? ""}
-              />
+              <div className="group relative">
+                <Label
+                  className="absolute top-0 left-2 z-1 block -translate-y-1/2 bg-card px-1 text-foreground text-xs"
+                  htmlFor="portRange"
+                >
+                  Port or range
+                </Label>
+                <Input
+                  className="w-40 bg-card"
+                  id="portRange"
+                  onChange={(e) =>
+                    onChange({ portRange: e.target.value || null })
+                  }
+                  placeholder="80 or 8000-8080"
+                  value={rule.portRange ?? ""}
+                />
+              </div>
             )}
           </div>
         </div>
