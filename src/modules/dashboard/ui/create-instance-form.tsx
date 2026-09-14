@@ -243,14 +243,26 @@ function BasicInfoForm({
         />
       </FieldGroup>
 
-      <Alert className="py-4" variant="info">
+      <Alert className="py-4" variant="warning">
         <IconShieldCheck />
         <AlertTitle className="font-semibold dark:text-primary-foreground">
-          Secure by default
+          Security Notice
         </AlertTitle>
         <AlertDescription className="mt-1 text-foreground/70!">
           SSH access is the only connection method enabled. Password-based
           logins are disabled for security reasons.
+        </AlertDescription>
+      </Alert>
+
+      <Alert className="py-4" variant="info">
+        <IconShieldCheck />
+        <AlertTitle className="font-semibold dark:text-primary-foreground">
+          SSH Access Delay
+        </AlertTitle>
+        <AlertDescription className="mt-1 text-foreground/70!">
+          After the instance reports as running, there may be a short delay
+          before SSH access is available due to boot timing. Please wait a few
+          moments before attempting to connect.
         </AlertDescription>
       </Alert>
 
