@@ -28,7 +28,7 @@ export const DASHBOARD_INFO_CARDS = [
     description:
       "Discover our extensive library of tutorials and guides. Learn how to create and manage virtual machines, configure networking, and optimize your cloud infrastructure.",
     link: "https://wiki.famlam.ca",
-    title: "Tutorials",
+    title: "Wiki",
   },
   {
     description:
