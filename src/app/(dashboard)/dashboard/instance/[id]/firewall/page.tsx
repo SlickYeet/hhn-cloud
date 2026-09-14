@@ -15,7 +15,7 @@ export default async function Page({
 
   return (
     <HydrateClient>
-      <div className="mx-auto mt-4 flex size-full max-w-384 flex-col gap-6 px-4 sm:px-6">
+      <div className="mx-auto mt-4 flex h-screen w-full max-w-384 flex-col gap-6 px-4 sm:px-6">
         <InstanceFirewallConfigurator instanceId={instanceId} />
       </div>
     </HydrateClient>

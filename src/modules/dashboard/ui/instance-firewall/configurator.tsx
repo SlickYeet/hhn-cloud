@@ -32,6 +32,7 @@ import { Hint } from "@/components/hint"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Empty, EmptyContent } from "@/components/ui/empty"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -456,23 +457,8 @@ export function InstanceFirewallConfigurator({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="mb-8 flex items-center">
         <SyncStatusBadge instanceId={instanceId} />
-        <Button
-          onClick={() =>
-            create.mutate({
-              action: "ACCEPT",
-              enabled: true,
-              instanceId,
-              priority: rules.length + 1,
-              protocol: "tcp",
-              sourceType: "any",
-            })
-          }
-          size="sm"
-        >
-          <IconPlus /> Add rule
-        </Button>
       </div>
 
       <DndContext
@@ -485,7 +471,7 @@ export function InstanceFirewallConfigurator({
           items={orderedIds}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             {rules.map((rule, idx) => (
               <SortableRuleRow
                 isFirst={idx === 0}
@@ -500,6 +486,29 @@ export function InstanceFirewallConfigurator({
           </div>
         </SortableContext>
       </DndContext>
+
+      <button
+        className="w-full cursor-pointer"
+        onClick={() =>
+          create.mutate({
+            action: "ACCEPT",
+            enabled: true,
+            instanceId,
+            priority: rules.length + 1,
+            protocol: "tcp",
+            sourceType: "any",
+          })
+        }
+        type="button"
+      >
+        <Empty className="border-2 border-dashed p-10">
+          <EmptyContent>
+            <p className="flex gap-2 text-lg text-muted-foreground">
+              <IconPlus /> Add rule
+            </p>
+          </EmptyContent>
+        </Empty>
+      </button>
     </div>
   )
 }
