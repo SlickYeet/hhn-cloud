@@ -9,15 +9,16 @@ import {
 } from "@/server/services/instance"
 import { releaseIpAddress } from "@/server/services/network"
 
-const proxmox = getProxmoxClient()
-
 async function main() {
+  const proxmox = getProxmoxClient()
+
   const instances = await db.query.instanceTable.findMany({
     with: { ipAllocations: true },
   })
 
   const failures: { instanceId: string; error: unknown }[] = []
 
+  console.info("Starting pre-reset cleanup...")
   for (const instance of instances) {
     try {
       await stopInstanceIfRunning(proxmox, instance.pveVmid)
