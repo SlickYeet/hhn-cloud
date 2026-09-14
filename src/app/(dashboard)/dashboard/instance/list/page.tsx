@@ -28,7 +28,7 @@ export default async function Page() {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start">
-            <p className="font-medium">Your Instances</p>
+            <p className="font-medium">Cloud Instances</p>
             <p className="text-xs">Your virtual infrastructure</p>
           </div>
         </div>
