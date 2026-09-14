@@ -58,7 +58,7 @@ export default function Page() {
   }
 
   return (
-    <div className="h-full w-full">
+    <main className="size-full">
       <div className="group/backdrop relative isolate flex min-h-svh flex-col overflow-hidden bg-background">
         <div className="pointer-events-none absolute inset-0 -z-30 scale-105">
           <Image
@@ -145,6 +145,6 @@ export default function Page() {
           </div>
         </main>
       </div>
-    </div>
+    </main>
   )
 }
