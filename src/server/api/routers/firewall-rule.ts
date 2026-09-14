@@ -438,7 +438,7 @@ export const firewallRuleRouter = createTRPCRouter({
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
         referenceType: "instance",
-        type: "firewall_sync_requested",
+        type: "firewall_sync_retry_requested",
       })
 
       return {

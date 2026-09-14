@@ -27,7 +27,7 @@ export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
 
 export const activityTypeEnum = pgEnum("activity_type", [
   "firewall_rule_created",
-  "firewall_sync_requested",
+  "firewall_sync_retry_requested",
   "firewall_sync_completed",
   "firewall_sync_failed",
   "firewall_rule_deleted",

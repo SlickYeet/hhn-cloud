@@ -1,0 +1,4 @@
+ALTER TABLE "activity" ALTER COLUMN "type" SET DATA TYPE text;--> statement-breakpoint
+DROP TYPE "public"."activity_type";--> statement-breakpoint
+CREATE TYPE "public"."activity_type" AS ENUM('firewall_rule_created', 'firewall_sync_retry_requested', 'firewall_sync_completed', 'firewall_sync_failed', 'firewall_rule_deleted', 'firewall_rule_reordered', 'firewall_rule_updated', 'instance_provision_requested', 'instance_provisioning_failed', 'instance_created', 'instance_power_action_requested', 'instance_power_action_completed', 'instance_power_action_failed', 'instance_started', 'instance_stopped', 'instance_deletion_requested', 'instance_deletion_failed', 'instance_deleted', 'instance_updated', 'ssh_key_created', 'ssh_key_updated', 'ssh_key_deleted', 'user_logged_in', 'user_logged_out', 'user_updated', 'user_deleted');--> statement-breakpoint
+ALTER TABLE "activity" ALTER COLUMN "type" SET DATA TYPE "public"."activity_type" USING "type"::"public"."activity_type";

@@ -169,6 +169,13 @@
       "when": 1789258251496,
       "tag": "0023_nebulous_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1789370382026,
+      "tag": "0024_daily_leopardon",
+      "breakpoints": true
     }
   ]
 }

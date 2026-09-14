@@ -164,7 +164,7 @@ export function getInstanceStatusAnimation(status: InstanceStatusEnum) {
 export function getActivityTypeIcon(type: ActivityTypeEnum) {
   switch (type) {
     case "firewall_rule_created":
-    case "firewall_sync_requested":
+    case "firewall_sync_retry_requested":
     case "firewall_sync_completed":
     case "firewall_sync_failed":
     case "firewall_rule_deleted":
