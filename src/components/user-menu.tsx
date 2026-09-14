@@ -49,7 +49,7 @@ export function UserMenu({ user }: { user: User }) {
         </Avatar>
         <div className="hidden flex-col items-start gap-0.5 sm:flex">
           <span className="font-medium text-sm">{user.name}</span>
-          <span className="text-muted-foreground text-xs capitalize">
+          <span className="text-primary-foreground/80 text-xs capitalize">
             {user.role}
           </span>
         </div>

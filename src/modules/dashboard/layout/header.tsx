@@ -1,141 +1,47 @@
 "use client"
 
-import {
-  IconActivity,
-  IconBell,
-  IconChartBar,
-  IconHome,
-  IconMenu,
-  IconServer2,
-} from "@tabler/icons-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import * as React from "react"
+import { IconActivity, IconBell } from "@tabler/icons-react"
+import { PanelLeftCloseIcon } from "lucide-react"
 
-import { Icons } from "@/components/icons"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
 import { Button } from "@/components/ui/button"
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu"
+import { useSidebar } from "@/components/ui/sidebar"
 import { UserMenu } from "@/components/user-menu"
 import { APP_NAME } from "@/constants/app"
+import { getDashboardWelcomeMessage } from "@/lib/utils"
 import type { Session } from "@/server/auth/utils"
 
 export function DashboardHeader({ session }: { session: Session }) {
-  const pathname = usePathname()
-
-  const NAV_ITEMS = [
-    { href: "/dashboard", icon: IconChartBar, label: "Dashboard" },
-    { href: "/dashboard/instance/list", icon: IconServer2, label: "Instances" },
-  ]
-
-  const path = pathname.split("/").filter(Boolean)
+  const { toggleSidebar } = useSidebar()
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-card/95 supports-backdrop-filter:bg-card/80 supports-backdrop-filter:backdrop-blur">
-      <div className="border-b">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Button className="rounded lg:hidden" size="icon" variant="outline">
-              <IconMenu />
-              <span className="sr-only">Menu</span>
-            </Button>
-            <Link href="/dashboard">
-              <div className="flex items-center">
-                <Icons.logo className="size-8" />
-                <span className="ml-2.5 hidden font-semibold text-xl sm:block">
-                  {APP_NAME}
-                </span>
-              </div>
-            </Link>
-          </div>
-          <NavigationMenu className="hidden lg:block">
-            <NavigationMenuList className="gap-2">
-              {NAV_ITEMS.map((item) => (
-                <NavigationMenuItem key={item.href}>
-                  <NavigationMenuLink className="py-2" href={item.href}>
-                    <item.icon />
-                    {item.label}
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
-          <div className="flex items-center gap-1.5">
-            <Button size="icon" variant="ghost">
-              <IconActivity className="size-5" />
-            </Button>
-            <Button className="relative" size="icon" variant="ghost">
-              <IconBell className="size-5" />
-              <span className="absolute top-[14%] right-[23%] size-2 rounded-full bg-destructive" />
-            </Button>
-            <UserMenu user={session.user} />
+    <header className="text-primary-foreground">
+      <div className="mx-auto flex w-full items-center justify-between gap-6 px-4 max-md:gap-1.5 sm:px-6">
+        <div className="flex items-center gap-4">
+          <Button
+            className="size-10 border-primary-foreground! bg-primary-foreground! text-primary! shadow-none outline-none hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50"
+            onClick={toggleSidebar}
+          >
+            <PanelLeftCloseIcon className="size-5" />
+          </Button>
+          <div className="hidden sm:flex sm:flex-col sm:items-start">
+            <p className="font-semibold text-lg">
+              {getDashboardWelcomeMessage()}, {session.user.name}
+            </p>
+            <p className="text-primary-foreground/80 md:max-lg:hidden">
+              {APP_NAME} Dashboard
+            </p>
           </div>
         </div>
-      </div>
-      <div className="mx-auto flex max-w-7xl justify-between gap-x-6 gap-y-2 px-4 py-1.5 max-sm:flex-col sm:items-center sm:px-6">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<a href="/" />}>
-                <IconHome className="size-4" />
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            {path[0] && (
-              <BreadcrumbItem>
-                <BreadcrumbLink render={<a href={`/${path[0]}`} />}>
-                  <span className="capitalize">{path[0]}</span>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            )}
-            {path[0] === "dashboard" && !path[1] && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <span className="capitalize">Home</span>
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            )}
-            {path.slice(1, -1).map((segment, index) => (
-              <React.Fragment key={index}>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbLink
-                    render={
-                      <a href={`/${path.slice(0, 2 + index).join("/")}`} />
-                    }
-                  >
-                    <span className="capitalize">{segment}</span>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              </React.Fragment>
-            ))}
-            {path.length > 2 && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    <span className="capitalize">{path[path.length - 1]}</span>
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            )}
-          </BreadcrumbList>
-        </Breadcrumb>
+        <div className="flex items-center gap-1.5">
+          <Button size="icon" variant="ghost">
+            <IconActivity className="size-5" />
+          </Button>
+          <Button className="relative" size="icon" variant="ghost">
+            <IconBell className="size-5" />
+            <span className="absolute top-[14%] right-[23%] size-2 rounded-full bg-destructive" />
+          </Button>
+          <UserMenu user={session.user} />
+        </div>
       </div>
     </header>
   )

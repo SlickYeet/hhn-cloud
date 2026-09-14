@@ -1,8 +1,6 @@
-import { IconCirclePlus, IconKey, IconServer2 } from "@tabler/icons-react"
-import Link from "next/link"
+import { IconKey } from "@tabler/icons-react"
 import { redirect } from "next/navigation"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { DASHBOARD_INFO_CARDS, DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
@@ -33,53 +31,24 @@ export default async function Page() {
   })
 
   return (
-    <main className="mx-auto size-full max-w-384 px-4 pb-6 sm:px-6">
-      <div className="flex justify-between gap-6 py-6 text-primary-foreground max-sm:flex-col">
-        <div className="flex items-center gap-2">
-          <Avatar
-            className="rounded-sm after:rounded-[inherit] after:border-0"
-            size="lg"
-          >
-            <AvatarFallback className="rounded-md bg-primary-foreground text-primary">
-              <IconServer2 className="size-5" />
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col items-start">
-            <p className="font-medium">Welcome back, {session.user.name}</p>
-            <p className="text-xs">Compute Dashboard</p>
+    <HydrateClient>
+      <div
+        className={cn(
+          "flex flex-col gap-4 lg:flex-row",
+          "[--activities-header-height:--spacing(16)] [--dashboard-0rg-resources-header-height:--spacing(8)] [--dashboard-card-height:calc(100dvh-40dvh)] md:[--dashboard-card-height:calc(100dvh-55dvh)]",
+        )}
+      >
+        <div className="inline-flex h-(--dashboard-card-height) flex-1 flex-col overflow-y-hidden rounded-t-2xl lg:flex-row lg:rounded-r-none lg:rounded-l-2xl">
+          <div className="w-full overflow-auto rounded-t-2xl lg:flex-1 lg:rounded-r-none lg:rounded-l-2xl">
+            <CloudMap />
           </div>
+          <OrgResources />
         </div>
-        <div>
-          <Button
-            nativeButton={false}
-            render={<Link href="/dashboard/instance/create" />}
-            size="lg"
-            variant="secondary"
-          >
-            <IconCirclePlus /> New Instance
-          </Button>
-        </div>
+        <ActivityCard
+          className="h-(--dashboard-card-height) w-full lg:max-w-sm"
+          scope="organization"
+        />
       </div>
-
-      <HydrateClient>
-        <div
-          className={cn(
-            "flex flex-col gap-4 lg:flex-row",
-            "[--activities-header-height:--spacing(16)] [--dashboard-0rg-resources-header-height:--spacing(8)] [--dashboard-card-height:calc(100dvh-40dvh)] md:[--dashboard-card-height:calc(100dvh-55dvh)]",
-          )}
-        >
-          <div className="inline-flex h-(--dashboard-card-height) flex-1 flex-col overflow-y-hidden rounded-t-2xl lg:flex-row lg:rounded-r-none lg:rounded-l-2xl">
-            <div className="w-full overflow-auto rounded-t-2xl lg:flex-1 lg:rounded-r-none lg:rounded-l-2xl">
-              <CloudMap />
-            </div>
-            <OrgResources />
-          </div>
-          <ActivityCard
-            className="h-(--dashboard-card-height) w-full lg:max-w-sm"
-            scope="organization"
-          />
-        </div>
-      </HydrateClient>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         <InviteMember />
@@ -114,6 +83,6 @@ export default async function Page() {
           </a>
         ))}
       </div>
-    </main>
+    </HydrateClient>
   )
 }

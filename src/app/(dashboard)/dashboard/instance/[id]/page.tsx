@@ -22,7 +22,7 @@ export default async function Page({
 
   return (
     <HydrateClient>
-      <div className="mx-auto mt-4 flex size-full max-w-384 flex-col gap-6 px-4 sm:px-6">
+      <div className="flex flex-col gap-4">
         <InstanceResources instanceId={instanceId} />
         <div className="grid grid-cols-1 gap-4 md:grid-cols-[2fr_3fr]">
           <ActivityCard
