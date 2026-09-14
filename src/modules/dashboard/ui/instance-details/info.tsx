@@ -15,7 +15,6 @@ import { notFound } from "next/navigation"
 import { toast } from "sonner"
 
 import { Hint } from "@/components/hint"
-import { IPAddress } from "@/components/parse-ip-addres"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -34,6 +33,7 @@ import {
   getInstanceStatusAnimation,
   getInstanceStatusColor,
 } from "@/lib/utils"
+import { IPAddress } from "@/modules/dashboard/ui/parse-ip-addres"
 import type {
   Instance,
   InstancePowerAction,

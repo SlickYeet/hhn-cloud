@@ -13,7 +13,6 @@ import Link from "next/link"
 
 import { DataTableColumnHeader } from "@/components/data-table/column-header"
 import { Hint } from "@/components/hint"
-import { IPAddress } from "@/components/parse-ip-addres"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -32,6 +31,7 @@ import {
   getInstanceStatusAnimation,
   getInstanceStatusColor,
 } from "@/lib/utils"
+import { IPAddress } from "@/modules/dashboard/ui/parse-ip-addres"
 import type { Instance } from "@/schemas/instance"
 
 import type { DataTableFeatures } from "../../../../components/data-table/features"
