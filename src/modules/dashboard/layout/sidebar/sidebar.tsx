@@ -5,6 +5,7 @@ import {
   IconApi,
   IconHeartHandshake,
   IconLayoutDashboard,
+  IconPlus,
   IconSearch,
   IconServer2,
   IconUsers,
@@ -19,6 +20,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -30,6 +32,9 @@ import { MainNav } from "@/modules/dashboard/layout/sidebar/main-nav"
 import { OrgNav } from "@/modules/dashboard/layout/sidebar/org-nav"
 
 export type NavItem = {
+  extra?: {
+    render: React.ReactNode
+  }
   href: string
   icon: IconType
   isActive: boolean
@@ -54,6 +59,16 @@ export function DashboardSidebar() {
         label: "Dashboard",
       },
       {
+        extra: {
+          render: (
+            <SidebarMenuAction
+              render={<Link href="/dashboard/instance/create" />}
+            >
+              <IconPlus />
+              <span className="sr-only">Create Instance</span>
+            </SidebarMenuAction>
+          ),
+        },
         href: "/dashboard/instance/list",
         icon: IconServer2,
         isActive: pathname.startsWith("/dashboard/instance"),

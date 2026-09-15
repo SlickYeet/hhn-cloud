@@ -28,7 +28,6 @@ export function FooterNav({ items }: { items: NavItem[] }) {
           return (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
-                className="h-8"
                 isActive={item.isActive}
                 render={
                   <Link
@@ -41,12 +40,12 @@ export function FooterNav({ items }: { items: NavItem[] }) {
               >
                 <Icon />
                 <span>{item.label}</span>
-                {isExternalLink && (
-                  <SidebarMenuBadge>
-                    <IconExternalLink className="size-3.5!" />
-                  </SidebarMenuBadge>
-                )}
               </SidebarMenuButton>
+              {isExternalLink && (
+                <SidebarMenuBadge>
+                  <IconExternalLink className="size-3.5!" />
+                </SidebarMenuBadge>
+              )}
             </SidebarMenuItem>
           )
         })}

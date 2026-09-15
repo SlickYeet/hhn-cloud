@@ -25,7 +25,6 @@ export function MainNav({ items }: { items: NavItem[] }) {
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
-                  className="h-8"
                   isActive={item.isActive}
                   // @ts-expect-error: cannot use typedRoutes here
                   render={<Link href={item.href} />}
@@ -34,6 +33,7 @@ export function MainNav({ items }: { items: NavItem[] }) {
                   <Icon />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
+                {item.extra?.render}
               </SidebarMenuItem>
             )
           })}
