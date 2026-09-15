@@ -52,7 +52,6 @@ export const activityRegistry = {
     icon: IconWall,
     metadataSchema: z.object({
       ruleIds: z.array(z.uuid()),
-      user: activityUserSchema,
     }),
     render: () => "Reordered firewall rules",
   },
@@ -78,9 +77,7 @@ export const activityRegistry = {
   },
   firewall_sync_retry_requested: {
     icon: IconWall,
-    metadataSchema: z.object({
-      user: activityUserSchema,
-    }),
+    metadataSchema: z.object({}),
     render: () => "Retrying firewall sync",
   },
   instance_created: {

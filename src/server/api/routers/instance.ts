@@ -249,12 +249,10 @@ export const instanceRouter = createTRPCRouter({
 
       await logActivity(ctx.db, "instance_provision_requested", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
-        metadata: {
-          instance,
-          user: ctx.session.user,
-        },
+        metadata: { instance },
         organizationId: ctx.organizationId,
         referenceId: instance.id,
         referenceType: "instance",
@@ -352,12 +350,10 @@ export const instanceRouter = createTRPCRouter({
 
       await logActivity(ctx.db, "instance_deletion_requested", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
-        metadata: {
-          instance,
-          user: ctx.session.user,
-        },
+        metadata: { instance },
         organizationId: ctx.organizationId,
         referenceId: instance.id,
         referenceType: "instance",
@@ -669,13 +665,10 @@ async function powerAction(
 
   await logActivity(ctx.db, "instance_power_action_requested", {
     actorId: ctx.session.session.userId,
+    actorSnapshot: ctx.session.user,
     actorType: "user",
     channel: "api",
-    metadata: {
-      action,
-      instance,
-      user: ctx.session.user,
-    },
+    metadata: { action, instance },
     organizationId: ctx.organizationId,
     referenceId: instance.id,
     referenceType: "instance",

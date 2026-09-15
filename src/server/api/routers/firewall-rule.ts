@@ -348,11 +348,11 @@ export const firewallRuleRouter = createTRPCRouter({
 
       await logActivity(ctx.db, "firewall_rule_reordered", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
         metadata: {
           ruleIds: input.orderedRuleIds,
-          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
@@ -410,9 +410,10 @@ export const firewallRuleRouter = createTRPCRouter({
 
       await logActivity(ctx.db, "firewall_sync_retry_requested", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
-        metadata: { user: ctx.session.user },
+        metadata: {},
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
         referenceType: "instance",
@@ -502,13 +503,12 @@ export const firewallRuleRouter = createTRPCRouter({
 
       await logActivity(ctx.db, "firewall_rule_updated", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
         metadata: {
           after: updatedRule,
           before: existingRule,
-          referenceId: updatedRule.id,
-          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: existingRule.instanceId,
