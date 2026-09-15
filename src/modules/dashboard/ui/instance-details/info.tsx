@@ -36,7 +36,7 @@ import {
 import { IPAddress } from "@/modules/dashboard/ui/parse-ip-addres"
 import type {
   Instance,
-  InstancePowerAction,
+  InstancePowerActionEnum,
   InstanceStatusEnum,
 } from "@/schemas/instance"
 
@@ -132,7 +132,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
 
   const isTransitionalStatus = TRANSITIONAL_STATUSES.includes(instance.status)
 
-  function isDisabled(action: InstancePowerAction) {
+  function isDisabled(action: InstancePowerActionEnum) {
     switch (action) {
       case "start":
         return instance.status !== "stopped"
