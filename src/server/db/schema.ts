@@ -8,6 +8,9 @@ import {
   unique,
   uniqueIndex,
 } from "drizzle-orm/pg-core"
+import type * as z from "zod"
+
+import type { ActivityType, activityUserSchema } from "@/schemas/activity"
 
 export const createTable = pgTableCreator((name) => name)
 
@@ -25,37 +28,11 @@ export const activityReferenceTypeEnum = pgEnum("activity_reference_type", [
   "user",
 ])
 
-export const activityTypeEnum = pgEnum("activity_type", [
-  "firewall_rule_created",
-  "firewall_sync_retry_requested",
-  "firewall_sync_completed",
-  "firewall_sync_failed",
-  "firewall_rule_deleted",
-  "firewall_rule_reordered",
-  "firewall_rule_updated",
-  "instance_provision_requested",
-  "instance_provisioning_failed",
-  "instance_created",
-  "instance_power_action_requested",
-  "instance_power_action_completed",
-  "instance_power_action_failed",
-  "instance_started",
-  "instance_stopped",
-  "instance_deletion_requested",
-  "instance_deletion_failed",
-  "instance_deleted",
-  "instance_updated",
-  "ssh_key_created",
-  "ssh_key_updated",
-  "ssh_key_deleted",
-  "user_logged_in",
-  "user_logged_out",
-  "user_updated",
-  "user_deleted",
-])
-
 export const activityTable = createTable("activity", (d) => ({
   actorId: d.text("actor_id"),
+  actorSnapshot: d
+    .jsonb("actor_snapshot")
+    .$type<z.infer<typeof activityUserSchema>>(),
   actorType: activityActorEnum("actor_type").notNull(),
   channel: activityChannelEnum("channel").notNull(),
   id: d.uuid("id").primaryKey(),
@@ -66,7 +43,7 @@ export const activityTable = createTable("activity", (d) => ({
   referenceId: d.text("reference_id").notNull(),
   referenceType: activityReferenceTypeEnum("reference_type").notNull(),
   timestamp: d.timestamp("timestamp").defaultNow().notNull(),
-  type: activityTypeEnum("type").notNull(),
+  type: d.text("type").$type<ActivityType>().notNull(),
 }))
 
 export const sshKeyTable = createTable(

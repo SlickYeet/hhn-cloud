@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server"
 import { and, desc, eq, lt, or } from "drizzle-orm"
 import * as z from "zod"
 
-import { selectActivitySchema } from "@/schemas/activity"
+import { activityRegistry, selectActivitySchema } from "@/schemas/activity"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { activityTable } from "@/server/db/schema"
 
@@ -16,7 +16,14 @@ const activityListInput = z.object({
     })
     .nullish(),
   limit: z.int().positive().max(100),
-  type: z.enum(selectActivitySchema.shape.type.options).optional(),
+  type: z
+    .enum(
+      Object.keys(activityRegistry) as [
+        keyof typeof activityRegistry,
+        ...(keyof typeof activityRegistry)[],
+      ],
+    )
+    .optional(),
 })
 
 export const activityRouter = createTRPCRouter({

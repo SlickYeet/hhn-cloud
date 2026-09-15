@@ -1,15 +1,11 @@
 import {
-  IconKey,
   IconQuestionMark,
-  IconServer2,
   IconStack,
   IconStack2,
   IconStack2Filled,
   IconStack3,
   IconStack3Filled,
   IconStackFilled,
-  IconUser,
-  IconWall,
 } from "@tabler/icons-react"
 import type { ClassValue } from "clsx"
 import { clsx } from "clsx"
@@ -17,7 +13,6 @@ import { twMerge } from "tailwind-merge"
 
 import { Icons } from "@/components/icons"
 import { env } from "@/env"
-import type { ActivityTypeEnum } from "@/schemas/activity"
 import type { InstanceStatusEnum } from "@/schemas/instance"
 import type {
   OperatingSystem,
@@ -158,43 +153,6 @@ export function getInstanceStatusAnimation(status: InstanceStatusEnum) {
       return "animate-pulse"
     default:
       return ""
-  }
-}
-
-export function getActivityTypeIcon(type: ActivityTypeEnum) {
-  switch (type) {
-    case "firewall_rule_created":
-    case "firewall_sync_retry_requested":
-    case "firewall_sync_completed":
-    case "firewall_sync_failed":
-    case "firewall_rule_deleted":
-    case "firewall_rule_reordered":
-    case "firewall_rule_updated":
-      return IconWall
-    case "instance_provision_requested":
-    case "instance_provisioning_failed":
-    case "instance_created":
-    case "instance_power_action_requested":
-    case "instance_power_action_completed":
-    case "instance_power_action_failed":
-    case "instance_started":
-    case "instance_stopped":
-    case "instance_deletion_requested":
-    case "instance_deletion_failed":
-    case "instance_deleted":
-    case "instance_updated":
-      return IconServer2
-    case "ssh_key_created":
-    case "ssh_key_deleted":
-    case "ssh_key_updated":
-      return IconKey
-    case "user_logged_in":
-    case "user_logged_out":
-    case "user_updated":
-    case "user_deleted":
-      return IconUser
-    default:
-      return IconQuestionMark
   }
 }
 

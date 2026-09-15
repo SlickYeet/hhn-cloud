@@ -3,7 +3,7 @@ import { createNodeRedisClient, Queue } from "bullmq"
 import * as z from "zod"
 
 import { getRedisClient } from "@/lib/redis"
-import { instancePowerAction } from "@/schemas/instance"
+import { instancePowerActionEnum } from "@/schemas/instance"
 
 export const POWER_ACTION_QUEUE_KEY = "cloud-power-action-queue"
 
@@ -28,7 +28,7 @@ function getPowerActionQueue(): Queue {
 }
 
 export const addPowerActionSchema = z.object({
-  action: instancePowerAction,
+  action: instancePowerActionEnum,
   instanceId: z.uuid(),
 })
 

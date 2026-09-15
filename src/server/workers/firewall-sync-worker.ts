@@ -100,13 +100,13 @@ firewallSyncWorker.on("completed", async (job) => {
 
   if (!instance) return
 
-  await logActivity(db, {
+  await logActivity(db, "firewall_sync_completed", {
     actorType: "system",
     channel: "worker",
+    metadata: {},
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "firewall_sync_completed",
   })
 })
 
@@ -132,14 +132,13 @@ firewallSyncWorker.on("failed", async (job, error) => {
 
   if (!instance) return
 
-  await logActivity(db, {
+  await logActivity(db, "firewall_sync_failed", {
     actorType: "system",
     channel: "worker",
     metadata: { error: error?.message ?? "Unknown error" },
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "firewall_sync_failed",
   })
 })
 

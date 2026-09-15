@@ -27,7 +27,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import type { RouterInputs } from "@/lib/api/client"
 import { api } from "@/lib/api/client"
-import { cn, getActivityTypeIcon } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import {
+  activityRegistry,
+  parseActivityMetadata,
+  renderActivity,
+} from "@/schemas/activity"
 
 interface ActivityCardProps {
   scope: RouterInputs["activity"]["list"]["scope"]
@@ -76,7 +81,14 @@ export function ActivityCard({
               activity.pages
                 .flatMap((page) => page.items)
                 .map((item) => {
-                  const Icon = getActivityTypeIcon(item.type)
+                  const Icon =
+                    activityRegistry[item.type as keyof typeof activityRegistry]
+                      ?.icon
+
+                  const metadata = parseActivityMetadata(
+                    item.type,
+                    item.metadata,
+                  )
 
                   return (
                     <Item
@@ -104,14 +116,14 @@ export function ActivityCard({
                           sideOffset={8}
                         >
                           <ItemTitle className="line-clamp-1 text-left font-normal text-base">
-                            {item.type.replace(/_/g, " ")}
+                            {renderActivity(item)}
                           </ItemTitle>
                         </Hint>
                         <ItemDescription className="line-clamp-2 text-xs capitalize">
                           {item.referenceType}{" "}
-                          {typeof item.metadata?.action === "string" ? (
-                            <span>- {item.metadata.action}</span>
-                          ) : null}
+                          {metadata && "action" in metadata
+                            ? `(${metadata.action})`
+                            : ""}
                         </ItemDescription>
                       </ItemContent>
                       <ItemContent className="flex-none shrink-0">
@@ -147,7 +159,7 @@ export function ActivityCard({
                               >
                                 {item.actorType}
                               </HoverCardTrigger>
-                              {item.metadata && "user" in item.metadata && (
+                              {item.actorSnapshot && (
                                 <HoverCardContent
                                   className="flex flex-row items-center gap-3"
                                   onClick={(e) => {
@@ -157,54 +169,19 @@ export function ActivityCard({
                                 >
                                   <Avatar>
                                     <AvatarImage
-                                      alt={
-                                        (
-                                          item.metadata.user as
-                                            | { name?: string }
-                                            | undefined
-                                        )?.name ?? ""
-                                      }
-                                      src={
-                                        (
-                                          item.metadata.user as
-                                            | { image?: string }
-                                            | undefined
-                                        )?.image ?? ""
-                                      }
+                                      alt={item.actorSnapshot.name}
+                                      src={item.actorSnapshot.image ?? ""}
                                     />
                                     <AvatarFallback>
-                                      {(
-                                        item.metadata.user as
-                                          | { name?: string }
-                                          | undefined
-                                      )?.name?.[0] ?? ""}
+                                      {item.actorSnapshot.name}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex w-full flex-col">
-                                    <div className="flex flex-row items-center gap-2">
-                                      <span className="text-sm">
-                                        {(
-                                          item.metadata.user as
-                                            | { name?: string }
-                                            | undefined
-                                        )?.name ?? "Unknown User"}
-                                      </span>
-                                      <span className="text-foreground/70 text-xs capitalize">
-                                        (
-                                        {(
-                                          item.metadata.user as
-                                            | { role?: string }
-                                            | undefined
-                                        )?.role ?? "Unknown Role"}
-                                        )
-                                      </span>
-                                    </div>
+                                    <span className="text-sm">
+                                      {item.actorSnapshot.name}
+                                    </span>
                                     <span className="text-muted-foreground text-sm">
-                                      {(
-                                        item.metadata.user as
-                                          | { email?: string }
-                                          | undefined
-                                      )?.email ?? "No email available"}
+                                      {item.actorSnapshot.email}
                                     </span>
                                   </div>
                                 </HoverCardContent>

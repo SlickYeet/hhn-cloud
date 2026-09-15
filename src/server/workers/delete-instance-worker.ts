@@ -73,13 +73,13 @@ deleteInstanceWorker.on("completed", async (job) => {
 
   if (!instance) return
 
-  await logActivity(db, {
+  await logActivity(db, "instance_deleted", {
     actorType: "system",
     channel: "worker",
+    metadata: {},
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "instance_deleted",
   })
 })
 
@@ -101,14 +101,16 @@ deleteInstanceWorker.on("failed", async (job, error) => {
 
   if (!instance) return
 
-  await logActivity(db, {
+  await logActivity(db, "instance_deletion_failed", {
     actorType: "system",
     channel: "worker",
-    metadata: { error: error?.message ?? "Unknown error" },
+    metadata: {
+      error: error?.message ?? "Unknown error",
+      instance,
+    },
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "instance_deletion_failed",
   })
 })
 

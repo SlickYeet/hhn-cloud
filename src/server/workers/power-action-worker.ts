@@ -91,7 +91,7 @@ powerActionWorker.on("completed", async (job) => {
   if (!job?.data.instanceId) return
 
   const instance = await db.query.instanceTable.findFirst({
-    columns: { id: true, organizationId: true, pveVmid: true },
+    columns: { hostname: true, id: true, organizationId: true, pveVmid: true },
     where: (i, { eq }) => eq(i.id, job.data.instanceId),
   })
 
@@ -110,14 +110,16 @@ powerActionWorker.on("completed", async (job) => {
     .set({ status: currentStatus })
     .where(eq(instanceTable.id, instance.id))
 
-  await logActivity(db, {
+  await logActivity(db, "instance_power_action_completed", {
     actorType: "system",
     channel: "worker",
-    metadata: { action: job.data.action },
+    metadata: {
+      action: job.data.action,
+      instance,
+    },
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "instance_power_action_completed",
   })
 })
 
@@ -132,7 +134,7 @@ powerActionWorker.on("failed", async (job, err) => {
   if (!isFinalAttempt) return
 
   const instance = await db.query.instanceTable.findFirst({
-    columns: { id: true, organizationId: true, pveVmid: true },
+    columns: { hostname: true, id: true, organizationId: true, pveVmid: true },
     where: (i, { eq }) => eq(i.id, job.data.instanceId),
   })
 
@@ -148,14 +150,16 @@ powerActionWorker.on("failed", async (job, err) => {
     .where(eq(instanceTable.id, instance.id))
     .returning()
 
-  await logActivity(db, {
+  await logActivity(db, "instance_power_action_failed", {
     actorType: "system",
     channel: "worker",
-    metadata: { error: err?.message ?? "Unknown error" },
+    metadata: {
+      error: err?.message ?? "Unknown error",
+      instance,
+    },
     organizationId: instance.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "instance_power_action_failed",
   })
 })
 

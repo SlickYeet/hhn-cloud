@@ -146,21 +146,15 @@ export const firewallRuleRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "firewall_rule_created", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
-        metadata: {
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
-        },
+        metadata: {},
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
         referenceType: "instance",
-        type: "firewall_rule_created",
       })
 
       return {
@@ -223,21 +217,15 @@ export const firewallRuleRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "firewall_rule_deleted", {
         actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
         actorType: "user",
         channel: "api",
-        metadata: {
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
-        },
+        metadata: {},
         organizationId: ctx.organizationId,
         referenceId: existingRule.instanceId,
         referenceType: "instance",
-        type: "firewall_rule_deleted",
       })
 
       return {
@@ -358,21 +346,17 @@ export const firewallRuleRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "firewall_rule_reordered", {
         actorId: ctx.session.session.userId,
         actorType: "user",
         channel: "api",
         metadata: {
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
+          ruleIds: input.orderedRuleIds,
+          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
         referenceType: "instance",
-        type: "firewall_rule_reordered",
       })
 
       return {
@@ -424,21 +408,14 @@ export const firewallRuleRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "firewall_sync_retry_requested", {
         actorId: ctx.session.session.userId,
         actorType: "user",
         channel: "api",
-        metadata: {
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
-        },
+        metadata: { user: ctx.session.user },
         organizationId: ctx.organizationId,
         referenceId: input.instanceId,
         referenceType: "instance",
-        type: "firewall_sync_retry_requested",
       })
 
       return {
@@ -523,22 +500,19 @@ export const firewallRuleRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "firewall_rule_updated", {
         actorId: ctx.session.session.userId,
         actorType: "user",
         channel: "api",
         metadata: {
-          updatedFields: Object.keys(rest),
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
+          after: updatedRule,
+          before: existingRule,
+          referenceId: updatedRule.id,
+          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: existingRule.instanceId,
         referenceType: "instance",
-        type: "firewall_rule_updated",
       })
 
       return updatedRule

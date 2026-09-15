@@ -10,7 +10,7 @@ import { env } from "@/env"
 import { generateMacAddress } from "@/lib/crypto"
 import { getProxmoxClient } from "@/lib/proxmox"
 import type {
-  InstancePowerAction,
+  InstancePowerActionEnum,
   InstanceStatusEnum,
 } from "@/schemas/instance"
 import {
@@ -36,13 +36,16 @@ import { logActivity } from "@/server/services/activity"
 import { createDhcpReservation } from "@/server/services/network"
 
 const PROXMOX_DEFAULT_NODE = env.PROXMOX_NODE
-const VALID_SOURCE_STATUS: Record<InstancePowerAction, InstanceStatusEnum[]> = {
+const VALID_SOURCE_STATUS: Record<
+  InstancePowerActionEnum,
+  InstanceStatusEnum[]
+> = {
   reboot: ["running"],
   shutdown: ["running"],
   start: ["stopped"],
   stop: ["running"],
 }
-const TRANSIENT_STATUS: Record<InstancePowerAction, InstanceStatusEnum> = {
+const TRANSIENT_STATUS: Record<InstancePowerActionEnum, InstanceStatusEnum> = {
   reboot: "restarting",
   shutdown: "stopping",
   start: "starting",
@@ -223,7 +226,9 @@ export const instanceRouter = createTRPCRouter({
         )
 
         return {
+          hostname: newInstance.hostname,
           id: newInstance.id,
+          organizationId: newInstance.organizationId,
         }
       })
 
@@ -242,27 +247,17 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "instance_provision_requested", {
         actorId: ctx.session.session.userId,
         actorType: "user",
         channel: "api",
         metadata: {
-          instance: {
-            cores: plan.cores,
-            disk: plan.disk,
-            hostname: input.hostname,
-            memory: plan.memory,
-          },
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
+          instance,
+          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: instance.id,
         referenceType: "instance",
-        type: "instance_provision_requested",
       })
 
       return {
@@ -355,24 +350,17 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, {
+      await logActivity(ctx.db, "instance_deletion_requested", {
         actorId: ctx.session.session.userId,
         actorType: "user",
         channel: "api",
         metadata: {
-          instance: {
-            hostname: instance.hostname,
-          },
-          user: {
-            email: ctx.session.user.email,
-            name: ctx.session.user.name,
-            role: ctx.session.user.role,
-          },
+          instance,
+          user: ctx.session.user,
         },
         organizationId: ctx.organizationId,
         referenceId: instance.id,
         referenceType: "instance",
-        type: "instance_deletion_requested",
       })
 
       return {
@@ -525,7 +513,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const action: InstancePowerAction = "reboot"
+      const action: InstancePowerActionEnum = "reboot"
 
       return await powerAction(action, { ctx, input })
     }),
@@ -544,7 +532,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const action: InstancePowerAction = "shutdown"
+      const action: InstancePowerActionEnum = "shutdown"
 
       return await powerAction(action, { ctx, input })
     }),
@@ -563,7 +551,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const action: InstancePowerAction = "start"
+      const action: InstancePowerActionEnum = "start"
 
       return await powerAction(action, { ctx, input })
     }),
@@ -582,7 +570,7 @@ export const instanceRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .output(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const action: InstancePowerAction = "stop"
+      const action: InstancePowerActionEnum = "stop"
 
       return await powerAction(action, { ctx, input })
     }),
@@ -630,7 +618,7 @@ export const instanceRouter = createTRPCRouter({
 })
 
 async function powerAction(
-  action: InstancePowerAction,
+  action: InstancePowerActionEnum,
   opts: Pick<
     inferProcedureBuilderResolverOptions<typeof protectedProcedure>,
     "ctx"
@@ -679,25 +667,18 @@ async function powerAction(
     })
   }
 
-  await logActivity(ctx.db, {
+  await logActivity(ctx.db, "instance_power_action_requested", {
     actorId: ctx.session.session.userId,
     actorType: "user",
     channel: "api",
     metadata: {
       action,
-      instance: {
-        hostname: instance.hostname,
-      },
-      user: {
-        email: ctx.session.user.email,
-        name: ctx.session.user.name,
-        role: ctx.session.user.role,
-      },
+      instance,
+      user: ctx.session.user,
     },
     organizationId: ctx.organizationId,
     referenceId: instance.id,
     referenceType: "instance",
-    type: "instance_power_action_requested",
   })
 
   return { id: instance.id }

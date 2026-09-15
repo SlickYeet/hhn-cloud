@@ -93,21 +93,15 @@ export const auth = betterAuth({
       if (ctx.path.startsWith("/callback")) {
         const newSession = ctx.context.newSession
         if (newSession) {
-          await logActivity(db, {
+          await logActivity(db, "user_logged_in", {
             actorId: newSession.user.id,
+            actorSnapshot: newSession.user,
             actorType: "user",
             channel: "api",
-            metadata: {
-              user: {
-                email: newSession.user.email,
-                name: newSession.user.name,
-                role: newSession.user.role,
-              },
-            },
+            metadata: {},
             organizationId: newSession.session.activeOrganizationId ?? null,
             referenceId: newSession.user.id,
             referenceType: "user",
-            type: "user_logged_in",
           })
         }
       }
@@ -116,21 +110,15 @@ export const auth = betterAuth({
       if (ctx.path === "/sign-out") {
         const session = await getSessionFromCtx(ctx, { disableRefresh: true })
         if (session) {
-          await logActivity(db, {
+          await logActivity(db, "user_logged_out", {
             actorId: session.user.id,
+            actorSnapshot: session.user,
             actorType: "user",
             channel: "api",
-            metadata: {
-              user: {
-                email: session.user.email,
-                name: session.user.name,
-                role: session.user.role,
-              },
-            },
+            metadata: {},
             organizationId: session.session.activeOrganizationId,
             referenceId: session.user.id,
             referenceType: "user",
-            type: "user_logged_out",
           })
         }
       }
