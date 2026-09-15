@@ -135,15 +135,27 @@ function SortableRuleRow({
   } = useSortable({ id: rule.id })
   const isMobile = useIsMobile()
 
+  const [draftComment, setDraftComment] = React.useState(rule.comment ?? "")
   const [draftSourceType, setDraftSourceType] = React.useState(rule.sourceType)
   const [draftSourceCidr, setDraftSourceCidr] = React.useState(
     rule.sourceCidr ?? "",
   )
+  const [draftPortRange, setDraftPortRange] = React.useState(
+    rule.portRange ?? "",
+  )
+
+  React.useEffect(() => {
+    setDraftComment(rule.comment ?? "")
+  }, [rule.comment])
 
   React.useEffect(() => {
     setDraftSourceType(rule.sourceType)
     setDraftSourceCidr(rule.sourceCidr ?? "")
   }, [rule.sourceType, rule.sourceCidr])
+
+  React.useEffect(() => {
+    setDraftPortRange(rule.portRange ?? "")
+  }, [rule.portRange])
 
   function handleSourceTypeChange(
     next: InstanceFirewallRule["sourceType"] | null,
@@ -155,10 +167,24 @@ function SortableRuleRow({
     if (next !== "cidr") onChange({ sourceCidr: null, sourceType: next })
   }
 
+  function commitComment() {
+    const trimmed = draftComment.trim()
+    if (trimmed !== (rule.comment ?? "")) {
+      onChange({ comment: trimmed || null })
+    }
+  }
+
   function commitCidr() {
     const trimmed = draftSourceCidr.trim()
     if (draftSourceType === "cidr" && trimmed && trimmed !== rule.sourceCidr) {
       onChange({ sourceCidr: trimmed, sourceType: "cidr" })
+    }
+  }
+
+  function commitPortRange() {
+    const trimmed = draftPortRange.trim()
+    if (trimmed !== (rule.portRange ?? "")) {
+      onChange({ portRange: trimmed || null })
     }
   }
 
@@ -208,9 +234,16 @@ function SortableRuleRow({
         <div className="flex-1 space-y-3">
           <Input
             className="border-none bg-transparent text-foreground/70 placeholder:underline placeholder:underline-offset-5 focus-visible:ring-0"
-            onChange={(e) => onChange({ comment: e.target.value })}
+            onBlur={commitComment}
+            onChange={(e) => setDraftComment(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                commitComment()
+              }
+            }}
             placeholder="Add description"
-            value={rule.comment ?? ""}
+            value={draftComment}
           />
 
           <div className="flex flex-wrap items-center gap-3 pl-3">
@@ -339,11 +372,16 @@ function SortableRuleRow({
                 <Input
                   className="w-40 bg-card"
                   id="portRange"
-                  onChange={(e) =>
-                    onChange({ portRange: e.target.value || null })
-                  }
+                  onBlur={commitPortRange}
+                  onChange={(e) => setDraftPortRange(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault()
+                      commitPortRange()
+                    }
+                  }}
                   placeholder="80 or 8000-8080"
-                  value={rule.portRange ?? ""}
+                  value={draftPortRange}
                 />
               </div>
             )}
