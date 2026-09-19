@@ -1,37 +1,44 @@
 import { IconCheck, IconCopy } from "@tabler/icons-react"
 import { GlobeIcon } from "lucide-react"
-import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
+import { useRevealOnClick } from "@/hooks/use-reveal-on-click"
 import { cn } from "@/lib/utils"
 
-export function IPAddress({ ipAddress }: { ipAddress: string }) {
+interface IPAddressProps {
+  ipAddress: string
+  direction?: "ltr" | "rtl"
+  showGlobe?: boolean
+}
+
+export function IPAddress({
+  ipAddress,
+  direction = "ltr",
+  showGlobe = true,
+}: IPAddressProps) {
   const { isCopied, copyToClipboard } = useCopyToClipboard()
-
-  const [isRevealed, setIsRevealed] = React.useState(false)
-
-  function handleReveal() {
-    if (isRevealed) setIsRevealed(false)
-    else setIsRevealed(true)
-  }
-
-  const parsedIpAddress = isRevealed
-    ? ipAddress
-    : ipAddress.replace(/[a-zA-Z0-9]/g, "*")
+  const { isRevealed, handleReveal, getDisplayText } = useRevealOnClick()
 
   return (
     <div className="group/ipAddress flex items-center gap-2">
-      <GlobeIcon
-        className={cn(
-          "size-4 stroke-primary group-hover/ipAddress:hidden",
-          isCopied && "hidden",
-        )}
-      />
+      {showGlobe && (
+        <GlobeIcon
+          className={cn(
+            "size-4 stroke-primary group-hover/ipAddress:hidden",
+            isRevealed && "hidden",
+            isCopied && "hidden",
+            direction === "ltr" ? "order-1" : "order-2",
+          )}
+        />
+      )}
       <Button
         className={cn(
           "hidden w-4 group-hover/ipAddress:inline-flex",
+          !showGlobe && "inline-flex! text-muted-foreground",
+          isRevealed && "inline-flex",
           isCopied && "inline-flex",
+          direction === "ltr" ? "order-1" : "order-2",
         )}
         onClick={() => copyToClipboard(ipAddress)}
         onKeyDown={(e) => {
@@ -47,12 +54,15 @@ export function IPAddress({ ipAddress }: { ipAddress: string }) {
         <span className="sr-only">Copy to clipboard</span>
       </Button>
       <Button
-        className="px-0 active:not-aria-[haspopup]:translate-y-0"
+        className={cn(
+          "bg-transparent! px-0 active:not-aria-[haspopup]:translate-y-0",
+          direction === "ltr" ? "order-2" : "order-1",
+        )}
         onClick={handleReveal}
         size="sm"
         variant="ghost"
       >
-        <span className="font-mono">{parsedIpAddress}</span>
+        <span className="font-mono">{getDisplayText(ipAddress)}</span>
       </Button>
     </div>
   )
