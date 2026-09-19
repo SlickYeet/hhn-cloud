@@ -11,10 +11,22 @@ import {
   IconRefresh,
   IconTrash,
 } from "@tabler/icons-react"
-import { notFound } from "next/navigation"
+import { notFound, useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { Hint } from "@/components/hint"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -26,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Spinner } from "@/components/ui/spinner"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
 import {
@@ -51,6 +64,7 @@ const TRANSITIONAL_STATUSES: InstanceStatusEnum[] = [
 ]
 
 function InstanceActions({ instance }: { instance: Instance }) {
+  const router = useRouter()
   const utils = api.useUtils()
   const { copyToClipboard } = useCopyToClipboard()
 
@@ -122,6 +136,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
+      router.push("/dashboard/instance/list")
       await utils.instance.get.invalidate({ id: data.instanceId })
       await utils.activity.list.invalidate({
         instanceId: data.instanceId,
@@ -148,62 +163,104 @@ function InstanceActions({ instance }: { instance: Instance }) {
   }
 
   const isDeletable =
+    instance.status !== "provisioning" &&
     instance.status !== "pending_deletion" &&
     instance.status !== "deleting" &&
     instance.status !== "deleted"
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        Actions <IconChevronDown />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" sideOffset={6}>
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Power Actions</DropdownMenuLabel>
-          <DropdownMenuItem
-            disabled={isDisabled("start") || isTransitionalStatus}
-            onClick={() => startMutation.mutate({ id: instance.id })}
-          >
-            <IconPlayerPlayFilled /> Start
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={isDisabled("reboot") || isTransitionalStatus}
-            onClick={() => rebootMutation.mutate({ id: instance.id })}
-          >
-            <IconRefresh /> Restart
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={isDisabled("shutdown") || isTransitionalStatus}
-            onClick={() => shutdownMutation.mutate({ id: instance.id })}
-          >
-            <IconPower /> Shutdown
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
-            disabled={isDisabled("stop") || isTransitionalStatus}
-            onClick={() => stopMutation.mutate({ id: instance.id })}
-          >
-            <IconPlayerStopFilled />
-            <span>Stop</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Instance Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => copyToClipboard(instance.id)}>
-            <IconCopy /> Copy ID
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
-            disabled={!isDeletable}
-            onClick={() => deleteMutation.mutate({ id: instance.id })}
-          >
+    <AlertDialog>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button variant="outline" />}>
+          Actions <IconChevronDown />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={6}>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Power Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              disabled={isDisabled("start") || isTransitionalStatus}
+              onClick={() => startMutation.mutate({ id: instance.id })}
+            >
+              <IconPlayerPlayFilled /> Start
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isDisabled("reboot") || isTransitionalStatus}
+              onClick={() => rebootMutation.mutate({ id: instance.id })}
+            >
+              <IconRefresh /> Restart
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={isDisabled("shutdown") || isTransitionalStatus}
+              onClick={() => shutdownMutation.mutate({ id: instance.id })}
+            >
+              <IconPower /> Shutdown
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
+              disabled={isDisabled("stop") || isTransitionalStatus}
+              onClick={() => stopMutation.mutate({ id: instance.id })}
+            >
+              <IconPlayerStopFilled /> Stop
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Instance Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => copyToClipboard(instance.id)}>
+              <IconCopy /> Copy ID
+            </DropdownMenuItem>
+            <AlertDialogTrigger
+              nativeButton={false}
+              render={
+                <DropdownMenuItem
+                  className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
+                  disabled={!isDeletable}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
+                  onSelect={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
+                >
+                  <IconTrash /> Delete
+                </DropdownMenuItem>
+              }
+            />
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
             <IconTrash />
-            <span>Delete</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          </AlertDialogMedia>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. Confirming will permanently delete the
+            instance <strong>{instance.hostname}</strong> and all of its data.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel
+            disabled={deleteMutation.isPending}
+            variant="outline"
+          >
+            Keep Instance
+          </AlertDialogCancel>
+          <AlertDialogAction
+            disabled={!isDeletable || deleteMutation.isPending}
+            onClick={() => deleteMutation.mutate({ id: instance.id })}
+            variant="destructive"
+          >
+            {deleteMutation.isPending && <Spinner />}
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
