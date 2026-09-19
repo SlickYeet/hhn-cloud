@@ -267,7 +267,7 @@ export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
               size="sm"
               variant="link"
             >
-              <IconNetwork /> Add Floating IP
+              <IconNetwork /> Add IP Address
             </Button>
           </div>
           <ScrollBar orientation="horizontal" />
