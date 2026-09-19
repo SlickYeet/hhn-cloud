@@ -1,8 +1,20 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { Card, CardContent } from "@/components/ui/card"
 import { api, HydrateClient } from "@/lib/api/server"
 import { InstanceFirewallConfigurator } from "@/modules/dashboard/ui/instance-firewall/configurator"
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/dashboard/instance/[id]/firewall">): Promise<Metadata> {
+  const { id: instanceId } = await params
+  const instance = await api.instance.get({ id: instanceId })
+  if (!instance) return notFound()
+  return {
+    title: `${instance.hostname} Firewall`,
+  }
+}
 
 export default async function Page({
   params,

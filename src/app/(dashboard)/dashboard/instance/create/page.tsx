@@ -1,9 +1,15 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
 import { CreateInstanceForm } from "@/modules/dashboard/ui/create-instance-form"
 import { getSession } from "@/server/auth/utils"
+
+export const metadata: Metadata = {
+  description: "Create a new virtual machine",
+  title: "Create Instance",
+}
 
 export default async function Page() {
   const session = await getSession()

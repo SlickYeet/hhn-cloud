@@ -1,0 +1,13 @@
+import { createSelectSchema } from "drizzle-zod"
+import * as z from "zod"
+
+import { organization as organizationTable } from "@/server/db/schema"
+
+const organizationSchemaConstraints = {
+  createdAt: z.coerce.date().optional(),
+}
+
+export const selectOrganizationSchema = createSelectSchema(
+  organizationTable,
+  organizationSchemaConstraints,
+)

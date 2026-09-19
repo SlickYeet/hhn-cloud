@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
@@ -7,12 +8,21 @@ import { InstanceLocation } from "@/modules/dashboard/ui/instance-details/locati
 import { InstanceOptions } from "@/modules/dashboard/ui/instance-details/options"
 import { InstanceResources } from "@/modules/dashboard/ui/instance-details/resources"
 
+export async function generateMetadata({
+  params,
+}: PageProps<"/dashboard/instance/[id]">): Promise<Metadata> {
+  const { id: instanceId } = await params
+  const instance = await api.instance.get({ id: instanceId })
+  if (!instance) return notFound()
+  return {
+    title: `${instance.hostname} Overview`,
+  }
+}
+
 export default async function Page({
   params,
 }: PageProps<"/dashboard/instance/[id]">) {
   const { id: instanceId } = await params
-
-  if (!instanceId) return notFound()
 
   await api.activity.list.prefetchInfinite({
     instanceId,

@@ -45,7 +45,10 @@ const robotoMono = Roboto_Mono({
 
 export const metadata: Metadata = {
   description: APP_DESCRIPTION,
-  title: APP_NAME,
+  title: {
+    default: APP_NAME,
+    template: `%s | ${APP_NAME}`,
+  },
 }
 
 export default function RootLayout({

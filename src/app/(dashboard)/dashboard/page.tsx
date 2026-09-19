@@ -1,5 +1,5 @@
 import { IconKey } from "@tabler/icons-react"
-import { redirect } from "next/navigation"
+import type { Metadata } from "next"
 
 import { Button } from "@/components/ui/button"
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
@@ -10,7 +10,12 @@ import { CloudMap } from "@/modules/dashboard/ui/cloud-map"
 import { CreateSshKeyModal } from "@/modules/dashboard/ui/create-ssh-key-modal"
 import { InviteMember } from "@/modules/dashboard/ui/invite-member"
 import { OrgResources } from "@/modules/dashboard/ui/org-resources"
-import { getSession } from "@/server/auth/utils"
+import { requireSession } from "@/server/auth/utils"
+
+export async function generateMetadata(): Promise<Metadata> {
+  const org = await api.organization.get()
+  return { title: `Dashboard - ${org.name}` }
+}
 
 export const DASHBOARD_INFO_CARDS = [
   {
@@ -34,8 +39,7 @@ export const DASHBOARD_INFO_CARDS = [
 ]
 
 export default async function Page() {
-  const session = await getSession()
-  if (!session?.user) return redirect("/auth/sign-in")
+  await requireSession()
 
   await api.instance.count.prefetch()
   await api.sshKey.count.prefetch()

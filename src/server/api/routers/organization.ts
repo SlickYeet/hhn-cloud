@@ -1,12 +1,44 @@
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
+import { TRPCError } from "@trpc/server"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
+import { selectOrganizationSchema } from "@/schemas/organization"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { member as organizationMemberTable } from "@/server/db/schema"
 
 export const organizationRouter = createTRPCRouter({
+  get: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/organization/{id}",
+          summary: "Get an organization by ID",
+          tags: ["Organization"],
+        }),
+      ),
+    )
+    .input(z.object({ id: z.string().optional() }).optional())
+    .output(selectOrganizationSchema)
+    .query(async ({ ctx, input }) => {
+      const organizationId = input?.id || ctx.organizationId
+
+      const organization = await ctx.db.query.organization.findFirst({
+        where: (org, { eq }) => eq(org.id, organizationId),
+      })
+
+      if (!organization) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Organization with ID ${organizationId} not found`,
+        })
+      }
+
+      return organization
+    }),
+
   member: {
     count: protectedProcedure
       .meta(
