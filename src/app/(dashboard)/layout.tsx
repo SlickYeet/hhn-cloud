@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation"
-
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { DashboardHeader } from "@/modules/dashboard/layout/header"
 import { DashboardSidebar } from "@/modules/dashboard/layout/sidebar/sidebar"
-import { getSession } from "@/server/auth/utils"
+import { requireSession } from "@/server/auth/utils"
 
 export default async function Layout({ children }: LayoutProps<"/">) {
-  const session = await getSession()
-  if (!session?.user) return redirect("/auth/sign-in")
+  const session = await requireSession()
 
   return (
     <SidebarProvider>

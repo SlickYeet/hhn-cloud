@@ -1,10 +1,9 @@
 import type { Metadata } from "next"
-import { redirect } from "next/navigation"
 
 import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
 import { CreateInstanceForm } from "@/modules/dashboard/ui/create-instance-form"
-import { getSession } from "@/server/auth/utils"
+import { requireSession } from "@/server/auth/utils"
 
 export const metadata: Metadata = {
   description: "Create a new virtual machine",
@@ -12,8 +11,7 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const session = await getSession()
-  if (!session?.user) return redirect("/auth/sign-in")
+  await requireSession()
 
   await api.instance.list.prefetchInfinite({ limit: DEFAULT_PAGE_SIZE })
   await api.sshKey.list.prefetch()
