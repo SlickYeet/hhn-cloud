@@ -103,14 +103,15 @@ export function CreateSshKeyModal({
     publicKey: string,
     keyName: string,
   ) {
+    const slug = keyName.toLowerCase().replace(/\s/g, "_")
     const zip = new JSZip()
-    zip.file(`id_${keyName.toLowerCase().replace(/\s/g, "_")}.pem`, privateKey)
-    zip.file(`id_${keyName.toLowerCase().replace(/\s/g, "_")}.pub`, publicKey)
+    zip.file(`id_${slug}`, privateKey)
+    zip.file(`id_${slug}.pub`, publicKey)
     zip.generateAsync({ type: "blob" }).then((content: Blob) => {
       const url = URL.createObjectURL(content)
       const a = document.createElement("a")
       a.href = url
-      a.download = `id_${keyName.toLowerCase().replace(/\s/g, "_")}.zip`
+      a.download = `id_${slug}.zip`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

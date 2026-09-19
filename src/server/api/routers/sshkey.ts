@@ -1,5 +1,5 @@
 import type { KeyObject } from "node:crypto"
-import { createHash, generateKeyPair, randomUUID } from "node:crypto"
+import { generateKeyPair, randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
 import { TRPCError } from "@trpc/server"
@@ -11,12 +11,12 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
 import { logActivity } from "@/server/services/activity"
-
-function bufferToLengthEncoded(buf: Buffer): Buffer {
-  const len = Buffer.alloc(4)
-  len.writeUInt32BE(buf.length)
-  return Buffer.concat([len, buf])
-}
+import {
+  buildEd25519PublicKeyBlob,
+  buildOpenSSHEd25519PrivateKey,
+  fingerprintSSHPublicKey,
+  formatSSHPublicKey,
+} from "@/server/services/ssh-key"
 
 export const sshKeyRouter = createTRPCRouter({
   count: protectedProcedure
@@ -64,25 +64,25 @@ export const sshKeyRouter = createTRPCRouter({
         })
       })
 
-      const privateKeyPem = privateKey.export({ format: "pem", type: "pkcs8" })
+      const name = input.name.toLowerCase().replace(/\s/g, "_")
 
-      const jwk = publicKey.export({ format: "jwk" })
-      if (!jwk.x) throw new Error("Invalid JWK")
+      const jwkPub = publicKey.export({ format: "jwk" })
+      if (!jwkPub.x) throw new Error("Invalid JWK")
+      const pubKeyBuffer = Buffer.from(jwkPub.x, "base64url")
 
-      const pubKeyBuffer = Buffer.from(jwk.x, "base64url")
-      const sshKeyType = Buffer.from("ssh-ed25519")
-      const blob = Buffer.concat([
-        bufferToLengthEncoded(sshKeyType),
-        bufferToLengthEncoded(pubKeyBuffer),
-      ])
+      const blob = buildEd25519PublicKeyBlob(pubKeyBuffer)
+      const publicKeyString = formatSSHPublicKey(blob, name)
+      const fingerprint = fingerprintSSHPublicKey(blob)
 
-      const base64 = blob.toString("base64")
-      const publicKeyString = `ssh-ed25519 ${base64} ${input.name.toLowerCase().replace(/\s/g, "_")}`
+      const jwkPriv = privateKey.export({ format: "jwk" })
+      if (!jwkPriv.d) throw new Error("Invalid private JWK")
+      const privateKeySeed = Buffer.from(jwkPriv.d, "base64url")
 
-      const sha256 = createHash("sha256").update(blob).digest("base64")
-      const fingerprint = `SHA256:${sha256.replace(/=+$/, "")}`
-
-      const name = input.name.trim() || `SSH Key ${new Date().toISOString()}`
+      const privateKeyPem = buildOpenSSHEd25519PrivateKey(
+        pubKeyBuffer,
+        privateKeySeed,
+        name,
+      )
 
       try {
         const [sshKey] = await ctx.db
