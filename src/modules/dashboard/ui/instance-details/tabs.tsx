@@ -5,7 +5,23 @@ import { usePathname } from "next/navigation"
 
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { INSTANCE_DETAILS_TABS } from "@/constants/app"
+
+export const INSTANCE_DETAILS_TABS = [
+  { label: "Overview", value: "overview" },
+  { label: "Access", value: "access" },
+  // { label: "Graphs", value: "graphs" },
+  // { label: "Backups", value: "backups" },
+  // { label: "Snapshots", value: "snapshots" },
+  // { label: "Networking", value: "networking" },
+  { label: "Firewall", value: "firewall" },
+  // { label: "Volumes", value: "volumes" },
+  // { label: "Power", value: "power" },
+  // { label: "Rescue", value: "rescue" },
+  // { label: "ISO Images", value: "images" },
+  // { label: "Rescale", value: "rescale" },
+  // { label: "Rebuild", value: "rebuild" },
+  // { label: "Delete", value: "delete" },
+]
 
 export function InstanceDetailsTabs({ instanceId }: { instanceId: string }) {
   const pathname = usePathname()

@@ -2,15 +2,36 @@ import { IconKey } from "@tabler/icons-react"
 import { redirect } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
-import { DASHBOARD_INFO_CARDS, DEFAULT_PAGE_SIZE } from "@/constants/app"
+import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import { api, HydrateClient } from "@/lib/api/server"
-import { cn } from "@/lib/utils"
+import { cn, getApiVersion, getBaseUrl } from "@/lib/utils"
 import { ActivityCard } from "@/modules/dashboard/ui/activity"
 import { CloudMap } from "@/modules/dashboard/ui/cloud-map"
 import { CreateSshKeyModal } from "@/modules/dashboard/ui/create-ssh-key-modal"
 import { InviteMember } from "@/modules/dashboard/ui/invite-member"
 import { OrgResources } from "@/modules/dashboard/ui/org-resources"
 import { getSession } from "@/server/auth/utils"
+
+export const DASHBOARD_INFO_CARDS = [
+  {
+    description:
+      "Find all our services and features in one place. Enjoy services from media streaming to cloud computing, and everything in between, all in one convenient location.",
+    link: "https://hub.famlam.ca",
+    title: "HHN Hub",
+  },
+  {
+    description:
+      "Discover our extensive library of tutorials and guides. Learn how to create and manage virtual machines, configure networking, and optimize your cloud infrastructure.",
+    link: "https://wiki.famlam.ca",
+    title: "Wiki",
+  },
+  {
+    description:
+      "Explore our comprehensive REST API documentation. Access detailed documentation, review API versioning, and discover all the features available to virtualize your infrastructure.",
+    link: `${getBaseUrl()}/api/v${getApiVersion()}`,
+    title: "API Docs",
+  },
+]
 
 export default async function Page() {
   const session = await getSession()
