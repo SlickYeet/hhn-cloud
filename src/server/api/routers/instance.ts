@@ -18,6 +18,7 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
+import { selectSshKeySchema } from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import {
   firewallSyncStatusEnum,
@@ -421,6 +422,38 @@ export const instanceRouter = createTRPCRouter({
       )
 
       return instance
+    }),
+
+  getSshKeys: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/instance/{id}/ssh-keys",
+          summary: "Get all SSH keys associated with an instance",
+          tags: ["Instances"],
+        }),
+      ),
+    )
+    .input(z.object({ id: z.string() }))
+    .output(z.array(selectSshKeySchema))
+    .query(async ({ ctx, input }) => {
+      const instance = await getOrgInstanceOrThrow(
+        input.id,
+        ctx.organizationId,
+        ctx.session.session.userId,
+        { sshKeys: true },
+      )
+
+      const sshKeys = await ctx.db.query.sshKeyTable.findMany({
+        where: (key, { inArray }) =>
+          inArray(
+            key.id,
+            instance.sshKeys.map((instanceSshKey) => instanceSshKey.sshKeyId),
+          ),
+      })
+
+      return sshKeys
     }),
 
   list: protectedProcedure
