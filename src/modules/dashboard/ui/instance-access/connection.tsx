@@ -76,7 +76,11 @@ export function InstanceAccessConnection({
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button className="rounded-lg" render={<a href={sshUrl} />}>
+          <Button
+            className="rounded-lg"
+            nativeButton={false}
+            render={<a href={sshUrl} />}
+          >
             <IconTerminal className="size-4" />
             Open in SSH client
           </Button>
