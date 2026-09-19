@@ -46,6 +46,8 @@ export const activityTable = createTable("activity", (d) => ({
   type: d.text("type").$type<ActivityType>().notNull(),
 }))
 
+export const sshKeyTypeEnum = pgEnum("ssh_key_type", ["rsa", "ed25519"])
+
 export const sshKeyTable = createTable(
   "ssh_key",
   (d) => ({
@@ -59,6 +61,7 @@ export const sshKeyTable = createTable(
       .notNull()
       .references(() => organization.id, { onDelete: "cascade" }),
     publicKey: d.text("public_key").notNull(),
+    type: sshKeyTypeEnum("type").notNull(),
     updatedAt: d
       .timestamp("updated_at")
       .defaultNow()

@@ -93,6 +93,7 @@ export const sshKeyRouter = createTRPCRouter({
             name,
             organizationId: ctx.organizationId,
             publicKey: publicKeyString,
+            type: "ed25519",
             userId: ctx.session.session.userId,
           })
           .returning()
