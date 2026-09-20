@@ -68,7 +68,7 @@ export function ActivityCard({
           <Button
             className="px-0"
             nativeButton={false}
-            render={<Link href="/dashboard" />}
+            render={<Link href="/organization/activity" />}
             size="sm"
             variant="link"
           >
@@ -97,7 +97,7 @@ export function ActivityCard({
                       render={
                         <Link
                           // @ts-expect-error: cannot use typedRoutes here
-                          href={`/dashboard/activity/${item.id}`}
+                          href={`/organization/activity/${item.id}`}
                         />
                       }
                     >

@@ -11,6 +11,7 @@ import {
   IconUser,
   IconUsers,
 } from "@tabler/icons-react"
+import Link from "next/link"
 import { useTheme } from "next-themes"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -124,7 +125,7 @@ export function UserMenu({ user }: { user: User }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/organization" />}>
             <IconUsers />
             <span>Organization</span>
           </DropdownMenuItem>
