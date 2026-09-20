@@ -273,7 +273,7 @@ export function InstanceDetailsInfo({ instanceId }: { instanceId: string }) {
       refetchInterval(query) {
         const status = query.state.data?.status
         if (!status) return false
-        return TRANSITIONAL_STATUSES.includes(status) ? 2000 : 60000
+        return TRANSITIONAL_STATUSES.includes(status) ? 2000 : false
       },
     },
   )
