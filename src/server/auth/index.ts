@@ -140,6 +140,7 @@ export const auth = betterAuth({
                   : undefined,
             }
           },
+          overrideUserInfo: true,
           providerId: env.NEXT_PUBLIC_OAUTH_PROVIDER_ID,
           scopes: ["openid", "email", "profile"],
         },
