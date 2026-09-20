@@ -8,7 +8,7 @@ import { InstanceDetailsTabs } from "@/modules/dashboard/ui/instance-details/tab
 export default async function Layout({
   children,
   params,
-}: LayoutProps<"/dashboard/instance/[id]">) {
+}: LayoutProps<"/instance/[id]">) {
   const { id: instanceId } = await params
 
   if (!instanceId) return notFound()

@@ -7,7 +7,7 @@ import { InstanceAccessDetails } from "@/modules/dashboard/ui/instance-access/de
 
 export async function generateMetadata({
   params,
-}: PageProps<"/dashboard/instance/[id]/access">): Promise<Metadata> {
+}: PageProps<"/instance/[id]/access">): Promise<Metadata> {
   const { id: instanceId } = await params
   const instance = await api.instance.get({ id: instanceId })
   if (!instance) return notFound()
@@ -18,7 +18,7 @@ export async function generateMetadata({
 
 export default async function Page({
   params,
-}: PageProps<"/dashboard/instance/[id]/access">) {
+}: PageProps<"/instance/[id]/access">) {
   const { id: instanceId } = await params
 
   if (!instanceId) return notFound()

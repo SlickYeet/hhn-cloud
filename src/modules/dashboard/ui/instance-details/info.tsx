@@ -136,7 +136,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
-      router.push("/dashboard/instance/list")
+      router.push("/instance/list")
       await utils.instance.get.invalidate({ id: data.instanceId })
       await utils.activity.list.invalidate({
         instanceId: data.instanceId,

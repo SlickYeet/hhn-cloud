@@ -36,7 +36,7 @@ export function OrgResources() {
     {
       icon: IconServer2,
       isPending: isInstanceCountPending,
-      link: "/dashboard/instance/list",
+      link: "/instance/list",
       name: "Instances",
       value: instanceCount || 0,
     },

@@ -10,7 +10,7 @@ import { InstanceResources } from "@/modules/dashboard/ui/instance-details/resou
 
 export async function generateMetadata({
   params,
-}: PageProps<"/dashboard/instance/[id]">): Promise<Metadata> {
+}: PageProps<"/instance/[id]">): Promise<Metadata> {
   const { id: instanceId } = await params
   const instance = await api.instance.get({ id: instanceId })
   if (!instance) return notFound()
@@ -19,9 +19,7 @@ export async function generateMetadata({
   }
 }
 
-export default async function Page({
-  params,
-}: PageProps<"/dashboard/instance/[id]">) {
+export default async function Page({ params }: PageProps<"/instance/[id]">) {
   const { id: instanceId } = await params
 
   await api.activity.list.prefetchInfinite({

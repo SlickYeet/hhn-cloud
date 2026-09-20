@@ -694,7 +694,7 @@ function ReviewAndCreateForm({
         position: "top-center",
       })
       onReset()
-      router.push(`/dashboard/instance/${data.instanceId}`)
+      router.push(`/instance/${data.instanceId}`)
     },
   })
 

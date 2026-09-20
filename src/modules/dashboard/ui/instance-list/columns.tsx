@@ -52,7 +52,7 @@ function ActionsCell({ instance }: { instance: Instance }) {
           <DropdownMenuGroup>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              render={<Link href={`/dashboard/instance/${instance.id}`} />}
+              render={<Link href={`/instance/${instance.id}`} />}
             >
               <IconListDetails /> View
             </DropdownMenuItem>
@@ -105,7 +105,7 @@ export const columns = columnHelper.columns([
               )}
             />
           </Hint>
-          <Link href={`/dashboard/instance/${id}`}>
+          <Link href={`/instance/${id}`}>
             <p className="font-medium text-base text-primary">{hostname}</p>
             <p className="text-sm">
               <CpuIcon className="inline-block size-3.5 stroke-foreground/70" />{" "}

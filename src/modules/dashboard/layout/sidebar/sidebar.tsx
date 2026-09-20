@@ -42,7 +42,7 @@ export type NavItem = {
 }
 
 type NavItems = {
-  dashboard: NavItem[]
+  main: NavItem[]
   organization: NavItem[]
   footer: NavItem[]
 }
@@ -51,30 +51,6 @@ export function DashboardSidebar() {
   const pathname = usePathname()
 
   const NAV_ITEMS: NavItems = {
-    dashboard: [
-      {
-        href: "/dashboard",
-        icon: IconLayoutDashboard,
-        isActive: pathname === "/dashboard",
-        label: "Dashboard",
-      },
-      {
-        extra: {
-          render: (
-            <SidebarMenuAction
-              render={<Link href="/dashboard/instance/create" />}
-            >
-              <IconPlus />
-              <span className="sr-only">Create Instance</span>
-            </SidebarMenuAction>
-          ),
-        },
-        href: "/dashboard/instance/list",
-        icon: IconServer2,
-        isActive: pathname.startsWith("/dashboard/instance"),
-        label: "Instances",
-      },
-    ],
     footer: [
       {
         href: "https://hub.famlam.ca",
@@ -95,11 +71,33 @@ export function DashboardSidebar() {
         label: "API Docs",
       },
     ],
+    main: [
+      {
+        href: "/dashboard",
+        icon: IconLayoutDashboard,
+        isActive: pathname === "/dashboard",
+        label: "Dashboard",
+      },
+      {
+        extra: {
+          render: (
+            <SidebarMenuAction render={<Link href="/instance/create" />}>
+              <IconPlus />
+              <span className="sr-only">Create Instance</span>
+            </SidebarMenuAction>
+          ),
+        },
+        href: "/instance/list",
+        icon: IconServer2,
+        isActive: pathname.startsWith("/instance"),
+        label: "Instances",
+      },
+    ],
     organization: [
       {
-        href: "/dashboard/organization",
+        href: "/organization",
         icon: IconUsers,
-        isActive: pathname.startsWith("/dashboard/organization"),
+        isActive: pathname.startsWith("/organization"),
         label: "Organization",
       },
     ],
@@ -133,7 +131,7 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="group-data-[collapsible=icon]:overflow-y-auto">
-        <MainNav items={NAV_ITEMS.dashboard} />
+        <MainNav items={NAV_ITEMS.main} />
         <OrgNav items={NAV_ITEMS.organization} />
       </SidebarContent>
       <SidebarFooter className="px-0">

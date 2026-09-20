@@ -28,7 +28,7 @@ export function InstanceDetailsTabs({ instanceId }: { instanceId: string }) {
 
   const activeTab =
     INSTANCE_DETAILS_TABS.find((tab) =>
-      pathname?.startsWith(`/dashboard/instance/${instanceId}/${tab.value}`),
+      pathname?.startsWith(`/instance/${instanceId}/${tab.value}`),
     )?.value || "overview"
 
   return (
@@ -43,7 +43,7 @@ export function InstanceDetailsTabs({ instanceId }: { instanceId: string }) {
               render={
                 <Link
                   // @ts-expect-error: typedRoutes cannot be used here
-                  href={`/dashboard/instance/${instanceId}/${tab.value === "overview" ? "" : tab.value}`}
+                  href={`/instance/${instanceId}/${tab.value === "overview" ? "" : tab.value}`}
                 />
               }
               value={tab.value}

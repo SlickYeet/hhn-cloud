@@ -24,7 +24,7 @@ export default async function Page() {
         <Button
           className="ml-auto"
           nativeButton={false}
-          render={<Link href="/dashboard/instance/create" />}
+          render={<Link href="/instance/create" />}
           size="lg"
           variant="secondary"
         >
