@@ -6,7 +6,6 @@ import {
   IconCheck,
   IconCopy,
   IconDownload,
-  IconPlus,
   IconSparkles2,
 } from "@tabler/icons-react"
 import JSZip from "jszip"
@@ -161,7 +160,7 @@ export function GenerateSSHKeyModal({
           children
         ) : (
           <>
-            <IconPlus /> Add SSH Key
+            <IconSparkles2 /> Generate SSH Key
           </>
         )}
       </AlertDialogTrigger>
@@ -321,7 +320,7 @@ export function GenerateSSHKeyModal({
                       aria-invalid={fieldState.invalid}
                       disabled={isDisabled}
                       id={field.name}
-                      placeholder="My SSH Key"
+                      placeholder="e.g. work_laptop"
                       type="text"
                     />
                     <FieldDescription>
