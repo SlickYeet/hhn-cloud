@@ -7,9 +7,9 @@ import { api, HydrateClient } from "@/lib/api/server"
 import { cn, getApiVersion, getBaseUrl } from "@/lib/utils"
 import { ActivityCard } from "@/modules/dashboard/ui/activity"
 import { CloudMap } from "@/modules/dashboard/ui/cloud-map"
-import { GenerateSSHKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
 import { InviteMember } from "@/modules/dashboard/ui/invite-member"
 import { OrgResources } from "@/modules/dashboard/ui/org-resources"
+import { GenerateSSHKeyModal } from "@/modules/ssh-keys/ui/ssh-key-list/generate-ssh-key-modal"
 import { requireSession } from "@/server/auth/utils"
 
 export async function generateMetadata(): Promise<Metadata> {
