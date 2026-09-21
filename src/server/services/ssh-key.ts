@@ -1,4 +1,10 @@
-import { createHash, createPublicKey, randomBytes } from "node:crypto"
+import type { KeyObject } from "node:crypto"
+import {
+  createHash,
+  createPublicKey,
+  generateKeyPair,
+  randomBytes,
+} from "node:crypto"
 
 import type { SSHKeyTypeEnum } from "@/schemas/ssh-key"
 
@@ -19,8 +25,58 @@ export function buildEd25519PublicKeyBlob(publicKeyRaw: Buffer): Buffer {
   ])
 }
 
-export function formatSSHPublicKey(blob: Buffer, comment: string): string {
-  return `ssh-ed25519 ${blob.toString("base64")} ${comment}`
+function bufferToMpint(buf: Buffer): Buffer {
+  let b = buf
+  while (b.length > 1 && b[0] === 0x00) b = b.subarray(1)
+  if (b.length === 0) b = Buffer.from([0])
+  if ((b[0] ?? 0) & 0x80) {
+    b = Buffer.concat([Buffer.from([0x00]), b])
+  }
+  return bufferToLengthEncoded(b)
+}
+
+function padPrivateSection(section: Buffer): Buffer {
+  const blockSize = 8
+  const padLength = (blockSize - (section.length % blockSize)) % blockSize
+  const padding = Buffer.from(
+    Array.from({ length: padLength }, (_, idx) => idx + 1),
+  )
+  return Buffer.concat([section, padding])
+}
+
+function wrapOpenSSHPrivateKey(
+  publicKeyBlob: Buffer,
+  privateSection: Buffer,
+): string {
+  const MAGIC = Buffer.from("openssh-key-v1\0", "utf8")
+  const body = Buffer.concat([
+    MAGIC,
+    stringToLengthEncoded("none"),
+    stringToLengthEncoded("none"),
+    stringToLengthEncoded(""),
+    Buffer.from([0, 0, 0, 1]),
+    bufferToLengthEncoded(publicKeyBlob),
+    bufferToLengthEncoded(padPrivateSection(privateSection)),
+  ])
+  const base64Body = body.toString("base64")
+  const wrapped = base64Body.match(/.{1,70}/g)?.join("\n") ?? base64Body
+  return `-----BEGIN OPENSSH PRIVATE KEY-----\n${wrapped}\n-----END OPENSSH PRIVATE KEY-----\n`
+}
+
+export function buildRSAPublicKeyBlob(n: Buffer, e: Buffer): Buffer {
+  return Buffer.concat([
+    stringToLengthEncoded("ssh-rsa"),
+    bufferToMpint(e),
+    bufferToMpint(n),
+  ])
+}
+
+export function formatSSHPublicKey(
+  sshType: string,
+  blob: Buffer,
+  comment: string,
+): string {
+  return `${sshType} ${blob.toString("base64")} ${comment}`
 }
 
 export function fingerprintSSHPublicKey(blob: Buffer): string {
@@ -33,15 +89,8 @@ export function buildOpenSSHEd25519PrivateKey(
   privateKeySeed: Buffer,
   comment: string,
 ): string {
-  const MAGIC = Buffer.from("openssh-key-v1\0", "utf8")
-
-  const sshPublicKeyBlob = Buffer.concat([
-    stringToLengthEncoded("ssh-ed25519"),
-    bufferToLengthEncoded(publicKeyRaw),
-  ])
-
+  const sshPublicKeyBlob = buildEd25519PublicKeyBlob(publicKeyRaw)
   const ed25519PrivateKeyField = Buffer.concat([privateKeySeed, publicKeyRaw])
-
   const checkint = randomBytes(4)
 
   const privateSection = Buffer.concat([
@@ -53,46 +102,76 @@ export function buildOpenSSHEd25519PrivateKey(
     stringToLengthEncoded(comment),
   ])
 
-  const blockSize = 8
-  const padLength =
-    (blockSize - (privateSection.length % blockSize)) % blockSize
-  const padding = Buffer.from(
-    Array.from({ length: padLength }, (_, idx) => idx + 1),
-  )
-  const paddedPrivateSection = Buffer.concat([privateSection, padding])
+  return wrapOpenSSHPrivateKey(sshPublicKeyBlob, privateSection)
+}
 
-  const body = Buffer.concat([
-    MAGIC,
-    stringToLengthEncoded("none"),
-    stringToLengthEncoded("none"),
-    stringToLengthEncoded(""),
-    Buffer.from([0, 0, 0, 1]),
-    bufferToLengthEncoded(sshPublicKeyBlob),
-    bufferToLengthEncoded(paddedPrivateSection),
+export function buildOpenSSHRSAPrivateKey(
+  n: Buffer,
+  e: Buffer,
+  d: Buffer,
+  p: Buffer,
+  q: Buffer,
+  iqmp: Buffer,
+  comment: string,
+): string {
+  const sshPublicKeyBlob = buildRSAPublicKeyBlob(n, e)
+  const checkint = randomBytes(4)
+
+  const privateSection = Buffer.concat([
+    checkint,
+    checkint,
+    stringToLengthEncoded("ssh-rsa"),
+    bufferToMpint(n),
+    bufferToMpint(e),
+    bufferToMpint(d),
+    bufferToMpint(iqmp),
+    bufferToMpint(p),
+    bufferToMpint(q),
+    stringToLengthEncoded(comment),
   ])
 
-  const base64Body = body.toString("base64")
-  const wrapped = base64Body.match(/.{1,70}/g)?.join("\n") ?? base64Body
+  return wrapOpenSSHPrivateKey(sshPublicKeyBlob, privateSection)
+}
 
-  return `-----BEGIN OPENSSH PRIVATE KEY-----\n${wrapped}\n-----END OPENSSH PRIVATE KEY-----\n`
+export function generateEd25519KeyPair(): Promise<{
+  publicKey: KeyObject
+  privateKey: KeyObject
+}> {
+  return new Promise((resolve, reject) => {
+    generateKeyPair("ed25519", {}, (err, publicKey, privateKey) => {
+      if (err) reject(err)
+      else resolve({ privateKey, publicKey })
+    })
+  })
+}
+
+export function generateRsaKeyPair(
+  modulusLength: number,
+): Promise<{ publicKey: KeyObject; privateKey: KeyObject }> {
+  return new Promise((resolve, reject) => {
+    generateKeyPair("rsa", { modulusLength }, (err, publicKey, privateKey) => {
+      if (err) reject(err)
+      else resolve({ privateKey, publicKey })
+    })
+  })
 }
 
 class SSHWireReader {
   private offset = 0
-  constructor(private readonly buffer: Buffer) {}
+  constructor(private readonly buf: Buffer) {}
 
   private readUInt32(): number {
-    const val = this.buffer.readUInt32BE(this.offset)
+    const val = this.buf.readUInt32BE(this.offset)
     this.offset += 4
     return val
   }
 
   readLengthPrefixed(): Buffer {
     const len = this.readUInt32()
-    if (len < 0 || this.offset + len > this.buffer.length) {
+    if (len < 0 || this.offset + len > this.buf.length) {
       throw new Error("Truncated or invalid key data")
     }
-    const field = this.buffer.subarray(this.offset, this.offset + len)
+    const field = this.buf.subarray(this.offset, this.offset + len)
     this.offset += len
     return field
   }
@@ -102,7 +181,7 @@ class SSHWireReader {
   }
 
   get remaining(): number {
-    return this.buffer.length - this.offset
+    return this.buf.length - this.offset
   }
 }
 
@@ -217,4 +296,8 @@ export function parseSSHPublicKey(input: string): ParsedSSHPublicKey {
       : `${wireType} ${base64}`,
     type,
   }
+}
+
+export function formatSSHKeyName(name: string): string {
+  return name.toLowerCase().replace(/\s/g, "_")
 }
