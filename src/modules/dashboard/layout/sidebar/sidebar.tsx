@@ -3,17 +3,27 @@
 import type { Icon as IconType } from "@tabler/icons-react"
 import {
   IconApi,
+  IconChevronRight,
   IconHeartHandshake,
+  IconKey,
   IconLayoutDashboard,
   IconPlus,
   IconSearch,
   IconServer2,
+  IconSparkles2,
+  IconUpload,
   IconUsers,
 } from "@tabler/icons-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { Icons } from "@/components/icons"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -91,6 +101,32 @@ export function DashboardSidebar() {
         icon: IconServer2,
         isActive: pathname.startsWith("/instance"),
         label: "Instances",
+      },
+      {
+        extra: {
+          render: (
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<SidebarMenuAction />}>
+                <IconChevronRight />
+                <span className="sr-only">Create SSH Key</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="right">
+                <DropdownMenuItem
+                  render={<Link href="/ssh-keys?new=generate" />}
+                >
+                  <IconSparkles2 /> Generate New
+                </DropdownMenuItem>
+                <DropdownMenuItem render={<Link href="/ssh-keys?new=import" />}>
+                  <IconUpload /> Import Existing
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ),
+        },
+        href: "/ssh-keys",
+        icon: IconKey,
+        isActive: pathname.startsWith("/ssh-keys"),
+        label: "SSH Keys",
       },
     ],
     organization: [
