@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
 import { TRPCError } from "@trpc/server"
-import { count, eq } from "drizzle-orm"
+import { and, count, eq } from "drizzle-orm"
 import * as z from "zod"
 
 import {
@@ -48,6 +48,51 @@ export const sshKeyRouter = createTRPCRouter({
         .where(eq(sshKeyTable.organizationId, ctx.organizationId))
 
       return sshKeyCount.count
+    }),
+
+  delete: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "DELETE",
+          path: "/sshkey/{id}",
+          summary: "Delete an SSH key",
+          tags: ["SSH Keys"],
+        }),
+      ),
+    )
+    .input(z.object({ id: z.string().uuid() }))
+    .output(z.object({ success: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      const [sshKey] = await ctx.db
+        .delete(sshKeyTable)
+        .where(
+          and(
+            eq(sshKeyTable.id, input.id),
+            eq(sshKeyTable.organizationId, ctx.organizationId),
+          ),
+        )
+        .returning()
+
+      if (!sshKey) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "SSH key not found",
+        })
+      }
+
+      await logActivity(ctx.db, "ssh_key_deleted", {
+        actorId: ctx.session.session.userId,
+        actorSnapshot: ctx.session.user,
+        actorType: "user",
+        channel: "api",
+        metadata: {},
+        organizationId: ctx.organizationId,
+        referenceId: sshKey.id,
+        referenceType: "ssh_key",
+      })
+
+      return { success: true }
     }),
 
   generate: protectedProcedure
@@ -275,8 +320,6 @@ export const sshKeyRouter = createTRPCRouter({
         where: (sshKey, { eq }) =>
           eq(sshKey.organizationId, ctx.organizationId),
       })
-
-      if (!sshKeys || sshKeys.length === 0) return []
 
       return sshKeys
     }),
