@@ -23,8 +23,10 @@ export default async function Page({
 
   if (!instanceId) return notFound()
 
-  await api.firewallRule.list.prefetch({ instanceId })
-  await api.instance.firewallStatus.prefetch({ instanceId })
+  await Promise.all([
+    api.firewallRule.list.prefetch({ instanceId }),
+    api.instance.firewallStatus.prefetch({ instanceId }),
+  ])
 
   return (
     <HydrateClient>

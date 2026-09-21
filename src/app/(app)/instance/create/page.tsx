@@ -13,11 +13,13 @@ export const metadata: Metadata = {
 export default async function Page() {
   await requireSession()
 
-  await api.instance.list.prefetchInfinite({ limit: DEFAULT_PAGE_SIZE })
-  await api.sshKey.list.prefetch()
-  await api.operatingSystem.category.list.prefetch()
-  await api.operatingSystem.list.prefetch()
-  await api.resourcePlan.list.prefetch()
+  await Promise.all([
+    api.instance.list.prefetchInfinite({ limit: DEFAULT_PAGE_SIZE }),
+    api.sshKey.list.prefetch(),
+    api.operatingSystem.category.list.prefetch(),
+    api.operatingSystem.list.prefetch(),
+    api.resourcePlan.list.prefetch(),
+  ])
 
   return (
     <HydrateClient>

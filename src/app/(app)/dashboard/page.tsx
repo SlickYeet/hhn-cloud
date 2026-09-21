@@ -41,19 +41,21 @@ export const DASHBOARD_INFO_CARDS = [
 export default async function Page() {
   await requireSession()
 
-  await api.instance.count.prefetch()
-  await api.sshKey.count.prefetch()
-  await api.ipAllocation.count.prefetch()
-  await api.network.count.prefetch()
-  await api.firewallRule.count.prefetch()
-  // TODO
-  // await api.snapshot.count.prefetch()
-  // await api.apiKey.count.prefetch()
-  await api.organization.member.count.prefetch()
-  await api.activity.list.prefetchInfinite({
-    limit: DEFAULT_PAGE_SIZE,
-    scope: "organization",
-  })
+  await Promise.all([
+    api.instance.count.prefetch(),
+    api.sshKey.count.prefetch(),
+    api.ipAllocation.count.prefetch(),
+    api.network.count.prefetch(),
+    api.firewallRule.count.prefetch(),
+    // TODO
+    // api.snapshot.count.prefetch(),
+    // api.apiKey.count.prefetch(),
+    api.organization.member.count.prefetch(),
+    api.activity.list.prefetchInfinite({
+      limit: DEFAULT_PAGE_SIZE,
+      scope: "organization",
+    }),
+  ])
 
   return (
     <HydrateClient>
