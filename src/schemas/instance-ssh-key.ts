@@ -1,19 +1,19 @@
 import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
-import { instanceSshKeyTable } from "@/server/db/schema"
+import { instanceSSHKeyTable } from "@/server/db/schema"
 
-export type InstanceSshKey = typeof instanceSshKeyTable.$inferInsert
+export type InstanceSSHKey = typeof instanceSSHKeyTable.$inferInsert
 
-const instanceSshKeySchemaConstraints = {
+const instanceSSHKeySchemaConstraints = {
   createdAt: z.coerce.date().optional(),
 }
 
-export const insertInstanceSshKeySchema = createInsertSchema(
-  instanceSshKeyTable,
-  instanceSshKeySchemaConstraints,
+export const insertInstanceSSHKeySchema = createInsertSchema(
+  instanceSSHKeyTable,
+  instanceSSHKeySchemaConstraints,
 )
-export const selectInstanceSshKeySchema = createSelectSchema(
-  instanceSshKeyTable,
-  instanceSshKeySchemaConstraints,
+export const selectInstanceSSHKeySchema = createSelectSchema(
+  instanceSSHKeyTable,
+  instanceSSHKeySchemaConstraints,
 )

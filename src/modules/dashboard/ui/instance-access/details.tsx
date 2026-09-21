@@ -15,7 +15,7 @@ export function InstanceAccessDetails({ instanceId }: { instanceId: string }) {
 
   const { data: instance } = api.instance.get.useQuery({ id: instanceId })
 
-  const { data: instanceSSHKeys } = api.instance.getSshKeys.useQuery({
+  const { data: instanceSSHKeys } = api.instance.getSSHKeys.useQuery({
     id: instanceId,
   })
 

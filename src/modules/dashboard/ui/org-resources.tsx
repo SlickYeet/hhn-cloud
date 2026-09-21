@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils"
 export function OrgResources() {
   const { data: instanceCount, isLoading: isInstanceCountPending } =
     api.instance.count.useQuery()
-  const { data: sshKeyCount, isPending: isSshKeyCountPending } =
+  const { data: sshKeyCount, isPending: isSSHKeyCountPending } =
     api.sshKey.count.useQuery()
   const { data: primaryIpCount, isPending: isPrimaryIpCountPending } =
     api.ipAllocation.count.useQuery()
@@ -42,7 +42,7 @@ export function OrgResources() {
     },
     {
       icon: IconKey,
-      isPending: isSshKeyCountPending,
+      isPending: isSSHKeyCountPending,
       name: "SSH Keys",
       value: sshKeyCount || 0,
     },

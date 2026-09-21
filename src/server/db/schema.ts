@@ -320,7 +320,7 @@ export const instanceTable = createTable(
   ],
 )
 
-export const instanceSshKeyTable = createTable(
+export const instanceSSHKeyTable = createTable(
   "instance_ssh_key",
   (d) => ({
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
@@ -589,7 +589,7 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
 }))
 
 export const sshKeyRelations = relations(sshKeyTable, ({ one, many }) => ({
-  instanceSshKeys: many(instanceSshKeyTable),
+  instanceSSHKeys: many(instanceSSHKeyTable),
   organization: one(organization, {
     fields: [sshKeyTable.organizationId],
     references: [organization.id],
@@ -601,7 +601,7 @@ export const sshKeyRelations = relations(sshKeyTable, ({ one, many }) => ({
 }))
 
 export const instanceRelations = relations(instanceTable, ({ one, many }) => ({
-  instanceSshKeys: many(instanceSshKeyTable),
+  instanceSSHKeys: many(instanceSSHKeyTable),
   ipAllocations: many(ipAllocationTable),
   network: one(networkTable, {
     fields: [instanceTable.networkId],
@@ -619,18 +619,18 @@ export const instanceRelations = relations(instanceTable, ({ one, many }) => ({
     fields: [instanceTable.resourcePlanId],
     references: [resourcePlanTable.id],
   }),
-  sshKeys: many(instanceSshKeyTable),
+  sshKeys: many(instanceSSHKeyTable),
 }))
 
-export const instanceSshKeyRelations = relations(
-  instanceSshKeyTable,
+export const instanceSSHKeyRelations = relations(
+  instanceSSHKeyTable,
   ({ one }) => ({
     instance: one(instanceTable, {
-      fields: [instanceSshKeyTable.instanceId],
+      fields: [instanceSSHKeyTable.instanceId],
       references: [instanceTable.id],
     }),
     sshKey: one(sshKeyTable, {
-      fields: [instanceSshKeyTable.sshKeyId],
+      fields: [instanceSSHKeyTable.sshKeyId],
       references: [sshKeyTable.id],
     }),
   }),

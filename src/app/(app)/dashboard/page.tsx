@@ -7,7 +7,7 @@ import { api, HydrateClient } from "@/lib/api/server"
 import { cn, getApiVersion, getBaseUrl } from "@/lib/utils"
 import { ActivityCard } from "@/modules/dashboard/ui/activity"
 import { CloudMap } from "@/modules/dashboard/ui/cloud-map"
-import { GenerateSshKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
+import { GenerateSSHKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
 import { InviteMember } from "@/modules/dashboard/ui/invite-member"
 import { OrgResources } from "@/modules/dashboard/ui/org-resources"
 import { requireSession } from "@/server/auth/utils"
@@ -77,7 +77,7 @@ export default async function Page() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">
         <InviteMember />
-        <GenerateSshKeyModal
+        <GenerateSSHKeyModal
           render={
             <Button
               className="h-14 w-full justify-start gap-4 rounded-2xl bg-gray-50 pl-6 hover:bg-[color-mix(in_oklch,var(--color-gray-50),var(--foreground)_5%)] lg:h-16 dark:bg-card dark:hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_5%)]"
@@ -87,7 +87,7 @@ export default async function Page() {
         >
           <IconKey className="size-6 stroke-primary" />
           <span className="text-lg">Add SSH Key</span>
-        </GenerateSshKeyModal>
+        </GenerateSSHKeyModal>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-4">

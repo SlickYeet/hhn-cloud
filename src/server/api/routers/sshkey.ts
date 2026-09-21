@@ -6,7 +6,11 @@ import { TRPCError } from "@trpc/server"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
-import { generateSSHKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
+import {
+  generateSSHKeySchema,
+  insertSSHKeySchema,
+  selectSSHKeySchema,
+} from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
@@ -52,7 +56,7 @@ export const sshKeyRouter = createTRPCRouter({
       ),
     )
     .input(z.object(generateSSHKeySchema.shape))
-    .output(z.object({ ...selectSshKeySchema.shape, privateKey: z.string() }))
+    .output(z.object({ ...selectSSHKeySchema.shape, privateKey: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { privateKey, publicKey } = await new Promise<{
         publicKey: KeyObject
@@ -139,7 +143,7 @@ export const sshKeyRouter = createTRPCRouter({
         }),
       ),
     )
-    .output(z.array(selectSshKeySchema))
+    .output(z.array(selectSSHKeySchema))
     .query(async ({ ctx }) => {
       const sshKeys = await ctx.db.query.sshKeyTable.findMany({
         where: (sshKey, { eq }) =>

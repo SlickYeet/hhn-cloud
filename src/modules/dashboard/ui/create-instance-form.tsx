@@ -72,7 +72,7 @@ import {
   getResourcePlanIcon,
   getResourcePlanStatusColor,
 } from "@/lib/utils"
-import { GenerateSshKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
+import { GenerateSSHKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
 import { createInstanceSchema } from "@/schemas/instance"
 import type { SSHKey } from "@/schemas/ssh-key"
 
@@ -221,7 +221,7 @@ function BasicInfoForm({
                         </ComboboxList>
                         <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
                         <div className="flex items-center justify-start border-t p-2">
-                          <GenerateSshKeyModal className="bg-transparent dark:bg-transparent" />
+                          <GenerateSSHKeyModal className="bg-transparent dark:bg-transparent" />
                         </div>
                       </ComboboxContent>
                     </Combobox>
@@ -668,7 +668,7 @@ function ReviewAndCreateForm({
   const { data: operatingSystems } = api.operatingSystem.list.useQuery()
   const { data: resourcePlans } = api.resourcePlan.list.useQuery()
 
-  const selectedSshKey = sshKeys?.find(
+  const selectedSSHKey = sshKeys?.find(
     (key) => key.id === defaultValues?.basics?.sshKeyId,
   )
   const selectedOs = operatingSystems?.find(
@@ -762,7 +762,7 @@ function ReviewAndCreateForm({
               </div>
               <div className="flex min-w-0 flex-col text-left">
                 <span className="line-clamp-1 font-medium">
-                  {selectedSshKey?.name ?? "—"}
+                  {selectedSSHKey?.name ?? "—"}
                 </span>
                 <span className="text-muted-foreground text-xs">SSH key</span>
               </div>

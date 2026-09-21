@@ -2,7 +2,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
 import { env } from "@/env"
-import { selectInstanceSshKeySchema } from "@/schemas/instance-ssh-key"
+import { selectInstanceSSHKeySchema } from "@/schemas/instance-ssh-key"
 import { selectIpAllocationSchema } from "@/schemas/ip-allocation"
 import type { instanceStatusEnum } from "@/server/db/schema"
 import { instanceTable } from "@/server/db/schema"
@@ -31,7 +31,7 @@ export const selectInstanceSchema = createSelectSchema(
   instanceSchemaConstraints,
 ).extend({
   ipAllocations: z.array(selectIpAllocationSchema),
-  sshKeys: z.array(selectInstanceSshKeySchema),
+  sshKeys: z.array(selectInstanceSSHKeySchema),
 })
 
 export const createInstanceSchema = insertInstanceSchema

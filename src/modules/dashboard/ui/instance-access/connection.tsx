@@ -24,7 +24,7 @@ export function InstanceAccessConnection({
   const { handleReveal, getDisplayText } = useRevealOnClick()
 
   const { data: instance } = api.instance.get.useQuery({ id: instanceId })
-  const { data: instanceSSHKeys } = api.instance.getSshKeys.useQuery({
+  const { data: instanceSSHKeys } = api.instance.getSSHKeys.useQuery({
     id: instanceId,
   })
 

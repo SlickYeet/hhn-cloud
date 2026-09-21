@@ -8,17 +8,17 @@ const sshKeyConstraints = {
   updatedAt: z.coerce.date().optional(),
 }
 
-export const insertSshKeySchema = createInsertSchema(
+export const insertSSHKeySchema = createInsertSchema(
   sshKeyTable,
   sshKeyConstraints,
 )
-export const selectSshKeySchema = createSelectSchema(
+export const selectSSHKeySchema = createSelectSchema(
   sshKeyTable,
   sshKeyConstraints,
 )
 
-export const generateSSHKeySchema = insertSshKeySchema.pick({
+export const generateSSHKeySchema = insertSSHKeySchema.pick({
   name: true,
 })
 
-export type SSHKey = z.infer<typeof selectSshKeySchema>
+export type SSHKey = z.infer<typeof selectSSHKeySchema>

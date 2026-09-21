@@ -49,7 +49,7 @@ import { cn } from "@/lib/utils"
 import type { SSHKey } from "@/schemas/ssh-key"
 import { generateSSHKeySchema } from "@/schemas/ssh-key"
 
-export function GenerateSshKeyModal({
+export function GenerateSSHKeyModal({
   render,
   children,
   className,
@@ -62,7 +62,7 @@ export function GenerateSshKeyModal({
   const { isCopied, copyToClipboard } = useCopyToClipboard()
 
   const [downloaded, setDownloaded] = React.useState(false)
-  const [sshKey, setSshKey] = React.useState<
+  const [sshKey, setSSHKey] = React.useState<
     (SSHKey & { privateKey: string }) | null
   >(null)
 
@@ -81,7 +81,7 @@ export function GenerateSshKeyModal({
       })
     },
     async onSuccess(data) {
-      setSshKey(data)
+      setSSHKey(data)
       form.reset()
       await utils.sshKey.list.invalidate()
       await utils.activity.list.invalidate()
@@ -125,7 +125,7 @@ export function GenerateSshKeyModal({
     <AlertDialog
       onOpenChange={(open) => {
         if (!open) {
-          setSshKey(null)
+          setSSHKey(null)
           setDownloaded(false)
         }
       }}

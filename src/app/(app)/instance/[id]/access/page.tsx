@@ -23,7 +23,7 @@ export default async function Page({
 
   if (!instanceId) return notFound()
 
-  await api.instance.getSshKeys.prefetch({ id: instanceId })
+  await api.instance.getSSHKeys.prefetch({ id: instanceId })
 
   return (
     <HydrateClient>

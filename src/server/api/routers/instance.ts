@@ -18,11 +18,11 @@ import {
   insertInstanceSchema,
   selectInstanceSchema,
 } from "@/schemas/instance"
-import { selectSshKeySchema } from "@/schemas/ssh-key"
+import { selectSSHKeySchema } from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import {
   firewallSyncStatusEnum,
-  instanceSshKeyTable,
+  instanceSSHKeyTable,
   instanceTable,
   ipAllocationTable,
   sshKeyTable,
@@ -204,8 +204,8 @@ export const instanceRouter = createTRPCRouter({
           })
         }
 
-        const [instanceSshKey] = await tx
-          .insert(instanceSshKeyTable)
+        const [instanceSSHKey] = await tx
+          .insert(instanceSSHKeyTable)
           .values({
             id: randomUUID(),
             instanceId: newInstance.id,
@@ -213,7 +213,7 @@ export const instanceRouter = createTRPCRouter({
           })
           .returning()
 
-        if (!instanceSshKey) {
+        if (!instanceSSHKey) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to associate SSH key with instance",
@@ -424,7 +424,7 @@ export const instanceRouter = createTRPCRouter({
       return instance
     }),
 
-  getSshKeys: protectedProcedure
+  getSSHKeys: protectedProcedure
     .meta(
       toTRPCMeta(
         openapi({
@@ -436,7 +436,7 @@ export const instanceRouter = createTRPCRouter({
       ),
     )
     .input(z.object({ id: z.string() }))
-    .output(z.array(selectSshKeySchema))
+    .output(z.array(selectSSHKeySchema))
     .query(async ({ ctx, input }) => {
       const instance = await getOrgInstanceOrThrow(
         input.id,
@@ -449,7 +449,7 @@ export const instanceRouter = createTRPCRouter({
         where: (key, { inArray }) =>
           inArray(
             key.id,
-            instance.sshKeys.map((instanceSshKey) => instanceSshKey.sshKeyId),
+            instance.sshKeys.map((key) => key.sshKeyId),
           ),
       })
 
