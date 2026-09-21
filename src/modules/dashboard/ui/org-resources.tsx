@@ -43,6 +43,7 @@ export function OrgResources() {
     {
       icon: IconKey,
       isPending: isSSHKeyCountPending,
+      link: "/ssh-keys",
       name: "SSH Keys",
       value: sshKeyCount || 0,
     },
