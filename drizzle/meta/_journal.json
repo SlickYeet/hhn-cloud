@@ -190,6 +190,13 @@
       "when": 1789797294433,
       "tag": "0026_sad_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1789951643890,
+      "tag": "0027_red_magik",
+      "breakpoints": true
     }
   ]
 }

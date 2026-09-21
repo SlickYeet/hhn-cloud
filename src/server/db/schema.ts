@@ -51,8 +51,8 @@ export const sshKeyTypeEnum = pgEnum("ssh_key_type", ["rsa", "ed25519"])
 export const sshKeyTable = createTable(
   "ssh_key",
   (d) => ({
+    comment: d.text("comment"),
     createdAt: d.timestamp("created_at").defaultNow().notNull(),
-    description: d.text("description"),
     fingerprint: d.text("fingerprint").notNull(),
     id: d.text("id").primaryKey(),
     name: d.text("name").notNull(),
