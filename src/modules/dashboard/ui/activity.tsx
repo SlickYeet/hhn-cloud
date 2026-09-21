@@ -95,10 +95,7 @@ export function ActivityCard({
                       className="group/activity flex-row items-start @lg:px-4 px-1"
                       key={item.id}
                       render={
-                        <Link
-                          // @ts-expect-error: cannot use typedRoutes here
-                          href={`/organization/activity/${item.id}`}
-                        />
+                        <Link href={`/organization/activity/${item.id}`} />
                       }
                     >
                       <ItemMedia>
