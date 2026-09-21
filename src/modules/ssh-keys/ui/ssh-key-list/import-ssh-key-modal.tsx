@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { IconUpload } from "@tabler/icons-react"
-import * as React from "react"
+import type * as React from "react"
 import { Controller, useForm } from "react-hook-form"
 import type * as z from "zod"
 
@@ -30,16 +30,19 @@ import { cn } from "@/lib/utils"
 import { importSSHKeySchema } from "@/schemas/ssh-key"
 
 export function ImportSSHKeyModal({
+  onOpenChange,
+  open,
   render,
   children,
   className,
 }: {
+  onOpenChange: (open: boolean) => void
+  open: boolean
   render?: React.ReactElement
   children?: React.ReactNode
   className?: string
 }) {
   const utils = api.useUtils()
-  const [open, setOpen] = React.useState(false)
 
   const form = useForm<z.infer<typeof importSSHKeySchema>>({
     defaultValues: {
@@ -57,7 +60,7 @@ export function ImportSSHKeyModal({
     onSuccess: () => {
       void utils.sshKey.list.invalidate()
       form.reset()
-      setOpen(false)
+      handleOpenChange(false)
     },
   })
 
@@ -69,7 +72,7 @@ export function ImportSSHKeyModal({
   }
 
   function handleOpenChange(next: boolean) {
-    setOpen(next)
+    onOpenChange(next)
     if (!next) form.reset()
   }
 
@@ -212,7 +215,7 @@ export function ImportSSHKeyModal({
           <DialogFooter>
             <Button
               disabled={importKey.isPending}
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
               type="button"
               variant="outline"
             >

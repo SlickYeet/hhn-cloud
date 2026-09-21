@@ -56,10 +56,14 @@ import { generateSSHKeySchema } from "@/schemas/ssh-key"
 import { sshKeyTypeEnum } from "@/server/db/schema"
 
 export function GenerateSSHKeyModal({
+  onOpenChange,
+  open,
   render,
   children,
   className,
 }: {
+  onOpenChange?: (open: boolean) => void
+  open?: boolean
   render?: React.ReactElement
   children?: React.ReactNode
   className?: string
@@ -136,11 +140,13 @@ export function GenerateSSHKeyModal({
   return (
     <AlertDialog
       onOpenChange={(open) => {
+        onOpenChange?.(open)
         if (!open) {
           setSSHKey(null)
           setDownloaded(false)
         }
       }}
+      open={open}
     >
       <AlertDialogTrigger
         className={cn(className)}

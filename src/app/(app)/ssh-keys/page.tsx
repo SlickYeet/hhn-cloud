@@ -1,11 +1,22 @@
+import type { Metadata } from "next"
+
+import { api, HydrateClient } from "@/lib/api/server"
+import { SshKeysTable } from "@/modules/ssh-keys/ui/ssh-key-list/list"
+
+export const metadata: Metadata = {
+  description: "Manage your SSH keys",
+  title: "SSH Keys",
+}
+
 export default async function Page({ searchParams }: PageProps<"/ssh-keys">) {
-  const { new: newParam } = await searchParams
+  const { new: newParamValue } = await searchParams
+  const newParam = typeof newParamValue === "string" ? newParamValue : undefined
+
+  await api.sshKey.list.prefetch()
 
   return (
-    <div>
-      <h1>Page</h1>
-      {newParam === "generate" && <p>Generate new SSH key</p>}
-      {newParam === "import" && <p>Import existing SSH key</p>}
-    </div>
+    <HydrateClient>
+      <SshKeysTable new={newParam} />
+    </HydrateClient>
   )
 }
