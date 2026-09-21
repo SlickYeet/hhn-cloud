@@ -149,15 +149,20 @@ export const activityRegistry = {
     metadataSchema: z.object({}),
     render: () => "Updated instance",
   },
-  ssh_key_created: {
-    icon: IconKey,
-    metadataSchema: z.object({}),
-    render: () => "Created SSH key",
-  },
   ssh_key_deleted: {
     icon: IconKey,
     metadataSchema: z.object({}),
     render: () => "Deleted SSH key",
+  },
+  ssh_key_generated: {
+    icon: IconKey,
+    metadataSchema: z.object({}),
+    render: () => "Generated SSH key",
+  },
+  ssh_key_imported: {
+    icon: IconKey,
+    metadataSchema: z.object({}),
+    render: () => "Imported SSH key",
   },
   ssh_key_updated: {
     icon: IconKey,

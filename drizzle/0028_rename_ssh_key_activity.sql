@@ -1,0 +1,1 @@
+UPDATE "activity" SET "type" = 'ssh_key_generated' WHERE "type" = 'ssh_key_created';
