@@ -8,18 +8,20 @@ import * as z from "zod"
 
 import {
   generateSSHKeySchema,
-  insertSSHKeySchema,
+  importSSHKeySchema,
   selectSSHKeySchema,
 } from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
 import { logActivity } from "@/server/services/activity"
+import type { ParsedSSHPublicKey } from "@/server/services/ssh-key"
 import {
   buildEd25519PublicKeyBlob,
   buildOpenSSHEd25519PrivateKey,
   fingerprintSSHPublicKey,
   formatSSHPublicKey,
+  parseSSHPublicKey,
 } from "@/server/services/ssh-key"
 
 export const sshKeyRouter = createTRPCRouter({
@@ -125,6 +127,80 @@ export const sshKeyRouter = createTRPCRouter({
           })
         }
 
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal server error",
+        })
+      }
+    }),
+
+  import: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "POST",
+          path: "/sshkey/import",
+          summary: "Import an existing SSH key",
+          tags: ["SSH Keys"],
+        }),
+      ),
+    )
+    .input(z.object(importSSHKeySchema.shape))
+    .output(selectSSHKeySchema)
+    .mutation(async ({ ctx, input }) => {
+      const name = input.name.toLowerCase().replace(/\s/g, "_")
+
+      let parsed: ParsedSSHPublicKey
+      try {
+        parsed = parseSSHPublicKey(input.publicKey)
+      } catch (error) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            error instanceof Error ? error.message : "Invalid public key",
+        })
+      }
+
+      try {
+        const [sshKey] = await ctx.db
+          .insert(sshKeyTable)
+          .values({
+            comment: input.comment || parsed.comment || null,
+            fingerprint: parsed.fingerprint,
+            id: randomUUID(),
+            name,
+            organizationId: ctx.organizationId,
+            publicKey: parsed.publicKeyString,
+            type: parsed.type,
+            userId: ctx.session.session.userId,
+          })
+          .returning()
+
+        await logActivity(ctx.db, "ssh_key_imported", {
+          actorId: ctx.session.session.userId,
+          actorSnapshot: ctx.session.user,
+          actorType: "user",
+          channel: "api",
+          metadata: {},
+          organizationId: ctx.organizationId,
+          referenceId: sshKey.id,
+          referenceType: "ssh_key",
+        })
+
+        return sshKey
+      } catch (error) {
+        if (isUniqueConstraintError(error, "ssh_key_name_idx")) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "SSH key name already exists",
+          })
+        }
+        if (isUniqueConstraintError(error, "ssh_key_fingerprint_idx")) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "SSH key already exists",
+          })
+        }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Internal server error",
