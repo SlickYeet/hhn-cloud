@@ -204,6 +204,13 @@
       "when": 1789955354884,
       "tag": "0028_rename_ssh_key_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1789955525750,
+      "tag": "0029_lazy_rhodey",
+      "breakpoints": true
     }
   ]
 }

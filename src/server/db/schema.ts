@@ -76,6 +76,7 @@ export const sshKeyTable = createTable(
     index("ssh_key_organizationId_idx").on(t.organizationId),
     index("ssh_key_userId_idx").on(t.userId),
     uniqueIndex("ssh_key_name_idx").on(t.organizationId, t.name),
+    uniqueIndex("ssh_key_fingerprint_idx").on(t.organizationId, t.fingerprint),
   ],
 )
 

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "ssh_key_fingerprint_idx" ON "ssh_key" USING btree ("organization_id","fingerprint");
