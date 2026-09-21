@@ -99,8 +99,8 @@ export function GenerateSSHKeyModal({
     async onSuccess(data) {
       setSSHKey(data)
       form.reset()
-      await utils.sshKey.list.invalidate()
-      await utils.activity.list.invalidate()
+      void utils.sshKey.list.invalidate()
+      void utils.activity.list.invalidate()
     },
   })
 

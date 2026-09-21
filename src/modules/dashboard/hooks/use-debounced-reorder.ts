@@ -18,8 +18,8 @@ export function useDebouncedReorder(instanceId: string, delay: number = 400) {
   const reorder = api.firewallRule.reorder.useMutation({
     onMutate: () => ({ prevData: prevDataRef.current }),
     async onSettled() {
-      await utils.firewallRule.list.invalidate({ instanceId })
-      await utils.instance.firewallStatus.invalidate({ instanceId })
+      void utils.firewallRule.list.invalidate({ instanceId })
+      void utils.instance.firewallStatus.invalidate({ instanceId })
     },
     onError(error, _input, ctx) {
       if (ctx?.prevData) {
@@ -30,7 +30,7 @@ export function useDebouncedReorder(instanceId: string, delay: number = 400) {
   })
 
   return async (orderedRuleIds: string[]) => {
-    await utils.firewallRule.list.cancel({ instanceId })
+    void utils.firewallRule.list.cancel({ instanceId })
     const prevData = utils.firewallRule.list.getData({ instanceId })
     prevDataRef.current = prevData
 

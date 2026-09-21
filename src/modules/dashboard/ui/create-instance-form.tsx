@@ -704,7 +704,7 @@ function ReviewAndCreateForm({
       })
     },
     async onSuccess(data) {
-      await utils.instance.list.invalidate()
+      void utils.instance.list.invalidate()
       toast.success("Instance created successfully!", {
         position: "top-center",
       })

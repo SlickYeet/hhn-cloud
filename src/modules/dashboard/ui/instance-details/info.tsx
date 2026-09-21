@@ -76,8 +76,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
-      await utils.instance.get.invalidate({ id: data.id })
-      await utils.activity.list.invalidate({
+      void utils.instance.get.invalidate({ id: data.id })
+      void utils.activity.list.invalidate({
         instanceId: data.id,
         scope: "instance",
       })
@@ -91,8 +91,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
-      await utils.instance.get.invalidate({ id: data.id })
-      await utils.activity.list.invalidate({
+      void utils.instance.get.invalidate({ id: data.id })
+      void utils.activity.list.invalidate({
         instanceId: data.id,
         scope: "instance",
       })
@@ -106,8 +106,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
-      await utils.instance.get.invalidate({ id: data.id })
-      await utils.activity.list.invalidate({
+      void utils.instance.get.invalidate({ id: data.id })
+      void utils.activity.list.invalidate({
         instanceId: data.id,
         scope: "instance",
       })
@@ -121,8 +121,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
       })
     },
     async onSuccess(data) {
-      await utils.instance.get.invalidate({ id: data.id })
-      await utils.activity.list.invalidate({
+      void utils.instance.get.invalidate({ id: data.id })
+      void utils.activity.list.invalidate({
         instanceId: data.id,
         scope: "instance",
       })
@@ -137,8 +137,8 @@ function InstanceActions({ instance }: { instance: Instance }) {
     },
     async onSuccess(data) {
       router.push("/instance/list")
-      await utils.instance.get.invalidate({ id: data.instanceId })
-      await utils.activity.list.invalidate({
+      void utils.instance.get.invalidate({ id: data.instanceId })
+      void utils.activity.list.invalidate({
         instanceId: data.instanceId,
         scope: "instance",
       })

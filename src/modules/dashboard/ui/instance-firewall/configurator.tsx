@@ -67,7 +67,7 @@ function SyncStatusBadge({ instanceId }: { instanceId: string }) {
 
   const retry = api.firewallRule.retrySync.useMutation({
     async onSuccess() {
-      await utils.instance.firewallStatus.invalidate({ instanceId })
+      void utils.instance.firewallStatus.invalidate({ instanceId })
     },
   })
 
@@ -444,7 +444,7 @@ export function InstanceFirewallConfigurator({
   // biome-ignore assist/source/useSortedKeys: onMutate must appear before onError for TContext inference
   const update = api.firewallRule.update.useMutation({
     async onMutate(patch) {
-      await utils.firewallRule.list.cancel({ instanceId })
+      void utils.firewallRule.list.cancel({ instanceId })
       const prevData = utils.firewallRule.list.getData({ instanceId })
 
       utils.firewallRule.list.setData({ instanceId }, (old) =>
@@ -466,14 +466,14 @@ export function InstanceFirewallConfigurator({
       })
     },
     async onSettled() {
-      await utils.firewallRule.list.invalidate({ instanceId })
-      await utils.instance.firewallStatus.invalidate({ instanceId })
+      void utils.firewallRule.list.invalidate({ instanceId })
+      void utils.instance.firewallStatus.invalidate({ instanceId })
     },
   })
   // biome-ignore assist/source/useSortedKeys: onMutate must appear before onError for TContext inference
   const remove = api.firewallRule.delete.useMutation({
     async onMutate({ id }) {
-      await utils.firewallRule.list.cancel({ instanceId })
+      void utils.firewallRule.list.cancel({ instanceId })
       const prevData = utils.firewallRule.list.getData({ instanceId })
 
       utils.firewallRule.list.setData({ instanceId }, (old) =>
@@ -493,14 +493,14 @@ export function InstanceFirewallConfigurator({
       })
     },
     async onSettled() {
-      await utils.firewallRule.list.invalidate({ instanceId })
-      await utils.instance.firewallStatus.invalidate({ instanceId })
+      void utils.firewallRule.list.invalidate({ instanceId })
+      void utils.instance.firewallStatus.invalidate({ instanceId })
     },
   })
   // biome-ignore assist/source/useSortedKeys: onMutate must appear before onError for TContext inference
   const create = api.firewallRule.create.useMutation({
     async onMutate(input) {
-      await utils.firewallRule.list.cancel({ instanceId })
+      void utils.firewallRule.list.cancel({ instanceId })
       const prevData = utils.firewallRule.list.getData({ instanceId })
 
       const optimisticRule: InstanceFirewallRule = {
@@ -537,8 +537,8 @@ export function InstanceFirewallConfigurator({
       })
     },
     async onSettled() {
-      await utils.firewallRule.list.invalidate({ instanceId })
-      await utils.instance.firewallStatus.invalidate({ instanceId })
+      void utils.firewallRule.list.invalidate({ instanceId })
+      void utils.instance.firewallStatus.invalidate({ instanceId })
     },
   })
 
