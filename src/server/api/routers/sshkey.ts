@@ -57,7 +57,7 @@ export const sshKeyRouter = createTRPCRouter({
         }),
       ),
     )
-    .input(z.object(generateSSHKeySchema.shape))
+    .input(generateSSHKeySchema)
     .output(z.object({ ...selectSSHKeySchema.shape, privateKey: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { privateKey, publicKey } = await new Promise<{
@@ -145,7 +145,7 @@ export const sshKeyRouter = createTRPCRouter({
         }),
       ),
     )
-    .input(z.object(importSSHKeySchema.shape))
+    .input(importSSHKeySchema)
     .output(selectSSHKeySchema)
     .mutation(async ({ ctx, input }) => {
       const name = input.name.toLowerCase().replace(/\s/g, "_")

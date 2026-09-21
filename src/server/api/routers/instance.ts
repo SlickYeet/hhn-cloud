@@ -94,7 +94,7 @@ export const instanceRouter = createTRPCRouter({
         }),
       ),
     )
-    .input(z.object(createInstanceSchema.shape))
+    .input(createInstanceSchema)
     .output(
       z.object({
         instanceId: z.uuid(),
@@ -411,7 +411,7 @@ export const instanceRouter = createTRPCRouter({
       ),
     )
     .input(z.object({ id: z.string() }))
-    .output(z.object(selectInstanceSchema.shape))
+    .output(selectInstanceSchema)
     .query(async ({ ctx, input }) => {
       const instance = await getOrgInstanceOrThrow(
         input.id,
