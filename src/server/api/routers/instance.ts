@@ -62,8 +62,7 @@ export const instanceRouter = createTRPCRouter({
         openapi({
           method: "GET",
           path: "/instance/count",
-          summary:
-            "Count all instances for the active organization of the user",
+          summary: "Count all instances for the active organization",
           tags: ["Instances"],
         }),
       ),
@@ -460,11 +459,9 @@ export const instanceRouter = createTRPCRouter({
     .meta(
       toTRPCMeta(
         openapi({
-          description:
-            "List all instances for the active organization of the user. An organization ID can be provided to list instances for a specific organization.",
           method: "GET",
           path: "/instance/list",
-          summary: "List an organization's instances",
+          summary: "List all instances for the active organization",
           tags: ["Instances"],
         }),
       ),

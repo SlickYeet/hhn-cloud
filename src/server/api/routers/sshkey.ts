@@ -29,7 +29,7 @@ export const sshKeyRouter = createTRPCRouter({
         openapi({
           method: "GET",
           path: "/sshkey/count",
-          summary: "Count all SSH keys for the active organization of the user",
+          summary: "Count all SSH keys for the active organization",
           tags: ["SSH Keys"],
         }),
       ),

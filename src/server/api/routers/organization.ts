@@ -46,7 +46,7 @@ export const organizationRouter = createTRPCRouter({
           openapi({
             method: "GET",
             path: "/organization/member/count",
-            summary: "Count all members of the active organization of the user",
+            summary: "Count all members of the active organization",
             tags: ["Organization Members"],
           }),
         ),
