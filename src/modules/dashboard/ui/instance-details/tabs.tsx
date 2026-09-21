@@ -32,7 +32,7 @@ export function InstanceDetailsTabs({ instanceId }: { instanceId: string }) {
     )?.value || "overview"
 
   return (
-    <Tabs className="w-full" defaultValue={activeTab} suppressHydrationWarning>
+    <Tabs className="w-full" suppressHydrationWarning value={activeTab}>
       <ScrollArea>
         <TabsList className="mb-[0.05rem] gap-4 px-0" variant="line">
           {INSTANCE_DETAILS_TABS.map((tab) => (
