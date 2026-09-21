@@ -72,7 +72,7 @@ import {
   getResourcePlanIcon,
   getResourcePlanStatusColor,
 } from "@/lib/utils"
-import { CreateSshKeyModal } from "@/modules/dashboard/ui/create-ssh-key-modal"
+import { GenerateSshKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
 import { createInstanceSchema } from "@/schemas/instance"
 import type { SSHKey } from "@/schemas/ssh-key"
 
@@ -221,7 +221,7 @@ function BasicInfoForm({
                         </ComboboxList>
                         <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
                         <div className="flex items-center justify-start border-t p-2">
-                          <CreateSshKeyModal className="bg-transparent dark:bg-transparent" />
+                          <GenerateSshKeyModal className="bg-transparent dark:bg-transparent" />
                         </div>
                       </ComboboxContent>
                     </Combobox>

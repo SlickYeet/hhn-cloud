@@ -7,6 +7,7 @@ import {
   IconCopy,
   IconDownload,
   IconPlus,
+  IconSparkles2,
 } from "@tabler/icons-react"
 import JSZip from "jszip"
 import * as React from "react"
@@ -46,9 +47,9 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
 import type { SSHKey } from "@/schemas/ssh-key"
-import { createSshKeySchema } from "@/schemas/ssh-key"
+import { generateSSHKeySchema } from "@/schemas/ssh-key"
 
-export function CreateSshKeyModal({
+export function GenerateSshKeyModal({
   render,
   children,
   className,
@@ -65,14 +66,14 @@ export function CreateSshKeyModal({
     (SSHKey & { privateKey: string }) | null
   >(null)
 
-  const form = useForm<z.infer<typeof createSshKeySchema>>({
+  const form = useForm<z.infer<typeof generateSSHKeySchema>>({
     defaultValues: {
       name: "",
     },
-    resolver: zodResolver(createSshKeySchema),
+    resolver: zodResolver(generateSSHKeySchema),
   })
 
-  const createSshKey = api.sshKey.create.useMutation({
+  const generateSSHKey = api.sshKey.generate.useMutation({
     onError(error) {
       toast.error("Failed to create SSH key:", {
         description: error.message,
@@ -87,11 +88,11 @@ export function CreateSshKeyModal({
     },
   })
 
-  const isDisabled = form.formState.isSubmitting || createSshKey.isPending
+  const isDisabled = form.formState.isSubmitting || generateSSHKey.isPending
 
-  function onSubmit(data: z.infer<typeof createSshKeySchema>) {
+  function onSubmit(data: z.infer<typeof generateSSHKeySchema>) {
     if (isDisabled) return
-    createSshKey.mutate(data)
+    generateSSHKey.mutate(data)
   }
 
   function handleCopyPrivateKey() {
@@ -227,7 +228,7 @@ export function CreateSshKeyModal({
 
             <form
               className="space-y-4"
-              id="create-ssh-key-form"
+              id="generate-ssh-key-form"
               onSubmit={(e) => {
                 e.stopPropagation()
                 form.handleSubmit(onSubmit)(e)
@@ -265,11 +266,11 @@ export function CreateSshKeyModal({
               </AlertDialogCancel>
               <AlertDialogAction
                 disabled={isDisabled}
-                form="create-ssh-key-form"
+                form="generate-ssh-key-form"
                 type="submit"
               >
-                {createSshKey.isPending ? <Spinner /> : <IconPlus />}
-                Create
+                {generateSSHKey.isPending ? <Spinner /> : <IconSparkles2 />}
+                Generate
               </AlertDialogAction>
             </AlertDialogFooter>
           </>

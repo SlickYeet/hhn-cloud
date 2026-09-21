@@ -17,7 +17,7 @@ export const selectSshKeySchema = createSelectSchema(
   sshKeyConstraints,
 )
 
-export const createSshKeySchema = insertSshKeySchema.pick({
+export const generateSSHKeySchema = insertSshKeySchema.pick({
   name: true,
 })
 

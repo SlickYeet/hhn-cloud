@@ -6,7 +6,7 @@ import { TRPCError } from "@trpc/server"
 import { count, eq } from "drizzle-orm"
 import * as z from "zod"
 
-import { createSshKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
+import { generateSSHKeySchema, selectSshKeySchema } from "@/schemas/ssh-key"
 import { createTRPCRouter, protectedProcedure } from "@/server/api/init"
 import { sshKeyTable } from "@/server/db/schema"
 import { isUniqueConstraintError } from "@/server/db/utils"
@@ -40,18 +40,18 @@ export const sshKeyRouter = createTRPCRouter({
       return sshKeyCount.count
     }),
 
-  create: protectedProcedure
+  generate: protectedProcedure
     .meta(
       toTRPCMeta(
         openapi({
           method: "POST",
-          path: "/sshkey/create",
-          summary: "Create a new SSH key",
+          path: "/sshkey/generate",
+          summary: "Generate a new SSH key",
           tags: ["SSH Keys"],
         }),
       ),
     )
-    .input(z.object(createSshKeySchema.shape))
+    .input(z.object(generateSSHKeySchema.shape))
     .output(z.object({ ...selectSshKeySchema.shape, privateKey: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { privateKey, publicKey } = await new Promise<{
