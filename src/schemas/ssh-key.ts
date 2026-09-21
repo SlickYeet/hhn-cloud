@@ -22,7 +22,15 @@ export const selectSSHKeySchema = createSelectSchema(
 )
 
 export const generateSSHKeySchema = insertSSHKeySchema.pick({
+  comment: true,
   name: true,
+  type: true,
+})
+export const importSSHKeySchema = insertSSHKeySchema.pick({
+  comment: true,
+  name: true,
+  publicKey: true,
 })
 
 export type SSHKey = z.infer<typeof selectSSHKeySchema>
+export type SSHKeyTypeEnum = (typeof sshKeyTypeEnum.enumValues)[number]
