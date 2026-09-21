@@ -1,5 +1,4 @@
-import type { KeyObject } from "node:crypto"
-import { generateKeyPair, randomUUID } from "node:crypto"
+import { randomUUID } from "node:crypto"
 import { openapi } from "@orpc/openapi"
 import { toTRPCMeta } from "@orpc/trpc"
 import { TRPCError } from "@trpc/server"
@@ -19,8 +18,13 @@ import type { ParsedSSHPublicKey } from "@/server/services/ssh-key"
 import {
   buildEd25519PublicKeyBlob,
   buildOpenSSHEd25519PrivateKey,
+  buildOpenSSHRSAPrivateKey,
+  buildRSAPublicKeyBlob,
   fingerprintSSHPublicKey,
+  formatSSHKeyName,
   formatSSHPublicKey,
+  generateEd25519KeyPair,
+  generateRsaKeyPair,
   parseSSHPublicKey,
 } from "@/server/services/ssh-key"
 
@@ -60,46 +64,93 @@ export const sshKeyRouter = createTRPCRouter({
     .input(generateSSHKeySchema)
     .output(z.object({ ...selectSSHKeySchema.shape, privateKey: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { privateKey, publicKey } = await new Promise<{
-        publicKey: KeyObject
-        privateKey: KeyObject
-      }>((resolve, reject) => {
-        generateKeyPair("ed25519", {}, (err, publicKey, privateKey) => {
-          if (err) reject(err)
-          else resolve({ privateKey, publicKey })
-        })
-      })
+      const name = formatSSHKeyName(input.name)
 
-      const name = input.name.toLowerCase().replace(/\s/g, "_")
+      let publicKeyString: string
+      let fingerprint: string
+      let privateKeyPem: string
 
-      const jwkPub = publicKey.export({ format: "jwk" })
-      if (!jwkPub.x) throw new Error("Invalid JWK")
-      const pubKeyBuffer = Buffer.from(jwkPub.x, "base64url")
+      if (input.type === "ed25519") {
+        const { privateKey, publicKey } = await generateEd25519KeyPair()
 
-      const blob = buildEd25519PublicKeyBlob(pubKeyBuffer)
-      const publicKeyString = formatSSHPublicKey(blob, name)
-      const fingerprint = fingerprintSSHPublicKey(blob)
+        const jwkPub = publicKey.export({ format: "jwk" })
+        if (!jwkPub.x) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Invalid public JWK",
+          })
+        }
+        const pubKeyBuffer = Buffer.from(jwkPub.x, "base64url")
 
-      const jwkPriv = privateKey.export({ format: "jwk" })
-      if (!jwkPriv.d) throw new Error("Invalid private JWK")
-      const privateKeySeed = Buffer.from(jwkPriv.d, "base64url")
+        const blob = buildEd25519PublicKeyBlob(pubKeyBuffer)
+        publicKeyString = formatSSHPublicKey("ssh-ed25519", blob, name)
+        fingerprint = fingerprintSSHPublicKey(blob)
 
-      const privateKeyPem = buildOpenSSHEd25519PrivateKey(
-        pubKeyBuffer,
-        privateKeySeed,
-        name,
-      )
+        const jwkPriv = privateKey.export({ format: "jwk" })
+        if (!jwkPriv.d) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Invalid private JWK",
+          })
+        }
+        const privateKeySeed = Buffer.from(jwkPriv.d, "base64url")
+
+        privateKeyPem = buildOpenSSHEd25519PrivateKey(
+          pubKeyBuffer,
+          privateKeySeed,
+          name,
+        )
+      } else {
+        const { privateKey, publicKey } = await generateRsaKeyPair(4096)
+
+        const jwkPub = publicKey.export({ format: "jwk" })
+        if (!jwkPub.n || !jwkPub.e) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Invalid public JWK",
+          })
+        }
+        const nBuf = Buffer.from(jwkPub.n, "base64url")
+        const eBuf = Buffer.from(jwkPub.e, "base64url")
+
+        const blob = buildRSAPublicKeyBlob(nBuf, eBuf)
+        publicKeyString = formatSSHPublicKey("ssh-rsa", blob, name)
+        fingerprint = fingerprintSSHPublicKey(blob)
+
+        const jwkPriv = privateKey.export({ format: "jwk" })
+        if (!jwkPriv.d || !jwkPriv.p || !jwkPriv.q || !jwkPriv.qi) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Invalid private JWK",
+          })
+        }
+        const dBuf = Buffer.from(jwkPriv.d, "base64url")
+        const pBuf = Buffer.from(jwkPriv.p, "base64url")
+        const qBuf = Buffer.from(jwkPriv.q, "base64url")
+        const iqmpBuf = Buffer.from(jwkPriv.qi, "base64url")
+
+        privateKeyPem = buildOpenSSHRSAPrivateKey(
+          nBuf,
+          eBuf,
+          dBuf,
+          pBuf,
+          qBuf,
+          iqmpBuf,
+          name,
+        )
+      }
 
       try {
         const [sshKey] = await ctx.db
           .insert(sshKeyTable)
           .values({
+            comment: input.comment,
             fingerprint,
             id: randomUUID(),
             name,
             organizationId: ctx.organizationId,
             publicKey: publicKeyString,
-            type: "ed25519",
+            type: input.type,
             userId: ctx.session.session.userId,
           })
           .returning()
@@ -126,7 +177,6 @@ export const sshKeyRouter = createTRPCRouter({
             message: "SSH key name already exists",
           })
         }
-
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Internal server error",
@@ -148,7 +198,7 @@ export const sshKeyRouter = createTRPCRouter({
     .input(importSSHKeySchema)
     .output(selectSSHKeySchema)
     .mutation(async ({ ctx, input }) => {
-      const name = input.name.toLowerCase().replace(/\s/g, "_")
+      const name = formatSSHKeyName(input.name)
 
       let parsed: ParsedSSHPublicKey
       try {
