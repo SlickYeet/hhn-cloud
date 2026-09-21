@@ -11,7 +11,10 @@ import {
   IconRefreshAlert,
   IconServer,
   IconShieldCheck,
+  IconSparkles2,
+  IconUpload,
 } from "@tabler/icons-react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import * as React from "react"
 import { Controller, useForm } from "react-hook-form"
@@ -72,7 +75,6 @@ import {
   getResourcePlanIcon,
   getResourcePlanStatusColor,
 } from "@/lib/utils"
-import { GenerateSSHKeyModal } from "@/modules/dashboard/ui/generate-ssh-key-modal"
 import { createInstanceSchema } from "@/schemas/instance"
 import type { SSHKey } from "@/schemas/ssh-key"
 
@@ -221,7 +223,20 @@ function BasicInfoForm({
                         </ComboboxList>
                         <ComboboxEmpty>No SSH keys found.</ComboboxEmpty>
                         <div className="flex items-center justify-start border-t p-2">
-                          <GenerateSSHKeyModal className="bg-transparent dark:bg-transparent" />
+                          <Button
+                            nativeButton={false}
+                            render={<Link href="/ssh-keys?new=generate" />}
+                            variant="link"
+                          >
+                            <IconSparkles2 /> Generate SSH Key
+                          </Button>
+                          <Button
+                            nativeButton={false}
+                            render={<Link href="/ssh-keys?new=import" />}
+                            variant="link"
+                          >
+                            <IconUpload /> Import SSH Key
+                          </Button>
                         </div>
                       </ComboboxContent>
                     </Combobox>
