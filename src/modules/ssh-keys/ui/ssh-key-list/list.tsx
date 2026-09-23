@@ -58,8 +58,10 @@ import { GenerateSSHKeyModal } from "./generate-ssh-key-modal"
 import { ImportSSHKeyModal } from "./import-ssh-key-modal"
 
 export function SshKeysTable({ new: newParam }: { new?: string }) {
-  const [sshKeys] = api.sshKey.list.useSuspenseQuery()
   const router = useRouter()
+
+  const [sshKeys] = api.sshKey.list.useSuspenseQuery()
+
   const [openModal, setOpenModal] = React.useState<
     "generate" | "import" | null
   >(newParam === "generate" || newParam === "import" ? newParam : null)
@@ -75,32 +77,6 @@ export function SshKeysTable({ new: newParam }: { new?: string }) {
     })
   }, [newParam, router])
 
-  if (sshKeys.length === 0) {
-    return (
-      <Empty className="mt-4 rounded-2xl bg-card">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <IconKeyFilled className="size-6 text-muted-foreground" />
-          </EmptyMedia>
-          <EmptyTitle>No SSH keys yet</EmptyTitle>
-          <EmptyDescription className="text-muted-foreground text-sm">
-            Generate a new key or import one you already use.
-          </EmptyDescription>
-        </EmptyHeader>
-        <div className="flex gap-2">
-          <GenerateSSHKeyModal
-            onOpenChange={(open) => setOpenModal(open ? "generate" : null)}
-            open={openModal === "generate"}
-          />
-          <ImportSSHKeyModal
-            onOpenChange={(open) => setOpenModal(open ? "import" : null)}
-            open={openModal === "import"}
-          />
-        </div>
-      </Empty>
-    )
-  }
-
   return (
     <Card className="mt-4 space-y-4">
       <CardContent>
@@ -115,23 +91,37 @@ export function SshKeysTable({ new: newParam }: { new?: string }) {
           />
         </div>
 
-        <Table className="mt-4">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Fingerprint</TableHead>
-              <TableHead>Comment</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-10" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sshKeys.map((key) => (
-              <SshKeyRow key={key.id} sshKey={key} />
-            ))}
-          </TableBody>
-        </Table>
+        {sshKeys.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <IconKeyFilled className="size-6 text-muted-foreground" />
+              </EmptyMedia>
+              <EmptyTitle>No SSH keys yet</EmptyTitle>
+              <EmptyDescription className="text-muted-foreground text-sm">
+                Generate a new key or import one you already use.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Table className="mt-4">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Fingerprint</TableHead>
+                <TableHead>Comment</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="w-10" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sshKeys.map((key) => (
+                <SshKeyRow key={key.id} sshKey={key} />
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   )
