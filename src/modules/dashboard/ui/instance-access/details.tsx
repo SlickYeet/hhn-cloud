@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
-import { IPAddress } from "@/modules/dashboard/ui/parse-ip-addres"
+import { IPAddress } from "@/modules/dashboard/ui/ip-addres"
 
 export function InstanceAccessDetails({ instanceId }: { instanceId: string }) {
   const { isCopied, copyToClipboard } = useCopyToClipboard()

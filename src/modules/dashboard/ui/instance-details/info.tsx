@@ -46,7 +46,7 @@ import {
   getInstanceStatusAnimation,
   getInstanceStatusColor,
 } from "@/lib/utils"
-import { IPAddress } from "@/modules/dashboard/ui/parse-ip-addres"
+import { IPAddress } from "@/modules/dashboard/ui/ip-addres"
 import type {
   Instance,
   InstancePowerActionEnum,
