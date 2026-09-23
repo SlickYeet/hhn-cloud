@@ -27,6 +27,38 @@ const activityListInput = z.object({
 })
 
 export const activityRouter = createTRPCRouter({
+  get: protectedProcedure
+    .meta(
+      toTRPCMeta(
+        openapi({
+          method: "GET",
+          path: "/activity/{id}",
+          summary: "Get a single activity item by ID",
+          tags: ["Activity"],
+        }),
+      ),
+    )
+    .input(z.object({ id: z.uuid() }))
+    .output(selectActivitySchema)
+    .query(async ({ ctx, input }) => {
+      const activity = await ctx.db.query.activityTable.findFirst({
+        where: (activity, { eq }) =>
+          and(
+            eq(activity.id, input.id),
+            eq(activity.organizationId, ctx.organizationId),
+          ),
+      })
+
+      if (!activity) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Activity with ID ${input.id} not found`,
+        })
+      }
+
+      return activity
+    }),
+
   list: protectedProcedure
     .meta(
       toTRPCMeta(

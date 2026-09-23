@@ -28,11 +28,7 @@ import { DEFAULT_PAGE_SIZE } from "@/constants/app"
 import type { RouterInputs } from "@/lib/api/client"
 import { api } from "@/lib/api/client"
 import { cn } from "@/lib/utils"
-import {
-  activityRegistry,
-  parseActivityMetadata,
-  renderActivity,
-} from "@/schemas/activity"
+import { activityRegistry, renderActivity } from "@/schemas/activity"
 
 interface ActivityCardProps {
   scope: RouterInputs["activity"]["list"]["scope"]
@@ -85,11 +81,6 @@ export function ActivityCard({
                     activityRegistry[item.type as keyof typeof activityRegistry]
                       ?.icon
 
-                  const metadata = parseActivityMetadata(
-                    item.type,
-                    item.metadata,
-                  )
-
                   return (
                     <Item
                       className="group/activity flex-row items-start @lg:px-4 px-1"
@@ -117,10 +108,7 @@ export function ActivityCard({
                           </ItemTitle>
                         </Hint>
                         <ItemDescription className="line-clamp-2 text-xs capitalize">
-                          {item.referenceType}{" "}
-                          {metadata && "action" in metadata
-                            ? `(${metadata.action})`
-                            : ""}
+                          {item.referenceType}
                         </ItemDescription>
                       </ItemContent>
                       <ItemContent className="flex-none shrink-0">
