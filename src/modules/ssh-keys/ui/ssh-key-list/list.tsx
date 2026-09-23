@@ -196,7 +196,7 @@ function SshKeyRow({ sshKey }: { sshKey: SSHKey }) {
       <TableCell className="text-muted-foreground">
         {sshKey.comment ?? "—"}
       </TableCell>
-      <TableCell className="text-muted-foreground">
+      <TableCell className="text-muted-foreground" suppressHydrationWarning>
         {sshKey.createdAt
           ? formatDistanceToNowStrict(new Date(sshKey.createdAt), {
               addSuffix: true,
