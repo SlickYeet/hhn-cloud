@@ -57,7 +57,7 @@ import type { SSHKey } from "@/schemas/ssh-key"
 import { GenerateSSHKeyModal } from "./generate-ssh-key-modal"
 import { ImportSSHKeyModal } from "./import-ssh-key-modal"
 
-export function SshKeysTable({ new: newParam }: { new?: string }) {
+export function SshKeysList({ new: newParam }: { new?: string }) {
   const router = useRouter()
 
   const [sshKeys] = api.sshKey.list.useSuspenseQuery()

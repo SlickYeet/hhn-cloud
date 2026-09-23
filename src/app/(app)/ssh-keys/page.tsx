@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 import { api, HydrateClient } from "@/lib/api/server"
-import { SshKeysTable } from "@/modules/ssh-keys/ui/ssh-key-list/list"
+import { SshKeysList } from "@/modules/ssh-keys/ui/ssh-key-list/list"
 
 export const metadata: Metadata = {
   description: "Manage your SSH keys",
@@ -16,7 +16,7 @@ export default async function Page({ searchParams }: PageProps<"/ssh-keys">) {
 
   return (
     <HydrateClient>
-      <SshKeysTable new={newParam} />
+      <SshKeysList new={newParam} />
     </HydrateClient>
   )
 }
