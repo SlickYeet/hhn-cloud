@@ -44,7 +44,18 @@ const VALID_SOURCE_STATUS: Record<
   reboot: ["running"],
   shutdown: ["running"],
   start: ["stopped"],
-  stop: ["running"],
+  stop: [
+    "queued",
+    "provisioning",
+    "starting",
+    "running",
+    "stopping",
+    "restarting",
+    "pending_deletion",
+    "deleting",
+    "deleted",
+    "failed",
+  ],
 }
 const TRANSIENT_STATUS: Record<InstancePowerActionEnum, InstanceStatusEnum> = {
   reboot: "restarting",

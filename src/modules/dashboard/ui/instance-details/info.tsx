@@ -156,7 +156,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
       case "shutdown":
         return instance.status !== "running"
       case "stop":
-        return instance.status !== "running"
+        return instance.status === "stopped"
       default:
         return true
     }
@@ -197,7 +197,7 @@ function InstanceActions({ instance }: { instance: Instance }) {
             </DropdownMenuItem>
             <DropdownMenuItem
               className="text-destructive focus:bg-destructive/10 focus:text-destructive dark:focus:bg-destructive/20 *:[svg]:text-destructive"
-              disabled={isDisabled("stop") || isTransitionalStatus}
+              disabled={isDisabled("stop")}
               onClick={() => stopMutation.mutate({ id: instance.id })}
             >
               <IconPlayerStopFilled /> Stop
