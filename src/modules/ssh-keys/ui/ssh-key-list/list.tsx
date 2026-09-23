@@ -4,7 +4,9 @@ import {
   IconCopy,
   IconDots,
   IconKeyFilled,
+  IconSparkles2,
   IconTrash,
+  IconUpload,
 } from "@tabler/icons-react"
 import { formatDistanceToNowStrict } from "date-fns"
 import type { Route } from "next"
@@ -52,6 +54,7 @@ import {
 } from "@/components/ui/table"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { api } from "@/lib/api/client"
+import { cn } from "@/lib/utils"
 import type { SSHKey } from "@/schemas/ssh-key"
 
 import { GenerateSSHKeyModal } from "./generate-ssh-key-modal"
@@ -80,7 +83,12 @@ export function SshKeysList({ new: newParam }: { new?: string }) {
   return (
     <Card className="mt-4 space-y-4">
       <CardContent>
-        <div className="flex justify-end gap-2">
+        <div
+          className={cn(
+            "flex justify-end gap-2",
+            sshKeys.length === 0 && "invisible",
+          )}
+        >
           <ImportSSHKeyModal
             onOpenChange={(open) => setOpenModal(open ? "import" : null)}
             open={openModal === "import"}
@@ -102,6 +110,28 @@ export function SshKeysList({ new: newParam }: { new?: string }) {
                 Generate a new key or import one you already use.
               </EmptyDescription>
             </EmptyHeader>
+            <div className="flex justify-center gap-2">
+              <Button
+                className="hover:bg-transparent! hover:text-foreground! hover:no-underline"
+                disabled={openModal !== null}
+                onClick={() => setOpenModal("generate")}
+                size="sm"
+                type="button"
+                variant="link"
+              >
+                <IconSparkles2 /> Generate key
+              </Button>
+              <Button
+                className="hover:bg-transparent! hover:text-foreground! hover:no-underline"
+                disabled={openModal !== null}
+                onClick={() => setOpenModal("import")}
+                size="sm"
+                type="button"
+                variant="link"
+              >
+                <IconUpload /> Import key
+              </Button>
+            </div>
           </Empty>
         ) : (
           <Table className="mt-4">

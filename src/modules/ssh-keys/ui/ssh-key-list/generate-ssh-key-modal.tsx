@@ -166,7 +166,7 @@ export function GenerateSSHKeyModal({
           children
         ) : (
           <>
-            <IconSparkles2 /> Generate SSH Key
+            <IconSparkles2 /> Generate key
           </>
         )}
       </AlertDialogTrigger>
