@@ -37,6 +37,8 @@ export function InstanceAccessConnection({
   const connectionString = `ssh -i ~/.ssh/id_${keyName} cloud-user@${ipAddress}`
   const sshUrl = `ssh://cloud-user@${ipAddress}`
 
+  const isDisabled = instance.status !== "running" || !instanceSSHKeys?.length
+
   return (
     <Card className="overflow-hidden">
       <CardHeader>
@@ -78,11 +80,17 @@ export function InstanceAccessConnection({
         <div className="flex flex-wrap items-center gap-3">
           <Button
             className="rounded-lg"
-            nativeButton={false}
-            render={<a href={sshUrl} />}
+            disabled={isDisabled}
+            nativeButton={isDisabled}
+            render={
+              isDisabled ? undefined : (
+                <a href={sshUrl} rel="noopener noreferrer" target="_blank">
+                  <span className="sr-only">Open in SSH client</span>
+                </a>
+              )
+            }
           >
-            <IconTerminal className="size-4" />
-            Open in SSH client
+            <IconTerminal /> Open in SSH client
           </Button>
           <span className="text-muted-foreground text-xs">
             Opens your system&apos;s default client, if one is registered
