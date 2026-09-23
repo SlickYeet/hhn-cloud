@@ -60,7 +60,7 @@ export function ActivityCard({
   return (
     <Card className={cn("@container pb-2", className)}>
       <CardContent className="flex flex-1 flex-col overflow-hidden">
-        <CardHeader className="mb-4 flex items-center justify-between gap-2 @md:px-4 px-0">
+        <CardHeader className="mb-4 flex items-center justify-between gap-2 px-0">
           <CardTitle className="flex items-center gap-2">
             <IconBell className="size-5 stroke-primary" />
             <p className="text-lg uppercase">Activity</p>
