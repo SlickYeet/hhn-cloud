@@ -5,6 +5,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 import * as z from "zod"
 
 import { selectInstanceFirewallRuleSchema } from "@/schemas/firewall-rule"
+import type { InstancePowerActionEnum } from "@/schemas/instance"
 import {
   instancePowerActionEnum,
   selectInstanceSchema,
@@ -35,6 +36,21 @@ function activityType<T extends z.ZodType>(
   config: ActivityTypeConfig<T>,
 ): ActivityTypeConfig<T> {
   return config
+}
+
+function powerActionActivityLabel(action: InstancePowerActionEnum) {
+  switch (action) {
+    case "reboot":
+      return "Rebooted instance"
+    case "shutdown":
+      return "Shutdown instance"
+    case "start":
+      return "Started instance"
+    case "stop":
+      return "Stopped instance"
+    default:
+      return "Performed power action"
+  }
 }
 
 export const activityRegistry = {
@@ -82,7 +98,9 @@ export const activityRegistry = {
   },
   instance_created: {
     icon: IconServer2,
-    metadataSchema: z.object({}),
+    metadataSchema: z.object({
+      instance: activityInstanceSchema,
+    }),
     render: () => "Created instance",
   },
   instance_deleted: {
@@ -105,14 +123,6 @@ export const activityRegistry = {
     }),
     render: () => "Requested instance deletion",
   },
-  instance_power_action_completed: activityType({
-    icon: IconServer2,
-    metadataSchema: z.object({
-      action: instancePowerActionEnum,
-      instance: activityInstanceSchema,
-    }),
-    render: (m) => `Completed instance ${m.action}`,
-  }),
   instance_power_action_failed: {
     icon: IconServer2,
     metadataSchema: z.object({
@@ -127,15 +137,8 @@ export const activityRegistry = {
       action: instancePowerActionEnum,
       instance: activityInstanceSchema,
     }),
-    render: (m) => `Requested instance ${m.action}`,
+    render: (m) => powerActionActivityLabel(m.action),
   }),
-  instance_provision_requested: {
-    icon: IconServer2,
-    metadataSchema: z.object({
-      instance: activityInstanceSchema,
-    }),
-    render: () => "Requested instance provisioning",
-  },
   instance_provisioning_failed: {
     icon: IconServer2,
     metadataSchema: z.object({

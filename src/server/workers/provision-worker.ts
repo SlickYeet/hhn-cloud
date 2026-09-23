@@ -99,15 +99,6 @@ provisionWorker.on("completed", async (job) => {
     .returning()
 
   if (!instance) return
-
-  await logActivity(db, "instance_created", {
-    actorType: "system",
-    channel: "worker",
-    metadata: {},
-    organizationId: instance.organizationId,
-    referenceId: instance.id,
-    referenceType: "instance",
-  })
 })
 
 provisionWorker.on("failed", async (job, error) => {

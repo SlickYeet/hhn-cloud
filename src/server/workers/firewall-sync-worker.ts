@@ -99,15 +99,6 @@ firewallSyncWorker.on("completed", async (job) => {
     .returning()
 
   if (!instance) return
-
-  await logActivity(db, "firewall_sync_completed", {
-    actorType: "system",
-    channel: "worker",
-    metadata: {},
-    organizationId: instance.organizationId,
-    referenceId: instance.id,
-    referenceType: "instance",
-  })
 })
 
 firewallSyncWorker.on("failed", async (job, error) => {

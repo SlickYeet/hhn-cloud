@@ -109,18 +109,6 @@ powerActionWorker.on("completed", async (job) => {
     .update(instanceTable)
     .set({ status: currentStatus })
     .where(eq(instanceTable.id, instance.id))
-
-  await logActivity(db, "instance_power_action_completed", {
-    actorType: "system",
-    channel: "worker",
-    metadata: {
-      action: job.data.action,
-      instance,
-    },
-    organizationId: instance.organizationId,
-    referenceId: instance.id,
-    referenceType: "instance",
-  })
 })
 
 powerActionWorker.on("failed", async (job, err) => {

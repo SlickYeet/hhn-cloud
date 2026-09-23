@@ -247,7 +247,7 @@ export const instanceRouter = createTRPCRouter({
         })
       }
 
-      await logActivity(ctx.db, "instance_provision_requested", {
+      await logActivity(ctx.db, "instance_created", {
         actorId: ctx.session.session.userId,
         actorSnapshot: ctx.session.user,
         actorType: "user",
