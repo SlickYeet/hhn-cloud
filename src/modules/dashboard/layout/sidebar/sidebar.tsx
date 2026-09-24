@@ -11,6 +11,7 @@ import {
   IconSearch,
   IconServer2,
   IconSparkles2,
+  IconTimeline,
   IconUpload,
   IconUsers,
 } from "@tabler/icons-react"
@@ -73,6 +74,12 @@ export function DashboardSidebar() {
         icon: IconSearch,
         isActive: false,
         label: "Wiki",
+      },
+      {
+        href: `${getBaseUrl()}/roadmap`,
+        icon: IconTimeline,
+        isActive: pathname === "/roadmap",
+        label: "Roadmap",
       },
       {
         href: `${getBaseUrl()}/api/v${getApiVersion()}`,
