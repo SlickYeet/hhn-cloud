@@ -90,7 +90,7 @@ export default function Page() {
         </Link>
         <ThemeToggle />
       </header>
-      <main className="mx-auto grid max-w-360 overflow-hidden px-4 pt-4">
+      <main className="mx-auto grid max-w-360 grid-rows-[auto_minmax(0,1fr)] overflow-hidden px-4 pt-4">
         <div className="mb-8 text-left">
           <h1 className="mb-2 font-bold text-4xl tracking-tight">Roadmap</h1>
           <p className="text-muted-foreground">
