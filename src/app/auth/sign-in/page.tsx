@@ -1,13 +1,13 @@
 "use client"
 
-import { IconLogin2, IconMoonStars, IconSun } from "@tabler/icons-react"
+import { IconLogin2 } from "@tabler/icons-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
 import * as React from "react"
 
 import { Icons } from "@/components/icons"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { APP_DESCRIPTION, APP_NAME } from "@/constants/app"
@@ -16,7 +16,6 @@ import { authClient } from "@/lib/auth/client"
 
 export default function Page() {
   const router = useRouter()
-  const { theme, setTheme } = useTheme()
   const { data: session } = authClient.useSession()
   if (session?.user) router.push("/")
 
@@ -58,7 +57,7 @@ export default function Page() {
   }
 
   return (
-    <main className="size-full">
+    <div className="size-full">
       <div className="group/backdrop relative isolate flex min-h-svh flex-col overflow-hidden bg-background">
         <div className="pointer-events-none absolute inset-0 -z-30 scale-105">
           <Image
@@ -113,15 +112,7 @@ export default function Page() {
               {APP_NAME}
             </span>
           </Link>
-          <Button
-            className="relative bg-accent hover:bg-accent/80 dark:bg-accent dark:hover:bg-accent/80"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            size="icon-sm"
-            variant="outline"
-          >
-            <IconMoonStars className="scale-100 dark:scale-0" />
-            <IconSun className="absolute scale-0 dark:scale-100" />
-          </Button>
+          <ThemeToggle />
         </header>
         <main className="relative z-10 flex flex-1 items-center justify-center px-4 pt-2 pb-14 sm:px-6">
           <div className="w-full max-w-md rounded-2xl border bg-linear-to-b bg-size-[100%_101%] from-primary/10 to-50% to-card/50 shadow-2xl backdrop-blur-2xl lg:max-w-lg dark:from-primary/15">
@@ -145,6 +136,6 @@ export default function Page() {
           </div>
         </main>
       </div>
-    </main>
+    </div>
   )
 }
