@@ -101,7 +101,7 @@ export function ImportSSHKeyModal({
         )}
       </ResponsiveDialogTrigger>
 
-      <ResponsiveDialogContent>
+      <ResponsiveDialogContent size="lg">
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Import SSH key</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>
