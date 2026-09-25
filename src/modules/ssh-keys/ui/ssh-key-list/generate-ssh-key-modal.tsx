@@ -145,6 +145,7 @@ export function GenerateSSHKeyModal({
         }
       }}
       open={open}
+      variant="alert"
     >
       <ResponsiveDialogTrigger
         className={cn(className)}
@@ -168,7 +169,7 @@ export function GenerateSSHKeyModal({
           </>
         )}
       </ResponsiveDialogTrigger>
-      <ResponsiveDialogContent size="lg">
+      <ResponsiveDialogContent size="xl">
         {sshKey ? (
           <>
             <ResponsiveDialogHeader>
