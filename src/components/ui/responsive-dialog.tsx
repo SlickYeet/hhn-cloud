@@ -3,6 +3,18 @@
 import * as React from "react"
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -22,12 +34,17 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer"
+import { useControllableState } from "@/hooks/use-controllable"
 import type { Breakpoint } from "@/hooks/use-media-query"
 import { useIsBreakpoint } from "@/hooks/use-media-query"
 import { cn } from "@/lib/utils"
 
+type Variant = "default" | "alert"
+
 interface ResponsiveDialogContextValue {
   isMobile: boolean
+  variant: Variant
+  close: () => void
 }
 
 const ResponsiveDialogContext =
@@ -50,39 +67,74 @@ interface ResponsiveDialogProps
       "showSwipeHandle" | "snapPoints" | "swipeDirection"
     > {
   children: React.ReactNode
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   breakpoint?: Breakpoint | number
+  variant?: Variant
 }
 
 function ResponsiveDialog({
   breakpoint = "md",
-  showSwipeHandle,
-  snapPoints,
+  variant = "default",
   swipeDirection,
+  snapPoints,
+  showSwipeHandle,
   children,
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
   ...props
 }: ResponsiveDialogProps) {
   const isMobile = useIsBreakpoint(breakpoint)
-  const Root = (isMobile ? Drawer : Dialog) as React.ElementType
+  const [open, setOpen] = useControllableState({
+    defaultProp: defaultOpen,
+    onChange: onOpenChange,
+    prop: openProp,
+  })
+  const close = React.useCallback(() => setOpen(false), [setOpen])
 
-  const rootProps = isMobile
-    ? { ...props, showSwipeHandle, snapPoints, swipeDirection }
-    : props
+  const Root = (
+    isMobile ? Drawer : variant === "alert" ? AlertDialog : Dialog
+  ) as React.ElementType
+
+  const mobileProps = isMobile
+    ? {
+        showSwipeHandle,
+        snapPoints,
+        swipeDirection,
+        ...(variant === "alert" ? { disablePointerDismissal: true } : {}),
+      }
+    : {}
 
   return (
-    <ResponsiveDialogContext.Provider value={{ isMobile }}>
-      <Root data-slot="responsive-dialog" {...rootProps}>
+    <ResponsiveDialogContext.Provider value={{ close, isMobile, variant }}>
+      <Root
+        data-slot="responsive-dialog"
+        onOpenChange={setOpen}
+        open={open}
+        {...mobileProps}
+        {...props}
+      >
         {children}
       </Root>
     </ResponsiveDialogContext.Provider>
   )
 }
 
-type TriggerProps = React.ComponentProps<typeof DialogTrigger> &
+type TriggerProps = React.ComponentProps<typeof AlertDialogTrigger> &
+  React.ComponentProps<typeof DialogTrigger> &
   React.ComponentProps<typeof DrawerTrigger>
 
 function ResponsiveDialogTrigger(props: TriggerProps) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogTrigger")
-  const Trigger = isMobile ? DrawerTrigger : DialogTrigger
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogTrigger",
+  )
+  const Trigger = isMobile
+    ? DrawerTrigger
+    : variant === "alert"
+      ? AlertDialogTrigger
+      : DialogTrigger
   return <Trigger data-slot="responsive-dialog-trigger" {...props} />
 }
 
@@ -90,9 +142,54 @@ type CloseProps = React.ComponentProps<typeof DialogClose> &
   React.ComponentProps<typeof DrawerClose>
 
 function ResponsiveDialogClose(props: CloseProps) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogClose")
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogClose",
+  )
+  if (!isMobile && variant === "alert") {
+    throw new Error(
+      "ResponsiveDialogClose cannot be used in an alert-variant ResponsiveDialog - use ResponsiveDialogCancel or ResponsiveDialogAction instead.",
+    )
+  }
   const Close = isMobile ? DrawerClose : DialogClose
   return <Close data-slot="responsive-dialog-close" {...props} />
+}
+
+function ResponsiveDialogCancel(props: CloseProps) {
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogCancel",
+  )
+  if (isMobile) {
+    return <DrawerClose data-slot="responsive-dialog-cancel" {...props} />
+  }
+  const Cancel = variant === "alert" ? AlertDialogCancel : DialogClose
+  return <Cancel data-slot="responsive-dialog-cancel" {...props} />
+}
+
+type ActionProps = React.ComponentProps<typeof Button>
+
+function ResponsiveDialogAction({ onClick, ...props }: ActionProps) {
+  const { close, isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogAction",
+  )
+  if (!isMobile && variant === "alert") {
+    return (
+      <AlertDialogAction
+        data-slot="responsive-dialog-action"
+        onClick={onClick}
+        {...(props as React.ComponentProps<typeof AlertDialogAction>)}
+      />
+    )
+  }
+  return (
+    <Button
+      data-slot="responsive-dialog-action"
+      onClick={(e) => {
+        onClick?.(e)
+        if (!e.defaultPrevented) close()
+      }}
+      {...props}
+    />
+  )
 }
 
 const CONTENT_SIZE_CLASSNAME = {
@@ -110,6 +207,10 @@ interface ResponsiveDialogContentProps {
   className?: string
   children: React.ReactNode
   size?: ContentSize
+  alertDialogProps?: Omit<
+    React.ComponentProps<typeof AlertDialogContent>,
+    "className" | "children" | "size"
+  >
   dialogProps?: Omit<
     React.ComponentProps<typeof DialogContent>,
     "children" | "className"
@@ -124,10 +225,13 @@ function ResponsiveDialogContent({
   className,
   children,
   size = "md",
+  alertDialogProps,
   dialogProps,
   drawerProps,
 }: ResponsiveDialogContentProps) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogContent")
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogContent",
+  )
 
   if (isMobile) {
     return (
@@ -138,6 +242,19 @@ function ResponsiveDialogContent({
       >
         {children}
       </DrawerContent>
+    )
+  }
+
+  if (variant === "alert") {
+    return (
+      <AlertDialogContent
+        className={cn(CONTENT_SIZE_CLASSNAME[size], className)}
+        data-slot="responsive-dialog-content"
+        size="auto"
+        {...alertDialogProps}
+      >
+        {children}
+      </AlertDialogContent>
     )
   }
 
@@ -156,8 +273,14 @@ function ResponsiveDialogHeader({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogHeader")
-  const Header = isMobile ? DrawerHeader : DialogHeader
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogHeader",
+  )
+  const Header = isMobile
+    ? DrawerHeader
+    : variant === "alert"
+      ? AlertDialogHeader
+      : DialogHeader
   return (
     <Header
       className={className}
@@ -171,8 +294,14 @@ function ResponsiveDialogFooter({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogFooter")
-  const Footer = isMobile ? DrawerFooter : DialogFooter
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogFooter",
+  )
+  const Footer = isMobile
+    ? DrawerFooter
+    : variant === "alert"
+      ? AlertDialogFooter
+      : DialogFooter
   return (
     <Footer
       className={className}
@@ -183,25 +312,41 @@ function ResponsiveDialogFooter({
 }
 
 function ResponsiveDialogTitle(
-  props: React.ComponentProps<typeof DialogTitle> &
+  props: React.ComponentProps<typeof AlertDialogTitle> &
+    React.ComponentProps<typeof DialogTitle> &
     React.ComponentProps<typeof DrawerTitle>,
 ) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogTitle")
-  const Title = isMobile ? DrawerTitle : DialogTitle
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogTitle",
+  )
+  const Title = isMobile
+    ? DrawerTitle
+    : variant === "alert"
+      ? AlertDialogTitle
+      : DialogTitle
   return <Title data-slot="responsive-dialog-title" {...props} />
 }
 
 function ResponsiveDialogDescription(
-  props: React.ComponentProps<typeof DialogDescription> &
+  props: React.ComponentProps<typeof AlertDialogDescription> &
+    React.ComponentProps<typeof DialogDescription> &
     React.ComponentProps<typeof DrawerDescription>,
 ) {
-  const { isMobile } = useResponsiveDialogContext("ResponsiveDialogDescription")
-  const Description = isMobile ? DrawerDescription : DialogDescription
+  const { isMobile, variant } = useResponsiveDialogContext(
+    "ResponsiveDialogDescription",
+  )
+  const Description = isMobile
+    ? DrawerDescription
+    : variant === "alert"
+      ? AlertDialogDescription
+      : DialogDescription
   return <Description data-slot="responsive-dialog-description" {...props} />
 }
 
 export {
   ResponsiveDialog,
+  ResponsiveDialogAction,
+  ResponsiveDialogCancel,
   ResponsiveDialogClose,
   ResponsiveDialogContent,
   ResponsiveDialogDescription,
