@@ -8,21 +8,21 @@ import type * as z from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { api } from "@/lib/api/client"
@@ -77,8 +77,8 @@ export function ImportSSHKeyModal({
   }
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger
+    <ResponsiveDialog onOpenChange={handleOpenChange} open={open}>
+      <ResponsiveDialogTrigger
         className={cn(className)}
         render={
           render || (
@@ -99,19 +99,19 @@ export function ImportSSHKeyModal({
             <IconUpload /> Import key
           </>
         )}
-      </DialogTrigger>
+      </ResponsiveDialogTrigger>
 
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Import SSH key</DialogTitle>
-          <DialogDescription>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Import SSH key</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Paste an existing public key. Ed25519 and RSA (2048-bit minimum) are
             supported.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
 
         <form
-          className="space-y-4"
+          className="mt-4 space-y-4 md:mt-0"
           id="import-ssh-key-form"
           onSubmit={form.handleSubmit(onSubmit)}
         >
@@ -212,7 +212,7 @@ export function ImportSSHKeyModal({
             </p>
           )}
 
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button
               disabled={importKey.isPending}
               onClick={() => handleOpenChange(false)}
@@ -225,9 +225,9 @@ export function ImportSSHKeyModal({
               {importKey.isPending ? <Spinner /> : <IconUpload />}
               Import
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }

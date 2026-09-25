@@ -15,17 +15,6 @@ import { toast } from "sonner"
 import type * as z from "zod"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import {
   Field,
@@ -46,6 +35,15 @@ import {
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+  ResponsiveDialogTrigger,
+} from "@/components/ui/responsive-dialog"
 import { Spinner } from "@/components/ui/spinner"
 import { Textarea } from "@/components/ui/textarea"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
@@ -138,7 +136,7 @@ export function GenerateSSHKeyModal({
   }
 
   return (
-    <AlertDialog
+    <ResponsiveDialog
       onOpenChange={(open) => {
         onOpenChange?.(open)
         if (!open) {
@@ -148,7 +146,7 @@ export function GenerateSSHKeyModal({
       }}
       open={open}
     >
-      <AlertDialogTrigger
+      <ResponsiveDialogTrigger
         className={cn(className)}
         render={
           render || (
@@ -169,15 +167,15 @@ export function GenerateSSHKeyModal({
             <IconSparkles2 /> Generate key
           </>
         )}
-      </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-lg!">
+      </ResponsiveDialogTrigger>
+      <ResponsiveDialogContent size="lg">
         {sshKey ? (
           <>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
                 SSH Key Pair generated Successfully
-              </AlertDialogTitle>
-            </AlertDialogHeader>
+              </ResponsiveDialogTitle>
+            </ResponsiveDialogHeader>
 
             <Alert variant="warning">
               <IconAlertCircleFilled />
@@ -215,9 +213,15 @@ export function GenerateSSHKeyModal({
                   </InputGroupAddon>
                 </InputGroup>
               </div>
-              <AlertDialogFooter>
+              <ResponsiveDialogFooter>
                 {downloaded && (
-                  <AlertDialogCancel type="button">Close</AlertDialogCancel>
+                  <Button
+                    onClick={() => setSSHKey(null)}
+                    type="button"
+                    variant="secondary"
+                  >
+                    Close
+                  </Button>
                 )}
                 <Button
                   onClick={() => {
@@ -232,20 +236,22 @@ export function GenerateSSHKeyModal({
                   <IconDownload />
                   Download Key
                 </Button>
-              </AlertDialogFooter>
+              </ResponsiveDialogFooter>
             </div>
           </>
         ) : (
           <>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Generate New SSH Key Pair</AlertDialogTitle>
-              <AlertDialogDescription>
+            <ResponsiveDialogHeader>
+              <ResponsiveDialogTitle>
+                Generate New SSH Key Pair
+              </ResponsiveDialogTitle>
+              <ResponsiveDialogDescription>
                 Generate a new SSH key pair for secure access to your computes.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+              </ResponsiveDialogDescription>
+            </ResponsiveDialogHeader>
 
             <form
-              className="space-y-4"
+              className="mt-4 space-y-4 md:mt-0"
               id="generate-ssh-key-form"
               onSubmit={(e) => {
                 e.stopPropagation()
@@ -367,22 +373,27 @@ export function GenerateSSHKeyModal({
               />
             </form>
 
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDisabled} type="button">
+            <ResponsiveDialogFooter className="mt-4">
+              <Button
+                disabled={isDisabled}
+                onClick={() => onOpenChange?.(false)}
+                type="button"
+                variant="outline"
+              >
                 Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
+              </Button>
+              <Button
                 disabled={isDisabled}
                 form="generate-ssh-key-form"
                 type="submit"
               >
                 {generateSSHKey.isPending ? <Spinner /> : <IconSparkles2 />}
                 Generate
-              </AlertDialogAction>
-            </AlertDialogFooter>
+              </Button>
+            </ResponsiveDialogFooter>
           </>
         )}
-      </AlertDialogContent>
-    </AlertDialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   )
 }
