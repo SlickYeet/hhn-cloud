@@ -17,3 +17,21 @@ export function useMediaQuery(query: string): boolean {
 
   return value
 }
+
+export const BREAKPOINTS = {
+  "2xl": 1536,
+  lg: 1024,
+  md: 768,
+  sm: 640,
+  xl: 1280,
+} as const
+
+export type Breakpoint = keyof typeof BREAKPOINTS
+
+export function useIsBreakpoint(
+  breakpoint: Breakpoint | number = "md",
+): boolean {
+  const px =
+    typeof breakpoint === "number" ? breakpoint : BREAKPOINTS[breakpoint]
+  return useMediaQuery(`(max-width: ${px - 1}px)`)
+}
